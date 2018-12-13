@@ -10,10 +10,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>hello-api</module>
-        <module>hello-impl</module>
-        <module>stream-api</module>
-        <module>stream-impl</module>
+        <module>portfolio-api</module>
+        <module>broker-api</module>
+        <module>wire-transfer-api</module>
         <module>integration-tests</module>
     </modules>
 
