@@ -22,31 +22,29 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<NewPortfolioRequest, Done> openPortfolio() {
-        return newPortfolioRequest -> {
-            return portfolioRepository.open(newPortfolioRequest);
-        };
+        return newPortfolioRequest ->
+                portfolioRepository.open(newPortfolioRequest);
     }
 
     @Override
-    public ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId) {
+    public ServiceCall<PortfolioId, Done> liquidatePortfolio() {
         return null;
     }
 
     @Override
-    public ServiceCall<BuyOrder, Done> buyStock(String portfolioId) {
+    public ServiceCall<BuyOrder, Done> buyStock() {
         return null;
     }
 
     @Override
-    public ServiceCall<SellOrder, Done> sellStock(String portfolioId) {
+    public ServiceCall<SellOrder, Done> sellStock() {
         return null;
     }
 
     @Override
-    public ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId) {
-        return request -> {
-            return portfolioRepository.get(new PortfolioId(portfolioId));
-        };
+    public ServiceCall<PortfolioId, PortfolioView> getPortfolio() {
+        return portfolioId ->
+                portfolioRepository.get(portfolioId);
     }
 
     @Override

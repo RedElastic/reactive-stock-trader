@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class PortfolioRepositoryImpl implements PortfolioRepository {
+
     private BrokerService brokerService;
 
     @Inject
@@ -24,12 +25,12 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     }
 
     @Override
-    public CompletableFuture<Done> open(NewPortfolioRequest request) {
+    public CompletionStage<Done> open(NewPortfolioRequest request) {
         return CompletableFuture.completedFuture(Done.getInstance());
     }
 
     @Override
-    public CompletableFuture<PortfolioView> get(PortfolioId portfolioId) {
+    public CompletionStage<PortfolioView> get(PortfolioId portfolioId) {
         BigDecimal funds = new BigDecimal("100");
         LoyaltyLevel loyaltyLevel = LoyaltyLevel.BRONZE;
         List<Holding> holdings = Collections.emptyList();
@@ -40,15 +41,15 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         return CompletableFuture.completedFuture(view);
     }
 
-    private CompletableFuture<Map<String, BigDecimal>> getPrices(List<String> symbols) {
+    private CompletionStage<Map<String, BigDecimal>> getPrices(List<String> symbols) {
         // TODO deal with request failures
         // TODO timeout
         // TODO add in share count multiplier logic and produce list of holdings
         ConcurrentHashMap<String, BigDecimal> priceMap = new ConcurrentHashMap<String, BigDecimal>();
         Stream<CompletionStage<Void>> requests = symbols.stream().map(symbol ->
             brokerService
-                    .getQuote(symbol)
-                    .invoke()
+                    .getQuote()
+                    .invoke(symbol)
                     .thenAccept(quote -> priceMap.put(symbol, quote.getSharePrice()))
         );
         // FIXME: Deal with this

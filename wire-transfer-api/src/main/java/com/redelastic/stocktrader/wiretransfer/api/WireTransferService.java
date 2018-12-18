@@ -1,14 +1,12 @@
 package com.redelastic.stocktrader.wiretransfer.api;
 
 import static com.lightbend.lagom.javadsl.api.Service.named;
-import static com.lightbend.lagom.javadsl.api.Service.restCall;
-import static com.lightbend.lagom.javadsl.api.Service.topic;
+import static com.lightbend.lagom.javadsl.api.Service.call;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
-import com.lightbend.lagom.javadsl.api.transport.Method;
 
 
 /**
@@ -16,13 +14,16 @@ import com.lightbend.lagom.javadsl.api.transport.Method;
  */
 public interface WireTransferService extends Service {
 
-  ServiceCall<TransferRequest, Done> transferFunds();
+  ServiceCall<PortfolioCreditRequest, Done> creditPortfolio();
+
+  ServiceCall<PortfolioDebitRequest, Done> debitPortfolio();
 
   @Override
   default Descriptor descriptor() {
     // @formatter:off
     return named("wire-transfer").withCalls(
-            restCall(Method.POST, "/api/wire-transfer", this::transferFunds)
+            call(this::creditPortfolio),
+            call(this::debitPortfolio)
         ).withAutoAcl(true);
     // @formatter:on
   }

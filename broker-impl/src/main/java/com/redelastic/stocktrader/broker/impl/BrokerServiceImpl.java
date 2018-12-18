@@ -7,10 +7,17 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.Order;
 import com.redelastic.stocktrader.broker.api.Quote;
 
-import java.math.BigDecimal;
-import java.util.concurrent.CompletableFuture;
+import javax.inject.Inject;
 
 public class BrokerServiceImpl implements BrokerService {
+
+    private QuoteService quoteService;
+
+    @Inject
+    public BrokerServiceImpl(QuoteService quoteService) {
+        this.quoteService = quoteService;
+    }
+
     @Override
     public ServiceCall<Order, Done> buyStock() {
         return null;
@@ -22,13 +29,9 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Quote> getQuote(String symbol) {
-        return request -> {
-            Quote quote = Quote.builder()
-                    .symbol(symbol)
-                    .sharePrice(new BigDecimal("10.40"))
-                    .build();
-            return CompletableFuture.completedFuture(quote);
+    public ServiceCall<String, Quote> getQuote() {
+        return symbol -> {
+            return quoteService.getQuote(symbol);
         };
     }
 }

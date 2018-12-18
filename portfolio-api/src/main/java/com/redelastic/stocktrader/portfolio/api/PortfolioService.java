@@ -1,14 +1,12 @@
 package com.redelastic.stocktrader.portfolio.api;
 
 import static com.lightbend.lagom.javadsl.api.Service.named;
-import static com.lightbend.lagom.javadsl.api.Service.restCall;
+import static com.lightbend.lagom.javadsl.api.Service.call;
 
 import akka.Done;
-import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
-import com.lightbend.lagom.javadsl.api.transport.Method;
 
 import java.math.BigDecimal;
 
@@ -19,14 +17,13 @@ public interface PortfolioService extends Service {
 
     ServiceCall<NewPortfolioRequest, Done> openPortfolio();
 
-    ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId);
+    ServiceCall<PortfolioId, Done> liquidatePortfolio();
 
-    ServiceCall<BuyOrder, Done> buyStock(String portfolioId);
+    ServiceCall<BuyOrder, Done> buyStock();
 
-    ServiceCall<SellOrder, Done> sellStock(String portfolioId);
+    ServiceCall<SellOrder, Done> sellStock();
 
-    ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
-
+    ServiceCall<PortfolioId, PortfolioView> getPortfolio();
 
     /**
      * Used by the wire transfer service to deposit a transfer.
@@ -51,13 +48,13 @@ public interface PortfolioService extends Service {
         // @formatter:off
         return named("portfolio").withCalls(
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
-                restCall(Method.POST, "/api/portfolio", this::openPortfolio),
-                restCall(Method.DELETE, "/api/portfolio/:portfolioId", this::liquidatePortfolio),
-                restCall(Method.POST, "/api/portfolio/:portfolioId/buyStock", this::buyStock),
-                restCall(Method.POST, "/api/portfolio/:portfolioId/sellStock", this::sellStock),
-                restCall(Method.GET, "/api/portfolio/:portfolioId", this::getPortfolio),
-                restCall(Method.POST, "/api/portfolio/:portfolioId/creditFunds", this::creditFunds),
-                restCall(Method.POST, "/api/portfolio/:portfolioId/debitFunds", this::debitFunds)
+                call(this::openPortfolio),
+                call(this::liquidatePortfolio),
+                call(this::buyStock),
+                call(this::sellStock),
+                call(this::getPortfolio),
+                call(this::creditFunds),
+                call(this::debitFunds)
         );
         /*.withTopics(
     topic(LOYALTY_LEVEL_TOPIC_ID, this::loyaltyLevelChanges)

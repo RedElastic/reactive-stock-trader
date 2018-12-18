@@ -83,6 +83,7 @@ lazy val wireTransferApi = (project in file("wire-transfer-api"))
       lombok
     )
   )
+  .dependsOn(portfolioApi)
 /*
 lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
   .settings(commonSettings)
