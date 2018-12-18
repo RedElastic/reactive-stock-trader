@@ -1,0 +1,1 @@
+GET     /portfolio/:portfolioId     controllers.PortfolioController.getPortfolio(portfolioId)
