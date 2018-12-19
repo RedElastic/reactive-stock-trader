@@ -3,7 +3,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import play.libs.Json;
 
 
-public class JavaJsonCustomObjectMapper {
+class JavaJsonCustomObjectMapper {
 
     JavaJsonCustomObjectMapper() {
         ObjectMapper mapper = Json.newDefaultMapper();

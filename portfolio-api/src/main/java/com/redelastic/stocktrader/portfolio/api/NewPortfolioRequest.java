@@ -11,7 +11,7 @@ import javax.annotation.concurrent.Immutable;
 @JsonDeserialize
 public final class NewPortfolioRequest {
     @NonNull
-    String portfolioId;
+    PortfolioId portfolioId;
 
     @NonNull
     String linkedAccount;

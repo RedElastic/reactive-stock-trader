@@ -1,5 +1,6 @@
 package controllers;
 
+import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.redelastic.stocktrader.portfolio.api.NewPortfolioRequest;
 import com.redelastic.stocktrader.portfolio.api.PortfolioId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
@@ -13,7 +14,7 @@ import java.util.concurrent.CompletionStage;
 
 public class PortfolioController extends Controller {
 
-    PortfolioService portfolioService;
+    private PortfolioService portfolioService;
 
     @Inject
     public PortfolioController(PortfolioService portfolioService) {
@@ -24,7 +25,6 @@ public class PortfolioController extends Controller {
         return portfolioService
             .getPortfolio()
             .invoke(new PortfolioId(portfolioId))
-                .thenApply(v -> {System.out.println(v); return v; })
             .thenApply(Json::toJson)
             .thenApply(Results::ok);
     }

@@ -12,7 +12,9 @@
 
 - Clear conventions around path parameters versus request body? Seems reasonable to include entity ID as part of path. Is there a reason to favour between "/api/broker/buyStock/IBM?shares=10" vs. "/api/broker/buyStock" vs. "/api/broker/buyStock?symbol=IBM&shares=10"    
 
-- REST doesn't really fit with a DDD philosophy in general. We do want to talk about entities, but avoid thinking about them purely in terms of CRUD. `restCall` should really be thought of as HTTP call, not REST. 
+- REST doesn't really fit with a DDD philosophy in general. We do want to talk about entities, but avoid thinking about them purely in terms of CRUD. `restCall` should really be thought of as HTTP call, not REST.
+
+- Can we proxy the HTML error responses from the Lagom services through the BFF for development? 
     
 # Design
 

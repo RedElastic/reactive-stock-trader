@@ -16,4 +16,5 @@ public final class PortfolioState implements Jsonable {
     public static PortfolioState uninitialized() {
         return new PortfolioState(0, TreePVector.empty());
     }
+
 }

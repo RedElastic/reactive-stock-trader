@@ -4,7 +4,6 @@ scalaVersion in ThisBuild := "2.12.4"
 
 EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 
-
 lazy val root = (project in file("."))
   .settings(name := "reactive-stock-trader")
   .aggregate(
@@ -21,10 +20,7 @@ lazy val portfolioApi = (project in file("portfolio-api"))
   .settings(commonSettings)
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies ++= Seq(
-      lagomJavadslApi,
-      lombok
-    )
+    libraryDependencies ++= lagomApiDependencies
   )
 
 lazy val portfolioImpl = (project in file("portfolio-impl"))
@@ -50,19 +46,14 @@ lazy val brokerApi = (project in file("broker-api"))
   .settings(commonSettings)
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies ++= Seq(
-      lagomJavadslApi,
-      lombok
-    )
+    libraryDependencies ++= lagomApiDependencies
   )
 
 
 lazy val brokerImpl = (project in file("broker-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava, SbtReactiveAppPlugin)
-  .dependsOn(
-    brokerApi
-  )
+  .dependsOn(brokerApi)
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
@@ -78,10 +69,7 @@ lazy val wireTransferApi = (project in file("wire-transfer-api"))
   .settings(commonSettings)
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies ++= Seq(
-      lagomJavadslApi,
-      lombok
-    )
+    libraryDependencies ++= lagomApiDependencies
   )
   .dependsOn(portfolioApi)
 /*
@@ -112,7 +100,7 @@ lazy val gateway = (project in file("gateway"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
-      lagomJavadslClient,
+      lagomJavadslClient
     ),
 
   PlayKeys.playMonitoredFiles ++= (sourceDirectories in (Compile, TwirlKeys.compileTemplates)).value,
@@ -124,6 +112,9 @@ lazy val gateway = (project in file("gateway"))
 val lombok = "org.projectlombok" % "lombok" % "1.18.4"
 val cassandraExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.0.0"
 
+val lagomApiDependencies = Seq(
+  lagomJavadslApi,
+  lombok)
 
 def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8"),
@@ -131,5 +122,3 @@ def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
 )
 
 lagomCassandraCleanOnStart in ThisBuild := false
-
-lagomServiceGatewayPort in ThisBuild := 9000

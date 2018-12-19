@@ -7,9 +7,8 @@ import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 public class Module extends AbstractModule implements ServiceClientGuiceSupport {
     @Override
     protected void configure() {
-        // route all paths that don't start with /api/ to Play.
-        bindServiceInfo(ServiceInfo.of("web-gateway-module", ServiceAcl.path("(?!/api/).*")));
-        //bindServiceInfo(ServiceInfo.of("web-gateway-module", ServiceAcl.path(".*")));
+        // route all paths to through this Play BFF
+        bindServiceInfo(ServiceInfo.of("web-gateway-module", ServiceAcl.path(".*")));
         bindClient(PortfolioService.class);
 
         bind(JavaJsonCustomObjectMapper.class).asEagerSingleton();
