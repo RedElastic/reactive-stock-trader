@@ -34,9 +34,9 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         LoyaltyLevel loyaltyLevel = LoyaltyLevel.BRONZE;
         PSequence<Holding> holdings = ConsPStack.empty();
         PSequence<String> symbols = ConsPStack.singleton("IBM");
-
-        PortfolioView view = new PortfolioView(portfolioId, funds, loyaltyLevel, holdings);
-        return CompletableFuture.completedFuture(view);
+        return CompletableFuture.completedFuture(
+                    new PortfolioView(portfolioId, funds, loyaltyLevel, holdings)
+                );
     }
 
     private CompletionStage<Map<String, BigDecimal>> getPrices(PSequence<String> symbols) {
