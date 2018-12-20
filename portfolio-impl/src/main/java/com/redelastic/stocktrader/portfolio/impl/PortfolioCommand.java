@@ -14,15 +14,15 @@ public interface PortfolioCommand extends Jsonable {
     }
 
     @Value
-    final class BuyOrder implements PortfolioCommand, ReplyType<Done> {
-        final String symbol;
-        final int shares;
+    class BuyOrder implements PortfolioCommand, ReplyType<Done> {
+        String symbol;
+        int shares;
     }
 
     @Value
-    final class SellOrder implements PortfolioCommand, ReplyType<Done> {
-        final String symbol;
-        final int shares;
+    class SellOrder implements PortfolioCommand, ReplyType<Done> {
+        String symbol;
+        int shares;
     }
 
     enum LiquidateOrder implements PortfolioCommand, ReplyType<Done> {
@@ -30,7 +30,7 @@ public interface PortfolioCommand extends Jsonable {
     }
 
     @Value
-    final class SetupMessage implements PortfolioCommand, ReplyType<Done> {
+    class SetupMessage implements PortfolioCommand, ReplyType<Done> {
         NewPortfolioRequest request;
     }
 

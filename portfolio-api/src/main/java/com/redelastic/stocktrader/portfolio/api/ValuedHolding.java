@@ -5,10 +5,10 @@ import lombok.Value;
 import java.math.BigDecimal;
 
 @Value
-public class Holding {
+public class ValuedHolding {
     String symbol;
 
-    int shares;
+    int shareCount;
 
-    BigDecimal currentValue;
+    BigDecimal marketValue;
 }

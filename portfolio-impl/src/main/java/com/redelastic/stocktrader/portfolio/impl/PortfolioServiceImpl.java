@@ -1,7 +1,6 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
-import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.redelastic.stocktrader.portfolio.api.*;
 
@@ -13,7 +12,7 @@ import java.math.BigDecimal;
 @Singleton
 public class PortfolioServiceImpl implements PortfolioService {
 
-    private PortfolioRepository portfolioRepository;
+    private final PortfolioRepository portfolioRepository;
 
     @Inject
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository) {
@@ -22,8 +21,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<NewPortfolioRequest, Done> openPortfolio() {
-        return newPortfolioRequest ->
-                portfolioRepository.open(newPortfolioRequest);
+        return portfolioRepository::open;
     }
 
     @Override
@@ -43,8 +41,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<PortfolioId, PortfolioView> getPortfolio() {
-        return portfolioId ->
-                portfolioRepository.get(portfolioId);
+        return portfolioRepository::get;
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.concurrent.CompletionStage;
 
 public class PortfolioController extends Controller {
 
-    private PortfolioService portfolioService;
+    private final PortfolioService portfolioService;
 
     @Inject
     public PortfolioController(PortfolioService portfolioService) {

@@ -1,7 +1,6 @@
 package com.redelastic.stocktrader.broker.impl;
 
 import akka.Done;
-import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.Order;
@@ -11,7 +10,7 @@ import javax.inject.Inject;
 
 public class BrokerServiceImpl implements BrokerService {
 
-    private QuoteService quoteService;
+    private final QuoteService quoteService;
 
     @Inject
     public BrokerServiceImpl(QuoteService quoteService) {
@@ -30,8 +29,6 @@ public class BrokerServiceImpl implements BrokerService {
 
     @Override
     public ServiceCall<String, Quote> getQuote() {
-        return symbol -> {
-            return quoteService.getQuote(symbol);
-        };
+        return quoteService::getQuote;
     }
 }

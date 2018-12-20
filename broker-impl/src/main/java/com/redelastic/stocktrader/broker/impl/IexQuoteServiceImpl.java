@@ -12,7 +12,7 @@ import java.util.concurrent.CompletionStage;
  * Delegate quotes out to the IexTrading public API.
  */
 public class IexQuoteServiceImpl implements QuoteService {
-    private WSClient wsClient;
+    private final WSClient wsClient;
 
     @Inject
     IexQuoteServiceImpl(WSClient wsClient) {

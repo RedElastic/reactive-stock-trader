@@ -14,5 +14,5 @@ public class PortfolioView {
 
     LoyaltyLevel loyaltyLevel;
 
-    PSequence<Holding> holdings;
+    PSequence<ValuedHolding> holdings;
 }

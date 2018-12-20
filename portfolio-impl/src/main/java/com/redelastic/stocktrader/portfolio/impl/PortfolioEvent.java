@@ -3,7 +3,6 @@ package com.redelastic.stocktrader.portfolio.impl;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
-import com.lightbend.lagom.javadsl.persistence.AggregateEventTagger;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.portfolio.api.PortfolioId;
 import lombok.Value;
@@ -21,7 +20,7 @@ public interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent>
     }
 
     @Value
-    public class Initialized implements PortfolioEvent {
+    class Initialized implements PortfolioEvent {
         PortfolioId portfolioId;
         String linkedAccount;
     }

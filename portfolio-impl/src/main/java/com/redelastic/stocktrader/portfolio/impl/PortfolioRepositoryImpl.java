@@ -8,15 +8,15 @@ import org.pcollections.PSequence;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class PortfolioRepositoryImpl implements PortfolioRepository {
 
-    private BrokerService brokerService;
+    private final BrokerService brokerService;
 
     @Inject
     public PortfolioRepositoryImpl(BrokerService brokerService) {
@@ -25,36 +25,44 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
 
     @Override
     public CompletionStage<Done> open(NewPortfolioRequest request) {
+        // TODO: Do
         return CompletableFuture.completedFuture(Done.getInstance());
     }
 
     @Override
     public CompletionStage<PortfolioView> get(PortfolioId portfolioId) {
-        BigDecimal funds = new BigDecimal("100");
-        LoyaltyLevel loyaltyLevel = LoyaltyLevel.BRONZE;
-        PSequence<Holding> holdings = ConsPStack.empty();
-        PSequence<String> symbols = ConsPStack.singleton("IBM");
-        return CompletableFuture.completedFuture(
-                    new PortfolioView(portfolioId, funds, loyaltyLevel, holdings)
+        PortfolioState portfolio = new PortfolioState(
+                new BigDecimal("100"),
+                LoyaltyLevel.BRONZE,
+                ConsPStack.singleton(new Holding("IBM", 10))
+        );
+        return priceHoldings(portfolio.getHoldings())
+                .thenApply(valuedHoldings ->
+                        new PortfolioView(portfolioId, portfolio.getFunds(), portfolio.getLoyaltyLevel(), valuedHoldings)
                 );
     }
 
-    private CompletionStage<Map<String, BigDecimal>> getPrices(PSequence<String> symbols) {
+    private CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding> holdings) {
         // TODO deal with request failures
         // TODO timeout
-        // TODO add in share count multiplier logic and produce list of holdings
-        ConcurrentHashMap<String, BigDecimal> priceMap = new ConcurrentHashMap<String, BigDecimal>();
-        Stream<CompletionStage<Void>> requests = symbols.stream().map(symbol ->
-            brokerService
-                    .getQuote()
-                    .invoke(symbol)
-                    .thenAccept(quote -> priceMap.put(symbol, quote.getSharePrice()))
-        );
-        // FIXME: Deal with this
-        CompletableFuture<Void>[] rs = requests.toArray(CompletableFuture[]::new);
-        return CompletableFuture
-                .allOf(rs)
-                .thenApply(u -> priceMap);
+        List<CompletableFuture<ValuedHolding>> requests = holdings.stream().map(valuedHolding ->
+                brokerService
+                        .getQuote()
+                        .invoke(valuedHolding.getSymbol())
+                        .thenApply(quote ->
+                                new ValuedHolding(
+                                        valuedHolding.getSymbol(),
+                                        valuedHolding.getShareCount(),
+                                        quote.getSharePrice().multiply(BigDecimal.valueOf(valuedHolding.getShareCount()))))
+                        .toCompletableFuture()
+        ).collect(toList());
+        
+        return CompletableFuture.allOf(requests.toArray(new CompletableFuture<?>[0]))
+                .thenApply(done ->
+                    requests.stream()
+                            .map(response -> response.toCompletableFuture().join())
+                        .collect(toList())
+                ).thenApply(ConsPStack::from);
     }
 
 }
