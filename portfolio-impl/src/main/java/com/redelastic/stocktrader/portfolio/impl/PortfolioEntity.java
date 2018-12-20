@@ -32,12 +32,13 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
 
     private void setupHandler(BehaviorBuilder builder) {
         builder.setCommandHandler(PortfolioCommand.SetupMessage.class,
-                (PortfolioCommand.SetupMessage setup, CommandContext ctx) -> {
+                (setup, ctx) -> {
                     PortfolioId portfolioId = setup.getRequest().getPortfolioId();
                     String linkedAccount = setup.getRequest().getLinkedAccount();
 
                     return ctx.thenPersist(
-                            new PortfolioEvent.Initialized(portfolioId, linkedAccount));
+                            new PortfolioEvent.Initialized(portfolioId, linkedAccount),
+                            (e) -> ctx.reply(Done.getInstance()));
         });
     }
 

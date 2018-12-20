@@ -1,9 +1,9 @@
 package com.redelastic.stocktrader.portfolio.api;
 
 import lombok.Value;
+import org.pcollections.PSequence;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Value
 public class PortfolioView {
@@ -14,5 +14,5 @@ public class PortfolioView {
 
     LoyaltyLevel loyaltyLevel;
 
-    List<Holding> holdings;
+    PSequence<Holding> holdings;
 }

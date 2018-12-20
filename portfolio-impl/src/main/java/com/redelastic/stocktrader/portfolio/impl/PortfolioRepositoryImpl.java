@@ -2,13 +2,12 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
 import com.redelastic.stocktrader.broker.api.BrokerService;
-import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.portfolio.api.*;
+import org.pcollections.ConsPStack;
+import org.pcollections.PSequence;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -33,15 +32,14 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     public CompletionStage<PortfolioView> get(PortfolioId portfolioId) {
         BigDecimal funds = new BigDecimal("100");
         LoyaltyLevel loyaltyLevel = LoyaltyLevel.BRONZE;
-        List<Holding> holdings = Collections.emptyList();
-        List<String> symbols = Collections.singletonList("IBM");
-
+        PSequence<Holding> holdings = ConsPStack.empty();
+        PSequence<String> symbols = ConsPStack.singleton("IBM");
 
         PortfolioView view = new PortfolioView(portfolioId, funds, loyaltyLevel, holdings);
         return CompletableFuture.completedFuture(view);
     }
 
-    private CompletionStage<Map<String, BigDecimal>> getPrices(List<String> symbols) {
+    private CompletionStage<Map<String, BigDecimal>> getPrices(PSequence<String> symbols) {
         // TODO deal with request failures
         // TODO timeout
         // TODO add in share count multiplier logic and produce list of holdings
