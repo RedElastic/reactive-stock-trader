@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Value;
 import lombok.NonNull;
 
-
 @Value
 @JsonDeserialize
 public class ShareOrder {

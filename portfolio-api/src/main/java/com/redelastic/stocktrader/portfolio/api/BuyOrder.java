@@ -6,7 +6,7 @@ import lombok.Value;
 
 @Value
 @JsonDeserialize
-public final class BuyOrder {
+public class BuyOrder {
 
     String portfolioId;
 

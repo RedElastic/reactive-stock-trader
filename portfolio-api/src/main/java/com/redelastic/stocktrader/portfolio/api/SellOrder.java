@@ -9,7 +9,7 @@ import javax.annotation.concurrent.Immutable;
 
 @Value
 @JsonDeserialize
-public final class SellOrder {
+public class SellOrder {
 
     String portfolioId;
 
