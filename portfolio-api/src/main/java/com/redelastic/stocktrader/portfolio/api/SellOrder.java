@@ -11,12 +11,9 @@ import javax.annotation.concurrent.Immutable;
 @JsonDeserialize
 public final class SellOrder {
 
-    @NonNull
-    public final String portfolioId;
+    String portfolioId;
 
-    @NonNull
-    public final String stockSymbol;
+    String stockSymbol;
 
-    @Nonnegative
-    public final int shares;
+    int shares;
 }

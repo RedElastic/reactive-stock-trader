@@ -1,6 +1,5 @@
 package controllers;
 
-import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.redelastic.stocktrader.portfolio.api.NewPortfolioRequest;
 import com.redelastic.stocktrader.portfolio.api.PortfolioId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;

@@ -6,17 +6,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Value;
 import lombok.NonNull;
 
-@Immutable
+
 @Value
 @JsonDeserialize
-public final class ShareOrder {
+public class ShareOrder {
 
-    @NonNull
-    public final String portfolioId;
+    String portfolioId;
 
-    @NonNull
-    public final String stockSymbol;
+    String stockSymbol;
 
-    @Nonnegative
-    public final int shares;
+    int shares;
 }
