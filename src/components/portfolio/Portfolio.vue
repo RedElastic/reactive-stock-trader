@@ -1,33 +1,30 @@
 <template>
   <div class="row">
     <div class="col">  
+
+      <!-- Portfolio Overview -->
       <div class="row mt-3">
         <div class="col-7">
           <h2>
             Portfolio
             <small class="text-muted">Conservative 60/40 Split</small>
           </h2>
-        </div>
-        <div class="col-5">
+          <portfolio-summary class="mb-3"></portfolio-summary>
           <portfolio-switcher></portfolio-switcher>
-        </div>      
-      </div>
-      <div class="row">
-        <div class="col-6">
-          <portfolio-summary></portfolio-summary>
-        </div> 
-        <div class="col-6">
+        </div>
+        <div class="col-5">          
           <cash-summary></cash-summary>
-        </div>    
-      </div>   
+        </div>      
+      </div> 
+      <!-- /Portfolio Overview -->
 
+      <!-- Equities -->
       <div class="row mt-3">
         <div class="col">
           <h2>Equities</h2>
         </div>
       </div>
 
-      <!-- stocks -->
       <div class="row mt-3">
         <div class="col-5">              
           <div class="card">

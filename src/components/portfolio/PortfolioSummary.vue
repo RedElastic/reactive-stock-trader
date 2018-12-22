@@ -3,18 +3,10 @@
     <div class="col">
       <div class="row">
         <div class="col-6">
-          Equity Value
+          Equities (book value)
         </div> 
         <div class="col-6">
           135,123 USD
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-6">
-          Deposits
-        </div> 
-        <div class="col-6">
-          112,100 USD
         </div>
       </div>        
       <div class="row">

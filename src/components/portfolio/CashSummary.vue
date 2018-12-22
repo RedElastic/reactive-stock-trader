@@ -4,9 +4,12 @@
       <h5 class="card-title">Cash on Hand</h5>
       <h6 class="card-subtitle mb-2 text-muted">5,301 USD</h6>
       <p class="card-text">
-        Transfer&nbsp;
+        Deposits: 213,123 USD<br/>
+        Withdrawals: 12,123 USD 
+        <p>Transfer&nbsp;
         <a href="#">In</a>&nbsp;|
         <a href="#">Out</a>
+        </p>
       </p>            
     </div>
   </div>
