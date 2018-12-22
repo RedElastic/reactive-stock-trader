@@ -3,6 +3,7 @@
 ## Project setup
 ```
 npm install
+npm install @amcharts/amcharts4
 ```
 
 ### Compiles and hot-reloads for development
