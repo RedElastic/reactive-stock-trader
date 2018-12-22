@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@amcharts/amcharts4": "^4.0.10",
     "vue": "^2.5.17"
   },
   "devDependencies": {
