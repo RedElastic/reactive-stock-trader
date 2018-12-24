@@ -63,11 +63,11 @@
 </template>
 
 <script>
-  import PortfolioSummary from './PortfolioSummary.vue'
-  import PortfolioSwitcher from './PortfolioSwitcher.vue'
-  import CashSummary from './CashSummary.vue'
-  import EquityRow from './EquityRow.vue'
-  import TransactionRow from './TransactionRow.vue'
+  import PortfolioSummary from '@/components/components/portfolio/PortfolioSummary.vue'
+  import PortfolioSwitcher from '@/components/components/portfolio/PortfolioSwitcher.vue'
+  import CashSummary from '@/components/components/portfolio/CashSummary.vue'
+  import EquityRow from '@/components/components/portfolio/EquityRow.vue'
+  import TransactionRow from '@/components/components/portfolio/TransactionRow.vue'
 
   export default {
     name: 'Portfolio',

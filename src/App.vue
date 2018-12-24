@@ -1,21 +1,23 @@
 <template>
   <div class="container">
-    <main-nav></main-nav>  
-    <portfolio></portfolio>
+    <!-- navigation -->
+    <main-nav></main-nav>      
+    <!-- route outlet -->
+    <!-- component matched by the route will render here -->
+    <router-view></router-view>
+    <!-- footer -->
     <main-footer></main-footer>  
   </div>
 </template>
 
 <script>
-  import MainNav from './components/layout/MainNav.vue'
-  import MainFooter from './components/layout/MainFooter.vue'
-  import Portfolio from './components/portfolio/Portfolio.vue'
+  import MainNav from '@/components/layout/MainNav.vue'
+  import MainFooter from '@/components/layout/MainFooter.vue'
 
   export default {
     name: 'app',
     components: {
       MainNav,
-      Portfolio,
       MainFooter    
     }
   }
