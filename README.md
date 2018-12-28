@@ -4,6 +4,7 @@
 ```
 npm install
 npm install @amcharts/amcharts4
+npm install bootstrap-vue
 ```
 
 ### Compiles and hot-reloads for development
