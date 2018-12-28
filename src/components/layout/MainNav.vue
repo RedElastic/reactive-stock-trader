@@ -1,15 +1,18 @@
 <template>
   <b-navbar class="navbar sticky-top navbar-expand-lg navbar-light bg-light mb-3">
-    <b-navbar-brand href="/">Reactive Stock Trader</b-navbar-brand>
+    <b-navbar-brand to="/">Reactive Stock Trader</b-navbar-brand>
     <b-navbar-nav>
-      <b-nav-item to="/">Portfolio</b-nav-item>
-      <b-nav-item to="trades">Trades</b-nav-item>
-      <b-nav-item to="transfers">Transfers</b-nav-item>
-    </b-navbar-nav>
-
-    <!-- Right aligned nav items -->
-    <b-navbar-nav class="ml-auto">
-      <b-nav-item href="/portfolio/new">Create Portfolio</b-nav-item>
+      <b-nav-item to="/portfolio">Portfolio</b-nav-item>      
+      <b-nav-item-dropdown text="Trading">
+        <b-dropdown-item to="/trades/new">Place New Order</b-dropdown-item>
+        <b-dropdown-item to="/trades/pending">Pending Orders</b-dropdown-item>
+        <b-dropdown-item to="/trades/completed">Completed Orders</b-dropdown-item>
+      </b-nav-item-dropdown>
+      <b-nav-item-dropdown text="Transfers">
+        <b-dropdown-item to="/transfers/new">Place Wire Transfer</b-dropdown-item>
+        <b-dropdown-item to="/transfers/pending">Pending Wires</b-dropdown-item>
+        <b-dropdown-item to="/transfers/completed">Completed Wires</b-dropdown-item>
+      </b-nav-item-dropdown>
     </b-navbar-nav>
   </b-navbar>
 </template>
