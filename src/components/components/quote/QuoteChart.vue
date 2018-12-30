@@ -62,7 +62,7 @@
 
         let series = chart.series.push(new am4charts.LineSeries());
         series.name = valYLabel;
-        series.stroke = am4core.color("#CDA2AB");
+        series.stroke = am4core.color("#7f8c8d");
         series.strokeWidth = 3;
         series.dataFields.valueY = valYKey;
         series.dataFields.categoryX = catXKey;

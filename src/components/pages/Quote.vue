@@ -24,7 +24,7 @@
         <div v-if="this.quote !== null" class="col-8">
           <h3 class="mb-3"><span class="text-muted">Market Summary > </span>{{ quote.companyName }}</h3>      
           <p>{{ quote.symbol }} <span class="text-muted">({{ quote.primaryExchange }})</span></p>
-          <p style="font-size:1.2em;">{{ quote.latestPrice }} <span class="text-muted">{{ quote.change }} {{ quote.changePercent }}%</span></p>
+          <p style="font-size:1.5em;" v-bind:class="returnClass">{{ quote.latestPrice }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change }} {{ quote.changePercent }}%</span></p>
           <p class="small">Source: {{ quote.latestSource }}</p>
         </div>        
       </div>           
@@ -87,6 +87,22 @@
         symbol: null
       }
     },
+    computed: {
+      returnClass: function() {
+        if (this.quote.changePercent >= 0.0) {
+          return 'positiveReturn';
+        } else {
+          return 'negativeReturn';
+        }
+      },
+      returnClassMuted: function() {
+        if (this.quote.changePercent >= 0.0) {
+          return 'positiveReturnMuted';
+        } else {
+          return 'negativeReturnMuted';
+        }
+      }
+    },
     methods: {
       onSubmit() {
         IEX.get('/stock/' + this.symbol + '/quote')
@@ -103,4 +119,23 @@
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .positiveReturn {
+    font-size: 1.5em;
+    color: #27ae60;
+  }
+
+  .positiveReturnMuted {
+    font-size: 0.8em;
+    color: #2ecc71;
+  }
+
+  .negativeReturn {
+    font-size: 1.5em;
+    color: #c0392b;
+  }
+
+  .negativeReturnMuted {
+    font-size: 0.8em;
+    color: #e74c3c;
+  }
 </style>
