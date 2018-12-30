@@ -6,11 +6,11 @@
       <div class="row mt-3">
         <div class="col-4">
           <h2>Get Quote</h2>
-          <b-form @submit="onSubmit" @reset="onReset">                                  
+          <b-form @submit.prevent="onSubmit">                                  
             <div class="row">
               <div class="col">
-                <b-form-group id="tickerGroup" label="Ticker Symbol" label-for="ticker">
-                  <b-form-input id="ticker" type="text" required></b-form-input>
+                <b-form-group id="symbolGroup" label="Symbol" label-for="symbol">
+                  <b-form-input id="symbol" type="text" v-model="symbol" required></b-form-input>
                 </b-form-group>   
               </div>
             </div>            
@@ -21,27 +21,15 @@
             </div>
           </b-form>
         </div>   
-        <div class="col-8">
-          <h3><span class="text-muted">Market Summary > </span>{{ quote.companyName }}</h3>      
+        <div v-if="this.quote !== null" class="col-8">
+          <h3 class="mb-3"><span class="text-muted">Market Summary > </span>{{ quote.companyName }}</h3>      
           <p>{{ quote.symbol }} <span class="text-muted">({{ quote.primaryExchange }})</span></p>
-          <p>{{ quote.latestPrice }} {{ quote.change }} {{ quote.changePercent }}%</p>
+          <p style="font-size:1.2em;">{{ quote.latestPrice }} <span class="text-muted">{{ quote.change }} {{ quote.changePercent }}%</span></p>
           <p class="small">Source: {{ quote.latestSource }}</p>
         </div>        
-      </div>     
-      <div class="row mt-5">
-        <div class="col">
-          <b-nav class="small" tabs>
-            <b-nav-item active>1 day</b-nav-item>
-            <b-nav-item>5 days</b-nav-item>
-            <b-nav-item>6 months</b-nav-item>
-            <b-nav-item>1 year</b-nav-item>
-            <b-nav-item>5 years</b-nav-item>
-            <b-nav-item>Max</b-nav-item>
-          </b-nav>
-        </div>
-      </div>
-      <quote-chart></quote-chart>
-      <div class="row mt-5">
+      </div>           
+      <quote-chart v-bind:symbol="this.quote.symbol" v-if="this.quote !== null"></quote-chart>
+      <div v-if="this.quote !== null" class="row mt-5">
         <div class="col-6">          
           <div class="row">
             <div class="col">Open</div>
@@ -95,17 +83,20 @@
     },
     data: function () {
       return {
-        quote: null
+        quote: null,
+        symbol: null
       }
     },
-    created() {
-      IEX.get('/stock/aapl/quote')
-      .then(response => {
-        this.quote = response.data
-      })
-      .catch(e => {
-        this.errors.push(e)
-      })
+    methods: {
+      onSubmit() {
+        IEX.get('/stock/' + this.symbol + '/quote')
+        .then(response => {
+          this.quote = response.data
+        })
+        .catch(e => {
+          this.errors.push(e)
+        })
+      }
     }
   } 
 </script>
