@@ -2,13 +2,13 @@
   <div class="row mt-3">    
     <div class="col">
       <b-nav class="small my-3" tabs>
-        <b-nav-item>1 day</b-nav-item>
-        <b-nav-item>5 days</b-nav-item>
-        <b-nav-item active>1 month</b-nav-item>
-        <b-nav-item>6 months</b-nav-item>
-        <b-nav-item>1 year</b-nav-item>
-        <b-nav-item>5 years</b-nav-item>
-        <b-nav-item>Max</b-nav-item>
+        <b-nav-item id="1d" @click="updateChart('1d')">1 day</b-nav-item>
+        <b-nav-item id="1m" @click="updateChart('1m')">1 month</b-nav-item>
+        <b-nav-item id="3m" @click="updateChart('3m')">3 months</b-nav-item>
+        <b-nav-item id="6m" @click="updateChart('6m')">6 months</b-nav-item>
+        <b-nav-item id="1y" @click="updateChart('1y')">1 year</b-nav-item>
+        <b-nav-item id="2y" @click="updateChart('2y')">2 years</b-nav-item>
+        <b-nav-item id="5y" @click="updateChart('5y')">5 years</b-nav-item>
       </b-nav>
       <div :id="this.chartId" style="width: 100%; height: 300px;"></div>
     </div>
@@ -29,55 +29,78 @@
     props: ['symbol'],
     data: function () {
       return {
-        chartId: "chart_" + this.symbol
+        chartId: "chart_" + this.symbol,
+        lastTimeframe: ""
+      }
+    },
+    methods: {
+      iexQueryStr: function (symbol, timeframe) {
+        if (timeframe === '1d') {
+          return "/stock/" + symbol + "/chart/" + timeframe + "?filter=average,minute";
+        } else {
+          return "/stock/" + symbol + "/chart/" + timeframe + "?filter=close,date";
+        }
+      },
+      getChart: function (chartData, catXKey, catXLabel, valYKey, valYLabel) {
+        let chart = am4core.create(this.chartId, am4charts.XYChart);
+
+        chart.data = chartData;
+
+        let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+        categoryAxis.dataFields.category = catXKey;
+        categoryAxis.title.text = catXLabel;
+
+        let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+        valueAxis.title.text = valYLabel;
+
+        let series = chart.series.push(new am4charts.LineSeries());
+        series.name = valYLabel;
+        series.stroke = am4core.color("#CDA2AB");
+        series.strokeWidth = 3;
+        series.dataFields.valueY = valYKey;
+        series.dataFields.categoryX = catXKey;
+        series.tensionX = 0.8;
+        series.tensionY = 1.0;
+
+        return chart;
+      },      
+      updateChart: function (timeframe) {      
+        IEX.get(this.iexQueryStr(this.symbol, timeframe))
+          .then(response => {                
+            if (timeframe === "1d") {
+              let chartData = response.data.filter(val => {
+                return val.average > 0;
+              });
+              this.chart = this.getChart(chartData, "minute", "Minute", "average", "Average");
+            } else {
+              this.chart = this.getChart(response.data, "date", "Date", "close", "Close");
+            }
+            this.lastTimeframe = timeframe;
+          })
+          .catch(e => {
+            console.error(e)
+          }
+        )          
       }
     },
     watch: {
-      // whenever question changes, this function will run
-      symbol: function (newSymbol, oldSymbol) {
-        if (this.chart) {
-          IEX.get('/stock/' + newSymbol + '/chart?filter=close,date')
-            .then(response => {
+      symbol: function (newSymbol) {        
+        IEX.get(this.iexQueryStr(newSymbol, this.lastTimeframe))
+          .then(response => {
+            if (this.lastTimeframe !== "") {
               this.chart.data = response.data
-            })
-            .catch(e => {
-              this.errors.push(e)
+            } else {
+              this.chart = this.updateChart("1m")
             }
-          )          
-        }
+          })
+          .catch(e => {
+            console.error(e)
+          }
+        )                  
       }
     },
     mounted() {
-      // Create chart instance
-      let chart = am4core.create(this.chartId, am4charts.XYChart);
-
-      IEX.get('/stock/' + this.symbol + '/chart?filter=close,date')
-        .then(response => {
-          chart.data = response.data
-        })
-        .catch(e => {
-          this.errors.push(e)
-        }
-      )
-
-      // Create axes
-      let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-      categoryAxis.dataFields.category = "date";
-      categoryAxis.title.text = "Date";
-
-      let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-      valueAxis.title.text = "Close";
-
-      let series = chart.series.push(new am4charts.LineSeries());
-      series.name = "Close";
-      series.stroke = am4core.color("#CDA2AB");
-      series.strokeWidth = 3;
-      series.dataFields.valueY = "close";
-      series.dataFields.categoryX = "date";
-      series.tensionX = 0.8;
-      series.tensionY = 1.0;
-
-      this.chart = chart;
+      this.updateChart("1m");
     },
     beforeDestroy() {
       if (this.chart) {
