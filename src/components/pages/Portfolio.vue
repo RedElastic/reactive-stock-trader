@@ -5,22 +5,26 @@
       <!-- overview -->
       <div class="row mt-3">
         <div class="col-7">
-          <h2>
-            Portfolio
-            <small class="text-muted">Conservative 60/40 Split</small>
-          </h2>
+          <h2>Portfolio <small class="text-muted">Conservative 60/40 Split</small></h2>
           <portfolio-summary class="mb-3"></portfolio-summary>          
         </div>
         <div class="col-5">          
-          <cash-summary></cash-summary>
+          <cash-summary></cash-summary>        
         </div>      
-      </div> 
+      </div>
       <!-- /overview -->
 
       <!-- equities -->
       <div class="row mt-3">
         <div class="col">
-          <h2>Equities</h2>
+          <b-nav class="small" tabs>
+            <b-nav-item active>1 day</b-nav-item>
+            <b-nav-item>5 days</b-nav-item>
+            <b-nav-item>6 months</b-nav-item>
+            <b-nav-item>1 year</b-nav-item>
+            <b-nav-item>5 years</b-nav-item>
+            <b-nav-item>Max</b-nav-item>
+          </b-nav>
         </div>
       </div>
       <equity-row ticker="aapl1"></equity-row>

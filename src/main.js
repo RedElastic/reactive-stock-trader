@@ -5,6 +5,7 @@ import App from './App.vue'
 
 import Portfolio from './components/pages/Portfolio.vue'
 import Home from './components/pages/Home.vue'
+import Quote from './components/pages/Quote.vue'
 
 import NewTrade from './components/pages/trades/New.vue'
 import PendingTrades from './components/pages/trades/Pending.vue'
@@ -24,6 +25,7 @@ Vue.use(BootstrapVue);
 
 const routes = [
   { path: '/portfolio', component: Portfolio },
+  { path: '/quote', component: Quote },
   { path: '/trades/new', component: NewTrade },
   { path: '/trades/pending', component: PendingTrades },
   { path: '/trades/completed', component: CompletedTrades },

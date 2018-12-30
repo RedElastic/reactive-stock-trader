@@ -2,7 +2,8 @@
   <b-navbar class="navbar sticky-top navbar-expand-lg navbar-light bg-light mb-3">
     <b-navbar-brand to="/">Reactive Stock Trader</b-navbar-brand>
     <b-navbar-nav>
-      <b-nav-item to="/portfolio">Portfolio</b-nav-item>      
+      <b-nav-item to="/portfolio">Portfolio</b-nav-item>
+      <b-nav-item to="/quote">Quote</b-nav-item>
       <b-nav-item-dropdown text="Trading">
         <b-dropdown-item to="/trades/new">Place New Order</b-dropdown-item>
         <b-dropdown-item to="/trades/pending">Pending Orders</b-dropdown-item>
@@ -13,6 +14,11 @@
         <b-dropdown-item to="/transfers/pending">Pending Wires</b-dropdown-item>
         <b-dropdown-item to="/transfers/completed">Completed Wires</b-dropdown-item>
       </b-nav-item-dropdown>
+    </b-navbar-nav>
+    <!-- Right aligned nav items -->
+    <b-navbar-nav class="ml-auto">
+      <b-nav-item to="/account/new">Create Account</b-nav-item>
+      <b-nav-item to="/account/login">Login</b-nav-item>
     </b-navbar-nav>
   </b-navbar>
 </template>
