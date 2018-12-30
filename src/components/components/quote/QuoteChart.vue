@@ -2,13 +2,13 @@
   <div class="row mt-3">    
     <div class="col">
       <b-nav class="small my-3" tabs>
-        <b-nav-item id="1d" @click="updateChart('1d')">1 day</b-nav-item>
-        <b-nav-item id="1m" @click="updateChart('1m')">1 month</b-nav-item>
-        <b-nav-item id="3m" @click="updateChart('3m')">3 months</b-nav-item>
-        <b-nav-item id="6m" @click="updateChart('6m')">6 months</b-nav-item>
-        <b-nav-item id="1y" @click="updateChart('1y')">1 year</b-nav-item>
-        <b-nav-item id="2y" @click="updateChart('2y')">2 years</b-nav-item>
-        <b-nav-item id="5y" @click="updateChart('5y')">5 years</b-nav-item>
+        <b-nav-item id="1d" @click="updateChart('1d')" v-bind:active="getLastTimeframe === '1d'">1 day</b-nav-item>
+        <b-nav-item id="1m" @click="updateChart('1m')" v-bind:active="getLastTimeframe === '1m'">1 month</b-nav-item>
+        <b-nav-item id="3m" @click="updateChart('3m')" v-bind:active="getLastTimeframe === '3m'">3 months</b-nav-item>
+        <b-nav-item id="6m" @click="updateChart('6m')" v-bind:active="getLastTimeframe === '6m'">6 months</b-nav-item>
+        <b-nav-item id="1y" @click="updateChart('1y')" v-bind:active="getLastTimeframe === '1y'">1 year</b-nav-item>
+        <b-nav-item id="2y" @click="updateChart('2y')" v-bind:active="getLastTimeframe === '2y'">2 years</b-nav-item>
+        <b-nav-item id="5y" @click="updateChart('5y')" v-bind:active="getLastTimeframe === '5y'">5 years</b-nav-item>
       </b-nav>
       <div :id="this.chartId" style="width: 100%; height: 300px;"></div>
     </div>
@@ -32,13 +32,20 @@
         chartId: "chart_" + this.symbol,
         lastTimeframe: ""
       }
+    },    
+    computed: {
+      getLastTimeframe: function () {
+        return this.lastTimeframe;
+      }
     },
-    methods: {
+    methods: {      
       iexQueryStr: function (symbol, timeframe) {
         if (timeframe === '1d') {
           return "/stock/" + symbol + "/chart/" + timeframe + "?filter=average,minute";
-        } else {
+        } else if (timeframe === '1m' || timeframe === '3m' || timeframe === '6m') {
           return "/stock/" + symbol + "/chart/" + timeframe + "?filter=close,date";
+        } else {
+          return "/stock/" + symbol + "/chart/" + timeframe + "?filter=close,date&chartSimplify=true";
         }
       },
       getChart: function (chartData, catXKey, catXLabel, valYKey, valYLabel) {
@@ -84,19 +91,8 @@
       }
     },
     watch: {
-      symbol: function (newSymbol) {        
-        IEX.get(this.iexQueryStr(newSymbol, this.lastTimeframe))
-          .then(response => {
-            if (this.lastTimeframe !== "") {
-              this.chart.data = response.data
-            } else {
-              this.chart = this.updateChart("1m")
-            }
-          })
-          .catch(e => {
-            console.error(e)
-          }
-        )                  
+      symbol: function () {        
+        this.updateChart(this.lastTimeframe);      
       }
     },
     mounted() {
