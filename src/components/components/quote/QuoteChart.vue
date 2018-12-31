@@ -1,5 +1,5 @@
 <template>
-  <div class="row mt-3">    
+  <div class="row">    
     <div class="col">
       <b-nav class="small my-3" tabs>
         <b-nav-item id="1d" @click="updateChart('1d')" v-bind:active="getLastTimeframe === '1d'">1 day</b-nav-item>
