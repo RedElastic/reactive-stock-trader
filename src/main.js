@@ -39,6 +39,25 @@ Vue.use(Rollbar, {
      }
 });
 
+Vue.filter('toCurrency', function (value) {
+    if (typeof value !== "number") {
+        return value;
+    }
+    var formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0
+    });
+    return formatter.format(value);
+});
+
+Vue.filter('iexPercent', function (value) {
+    if (typeof value !== "number") {
+        return value;
+    }
+    return (value * 100).toFixed(2);
+});
+
 const routes = [
   { path: '/portfolio', component: Portfolio },
   { path: '/quote', component: Quote },

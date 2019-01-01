@@ -7,6 +7,13 @@ npm install @amcharts/amcharts4
 npm install bootstrap-vue
 npm install --save axios
 npm install vue-rollbar --save
+npm install lodash --save
+```
+
+If you receive an audit warning on lodash:
+
+```
+npm audit fix
 ```
 
 ### Compiles and hot-reloads for development
