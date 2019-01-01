@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router';
 import BootstrapVue from 'bootstrap-vue'
 import App from './App.vue'
+import Rollbar from 'vue-rollbar';
 
 import Portfolio from './components/pages/Portfolio.vue'
 import Home from './components/pages/Home.vue'
@@ -22,6 +23,21 @@ Vue.config.productionTip = false
 
 Vue.use(VueRouter);
 Vue.use(BootstrapVue);
+Vue.use(Rollbar, {
+     accessToken: "***REMOVED***",
+     captureUncaught: true,
+     captureUnhandledRejections: true,
+     enabled: true,
+     source_map_enabled: true,
+     environment: 'production',
+     payload: {
+       client: {
+            javascript: {
+               code_version: '1.0'
+            }
+       }
+     }
+});
 
 const routes = [
   { path: '/portfolio', component: Portfolio },

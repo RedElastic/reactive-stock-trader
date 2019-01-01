@@ -6,6 +6,7 @@ npm install
 npm install @amcharts/amcharts4
 npm install bootstrap-vue
 npm install --save axios
+npm install vue-rollbar --save
 ```
 
 ### Compiles and hot-reloads for development
