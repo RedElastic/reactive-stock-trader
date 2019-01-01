@@ -64,19 +64,7 @@
 </template>
 
 <script>
-  import PortfolioSummary from '@/components/components/portfolio/PortfolioSummary.vue'
-  import PortfolioSwitcher from '@/components/components/portfolio/PortfolioSwitcher.vue'
-  import CashSummary from '@/components/components/portfolio/CashSummary.vue'
-  import EquityRow from '@/components/components/portfolio/EquityRow.vue'
-
-  export default {
-    name: 'Portfolio',
-    components: {      
-      PortfolioSummary,
-      PortfolioSwitcher,
-      CashSummary,
-      EquityRow
-    }    
+  export default {  
   } 
 </script>
 

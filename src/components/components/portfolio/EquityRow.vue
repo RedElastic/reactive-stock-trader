@@ -6,13 +6,13 @@
           <h5 class="card-title mb-3">{{ quote.companyName }}</h5>
           <h6 class="card-subtitle mb-2">{{ quote.symbol }} <span class="text-muted">({{ quote.primaryExchange }})</span></h6>
           <p class="card-text">
-            <p v-bind:class="returnClass">{{ quote.latestPrice }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change }} {{ quote.changePercent }}%</span></p>            
+            <p v-bind:class="returnClass">{{ quote.latestPrice | toCurrency }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%</span></p>            
             <div class="row">
               <div class="col-4">
-                Value
+                Current Value
               </div> 
               <div class="col-8">
-                {{ this.equity.value }}
+                {{ this.equity.value | toCurrency }}
               </div>
             </div>
             <div class="row">
@@ -25,10 +25,10 @@
             </div>
             <div class="row mt-3">
               <div class="col-4">
-                Return
+                Return (max)
               </div> 
               <div class="col-8">
-                {{ this.equity.returnValue }} ({{ this.equity.returnPercent }})
+                {{ this.equity.returnValue | toCurrency }} ({{ this.equity.returnPercent }})
               </div>
             </div>
             <div class="row">
@@ -36,7 +36,7 @@
                 Return (24h)
               </div> 
               <div class="col-8">
-                {{ this.equity.return24h }} ({{ this.equity.returnPercent24h }})
+                {{ this.equity.return24h | toCurrency }} ({{ this.equity.returnPercent24h }})
               </div>
             </div>
           </p>

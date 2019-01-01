@@ -24,7 +24,7 @@
         <div v-if="this.quote !== null" class="col-8">
           <h3 class="mb-3"><span class="text-muted">Market Summary > </span>{{ quote.companyName }}</h3>      
           <p>{{ quote.symbol }} <span class="text-muted">({{ quote.primaryExchange }})</span></p>
-          <p style="font-size:1.5em;" v-bind:class="returnClass">{{ quote.latestPrice }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change }} {{ quote.changePercent }}%</span></p>
+          <p style="font-size:1.5em;" v-bind:class="returnClass">{{ quote.latestPrice | toCurrency }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%</span></p>
           <p class="small">Source: {{ quote.latestSource }}</p>
         </div>        
       </div>           

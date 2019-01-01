@@ -13,7 +13,7 @@
                   Value (USD)
                 </div> 
                 <div class="col-6">
-                  {{ this.portfolio.value }}
+                  {{ this.portfolio.value | toCurrency }}
                 </div>
               </div>        
               <div class="row">
@@ -21,7 +21,7 @@
                   Return
                 </div> 
                 <div class="col-6">
-                  {{ this.portfolio.returnValue }} ({{ this.portfolio.returnPercent }})
+                  {{ this.portfolio.returnValue | toCurrency }} ({{ this.portfolio.returnPercent | iexPercent }})
                 </div>
               </div>
               <div class="row">
@@ -29,14 +29,22 @@
                   Return (24h)
                 </div> 
                 <div class="col-6">
-                  {{ this.portfolio.return24h }} ({{ this.portfolio.returnPercent24h }})
+                  {{ this.portfolio.return24h | toCurrency }} ({{ this.portfolio.returnPercent24h | iexPercent }})
                 </div>
               </div>
             </div> 
           </div>
         </div>
         <div class="col-5">          
-          <cash-summary></cash-summary>        
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Cash on Hand</h5>
+              <h6 class="card-subtitle mb-2 text-muted">{{ this.portfolio.cashOnHand | toCurrency }}</h6>
+              <p class="card-text">
+                <router-link to="/transfers">Transfer</router-link>
+              </p>            
+            </div>
+          </div>     
         </div>      
       </div>
       <!-- /overview -->
@@ -54,15 +62,11 @@
 </template>
 
 <script>
-  import PortfolioSummary from '@/components/components/portfolio/PortfolioSummary.vue'
-  import CashSummary from '@/components/components/portfolio/CashSummary.vue'
   import EquityRow from '@/components/components/portfolio/EquityRow.vue'
 
   export default {
     name: 'Portfolio',
     components: {      
-      PortfolioSummary,
-      CashSummary,
       EquityRow
     },
     data: function () {
@@ -71,9 +75,9 @@
           "name": "Conservative 59/41 Split",
           "value": 135122,
           "returnValue": 22132,
-          "returnPercent": 12.03,
+          "returnPercent": 0.1203,
           "return24h": -234,
-          "returnPercent24h": -0.12,
+          "returnPercent24h": -0.0122,
           "cashOnHand": 1245,
           "equities": [
               {
@@ -81,27 +85,27 @@
                   "shares": 135,
                   "value": 135123,
                   "returnValue": -20123,
-                  "returnPercent": -12.03,
+                  "returnPercent": -0.1234,
                   "return24h": -20123,
-                  "returnPercent24h": -12.03
+                  "returnPercent24h": -0.1234
               },
               {
                   "symbol": "MSFT",
                   "shares": 135,
                   "value": 135123,
                   "returnValue": -20123,
-                  "returnPercent": -12.03,
+                  "returnPercent": -0.1234,
                   "return24h": -20123,
-                  "returnPercent24h": -12.03
+                  "returnPercent24h": -0.1234
               },
               {
                   "symbol": "GOOGL",
                   "shares": 135,
                   "value": 135123,
                   "returnValue": -20123,
-                  "returnPercent": -12.03,
+                  "returnPercent": -0.1234,
                   "return24h": -20123,
-                  "returnPercent24h": -12.03
+                  "returnPercent24h": -0.1234
               }
           ],
           "version":1.0
