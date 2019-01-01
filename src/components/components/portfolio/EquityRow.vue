@@ -55,7 +55,8 @@
 
 <script>
   import QuoteChart from '@/components/components/quote/QuoteChart.vue'
-  import {IEX} from '@/common/http.js';
+  import {IEX} from '@/common/http.js'
+  import Vue from 'vue'
 
   export default {
     name: 'EquityRow',
@@ -78,13 +79,11 @@
       },
     },
     mounted() {
-      IEX.get('/stock/' + this.equity.symbol + '/quote')
+      IEX.get('/stock/' + this.equity.symbol + '/quote', {timeout: 2000})
         .then(response => {
           this.quote = response.data
         })
-        .catch(e => {
-          this.errors.push(e)
-        })
+        .catch(e => Vue.rollbar.error(e))
     }
   } 
 </script>

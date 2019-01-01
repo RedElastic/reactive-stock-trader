@@ -6,7 +6,7 @@
       <div class="row mt-3">
         <div class="col-4">
           <h2>Get Quote</h2>
-          <b-form @submit.prevent="onSubmit">                                  
+          <b-form @submit.prevent="getQuote">                                  
             <div class="row">
               <div class="col">
                 <b-form-group id="symbolGroup" label="Symbol" label-for="symbol">
@@ -73,8 +73,9 @@
 </template>
 
 <script>
+  import Vue from 'vue'
   import QuoteChart from '@/components/components/quote/QuoteChart.vue'
-  import {IEX} from '@/common/http.js';
+  import {IEX} from '@/common/http.js'
 
   export default {
     name: 'Quote',
@@ -104,15 +105,19 @@
       }
     },
     methods: {
-      onSubmit() {
-        IEX.get('/stock/' + this.symbol + '/quote')
-        .then(response => {
-          this.quote = response.data
-        })
-        .catch(e => {
-          this.errors.push(e)
-        })
+      getQuote() {
+        if (this.symbol !== null) {
+          IEX.get('/stock/' + this.symbol + '/quote', {timeout: 2000})
+          .then(response => {
+            this.quote = response.data
+          })
+          .catch(e => Vue.rollbar.error(e))
+        }
       }
+    },
+    beforeDestroy() {
+      this.quote = null
+      this.symbol = null
     }
   } 
 </script>

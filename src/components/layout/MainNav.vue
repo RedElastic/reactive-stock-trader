@@ -15,11 +15,6 @@
         <b-dropdown-item to="/transfers/completed">Completed Wires</b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
-    <!-- Right aligned nav items -->
-    <b-navbar-nav class="ml-auto">
-      <b-nav-item to="/account/new">Create Account</b-nav-item>
-      <b-nav-item to="/account/login">Login</b-nav-item>
-    </b-navbar-nav>
   </b-navbar>
 </template>
 

@@ -21,6 +21,7 @@
   import * as am4charts from "@amcharts/amcharts4/charts";
   import am4themes_animated from "@amcharts/amcharts4/themes/animated";
   import {IEX} from '@/common/http.js';
+  import Vue from 'vue'
 
   am4core.useTheme(am4themes_animated);
 
@@ -41,7 +42,7 @@
     methods: {      
       iexQueryStr: function (symbol, timeframe) {
         if (timeframe === '1d') {
-          return "/stock/" + symbol + "/chart/" + timeframe + "?filter=average,minute";
+          return "/stock/" + symbol + "/chart/" + timeframe + "?filter=average,minute&chartSimplify=true";
         } else if (timeframe === '1m' || timeframe === '3m' || timeframe === '6m') {
           return "/stock/" + symbol + "/chart/" + timeframe + "?filter=close,date";
         } else {
@@ -72,7 +73,7 @@
         return chart;
       },      
       updateChart: function (timeframe) {      
-        IEX.get(this.iexQueryStr(this.symbol, timeframe))
+        IEX.get(this.iexQueryStr(this.symbol, timeframe), {timeout: 2000})
           .then(response => {                
             if (timeframe === "1d") {
               let chartData = response.data.filter(val => {
@@ -84,10 +85,7 @@
             }
             this.lastTimeframe = timeframe;
           })
-          .catch(e => {
-            console.error(e)
-          }
-        )          
+          .catch(e => Vue.rollbar.error(e))
       }
     },
     watch: {
