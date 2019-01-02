@@ -6,11 +6,13 @@ import lombok.Value;
 
 @Value
 @JsonDeserialize
-public class BuyOrder {
+public class Order {
 
     String portfolioId;
 
     String stockSymbol;
 
     int shares;
+
+    OrderType orderType;
 }

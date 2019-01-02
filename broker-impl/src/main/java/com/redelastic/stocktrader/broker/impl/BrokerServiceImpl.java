@@ -18,12 +18,7 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     @Override
-    public ServiceCall<Order, Done> buyStock() {
-        return null;
-    }
-
-    @Override
-    public ServiceCall<Order, Done> sellStock() {
+    public ServiceCall<Order, Done> placeOrder() {
         return null;
     }
 

@@ -1,24 +1,44 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
+import play.libs.Json;
 
 import java.math.BigDecimal;
 
-@Value
-public class PortfolioState implements Jsonable {
+public abstract class PortfolioState implements Jsonable {
 
-    BigDecimal funds;
+    private PortfolioState() {}
 
-    LoyaltyLevel loyaltyLevel;
+    public static final class Uninitialized extends PortfolioState {
+        private Uninitialized() {}
 
-    PSequence<Holding> holdings;
+        public static final Uninitialized INSTANCE = new Uninitialized();
 
-    public static PortfolioState uninitialized() {
-        return new PortfolioState(new BigDecimal("0"), LoyaltyLevel.BRONZE, TreePVector.empty());
+    }
+
+    @Value
+    @EqualsAndHashCode(callSuper = false)
+    @Builder
+    public static final class Open extends PortfolioState {
+        BigDecimal funds;
+
+        LoyaltyLevel loyaltyLevel;
+
+        PSequence<Holding> holdings;
+
+        String name;
+    }
+
+    public static final class Closed extends PortfolioState {
+        private Closed() {}
+        public static final Closed INSTANCE = new Closed();
     }
 
 }

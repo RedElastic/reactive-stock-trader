@@ -10,8 +10,7 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 
 public interface BrokerService extends Service {
 
-  ServiceCall<Order, Done> buyStock();
-  ServiceCall<Order, Done> sellStock();
+  ServiceCall<Order, Done> placeOrder();
 
   ServiceCall<String, Quote> getQuote();
 
@@ -19,8 +18,7 @@ public interface BrokerService extends Service {
   default Descriptor descriptor() {
     // @formatter:off
     return named("broker").withCalls(
-        call(this::buyStock),
-        call(this::sellStock),
+        call(this::placeOrder),
         call(this::getQuote)
     );
     // @formatter:on

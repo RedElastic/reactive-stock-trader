@@ -15,13 +15,11 @@ import java.math.BigDecimal;
  */
 public interface PortfolioService extends Service {
 
-    ServiceCall<NewPortfolioRequest, Done> openPortfolio();
+    ServiceCall<NewPortfolioRequest, PortfolioId> openPortfolio();
 
     ServiceCall<PortfolioId, Done> liquidatePortfolio();
 
-    ServiceCall<BuyOrder, Done> buyStock();
-
-    ServiceCall<SellOrder, Done> sellStock();
+    ServiceCall<Order, Done> placeOrder();
 
     ServiceCall<PortfolioId, PortfolioView> getPortfolio();
 
@@ -50,8 +48,7 @@ public interface PortfolioService extends Service {
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
                 call(this::openPortfolio),
                 call(this::liquidatePortfolio),
-                call(this::buyStock),
-                call(this::sellStock),
+                call(this::placeOrder),
                 call(this::getPortfolio),
                 call(this::creditFunds),
                 call(this::debitFunds)
