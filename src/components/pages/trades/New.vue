@@ -159,10 +159,14 @@
         this.form = {
           order: '',  
           symbol: '',
-          shares: '',
+          shares: null,
           orderType: '',
-          limitPrice: '',
-          stopPrice: ''
+          limitPrice: null,
+          stopPrice: null
+        }
+        this.quote = {
+          symbol: '',
+          latestPrice: null
         }
       },
       debounceSymbolInput: _.debounce(function() { // only execute once every 1s max
