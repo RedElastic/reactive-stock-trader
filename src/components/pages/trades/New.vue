@@ -35,19 +35,19 @@
                   <b-form-radio-group id="orderType" v-model="form.orderType" name="orderType">
                     <b-form-radio value="market">Market</b-form-radio>
                     <b-form-radio value="limit">Limit</b-form-radio>
-                    <b-form-radio value="stopMarket">Stop</b-form-radio>
+                    <b-form-radio value="stop">Stop</b-form-radio>
                     <b-form-radio value="stopLimit">Stop limit</b-form-radio>
                   </b-form-radio-group>
                 </b-form-group>
               </div>             
             </div>
-            <div class="row">
-              <div class="col">
+            <div class="row" v-if="this.stopOrder || this.limitOrder">
+              <div class="col-6" v-if="this.limitOrder">
                 <b-form-group id="limitPriceGroup" label="Limit price" label-for="limitPrice">
                   <b-form-input id="limitPrice" type="number" v-model.number="form.limitPrice" required></b-form-input>
                 </b-form-group>            
               </div>                          
-              <div class="col">
+              <div class="col-6" v-if="this.stopOrder">
                 <b-form-group id="stopPriceGroup" label="Stop price" label-for="stopPrice">
                   <b-form-input id="stopPrice" type="number" v-model.number="form.stopPrice" required></b-form-input>
                 </b-form-group>            
@@ -74,20 +74,20 @@
           </div>
           <div class="row">
             <div class="col">Order Type</div>
-            <div class="col">{{ form.order }} {{ form.orderType }}</div>
+            <div class="col">{{ this.formatOrderType() }}</div>
           </div>
           <div class="row">
             <div class="col">Number of Shares</div>
             <div class="col">{{ form.shares }}</div>
           </div>
-          <div class="row">
-            <div class="col">Limit price</div>
-            <div class="col">{{ form.limitPrice | toCurrency }}</div>
-          </div>
-          <div class="row">
+          <div class="row" v-if="this.stopOrder">
             <div class="col">Stop price</div>
             <div class="col">{{ form.stopPrice | toCurrency }}</div>
           </div>
+          <div class="row" v-if="this.limitOrder">
+            <div class="col">Limit price</div>
+            <div class="col">{{ form.limitPrice | toCurrency }}</div>
+          </div>          
           <div class="row mt-3">
             <div class="col">
               <b-button type="submit" variant="primary" class="mr-3">Place Order</b-button>
@@ -127,6 +127,31 @@
       }
     },
     methods: {
+      formatOrderType () {
+        if (this.form.order !== null && this.form.orderType !== null) {
+          if (this.form.order === "buy") {
+            if (this.form.orderType === "market") {
+              return "Buy"
+            } else if (this.form.orderType === "limit") {
+              return "Buy Limit"
+            } else if (this.form.orderType === "stop") {
+              return "Buy On Stop"
+            } else if (this.form.orderType === "stopLimit") {
+              return "Buy Stop-Limit"
+            }
+          } else {
+            if (this.form.orderType === "market") {
+              return "Sell"
+            } else if (this.form.orderType === "limit") {
+              return "Sell Limit"
+            } else if (this.form.orderType === "stop") {
+              return "Stop Loss"
+            } else if (this.form.orderType === "stopLimit") {
+              return "Sell Stop-Limit"
+            }
+          }
+        }
+      },
       handleSubmit() {
         this.submitted = true
       },
@@ -170,6 +195,12 @@
             name: ""
           } 
         }
+      },
+      stopOrder() {
+        return (this.form.orderType === "stop" || this.form.orderType === "stopLimit")
+      },
+      limitOrder() {
+        return (this.form.orderType === "limit" || this.form.orderType === "stopLimit")
       }
     },
     mounted() {
