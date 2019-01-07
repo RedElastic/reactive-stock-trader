@@ -1,13 +1,18 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import akka.japi.Pair;
+import akka.stream.javadsl.Source;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
+import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.*;
-import com.redelastic.stocktrader.portfolio.impl.entities.PortfolioCommand;
-import com.redelastic.stocktrader.portfolio.impl.entities.PortfolioEntity;
 import org.pcollections.ConsPStack;
 import org.pcollections.PSequence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
@@ -19,6 +24,8 @@ import java.util.concurrent.CompletionStage;
 import static java.util.stream.Collectors.toList;
 
 public class PortfolioRepositoryImpl implements PortfolioRepository {
+
+    private Logger log = LoggerFactory.getLogger(PortfolioRepositoryImpl.class);
 
     private final BrokerService brokerService;
 
@@ -41,27 +48,20 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      */
     // TODO: Implement retry logic. Theoretically the chance of a collision is astronomically low *given* everything else works.
     @Override
-    public CompletionStage<PortfolioId> open(NewPortfolioRequest request) {
+    public CompletionStage<String> open(NewPortfolioRequest request) {
         UUID uuid = UUID.randomUUID();
-        String persistenceId = uuid.toString();
-        PortfolioId portfolioId = new PortfolioId(persistenceId);
-        PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, persistenceId);
-        return ref.ask(new PortfolioCommand.Open(portfolioId, request))
+        String portfolioId = uuid.toString();
+        PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, portfolioId);
+        return ref.ask(new PortfolioCommand.Open(request.getName()))
                 .thenApply(done -> portfolioId);
     }
 
     @Override
-    public CompletionStage<PortfolioView> get(PortfolioId portfolioId) {
-//        PortfolioState.Open portfolio = new PortfolioState.Open(
-//                new BigDecimal("100"),
-//                LoyaltyLevel.BRONZE,
-//                ConsPStack.singleton(new Holding("IBM", 10)),
-//     "Dummy portfolio"
-//        );
-        return persistentEntities.refFor(PortfolioEntity.class, portfolioId.getId())
+    public CompletionStage<PortfolioView> get(String portfolioId) {
+        return persistentEntities.refFor(PortfolioEntity.class, portfolioId)
                 .ask(PortfolioCommand.GetState.INSTANCE)
                 .thenCompose(portfolio ->
-                    priceHoldings(portfolio.getHoldings())
+                    priceHoldings(portfolio.getHoldings().asSequence())
                     .thenApply(valuedHoldings ->
                         PortfolioView.builder()
                                 .portfolioId(portfolioId)
@@ -96,8 +96,22 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                 ).thenApply(ConsPStack::from);
     }
 
-    public PersistentEntityRef<PortfolioCommand> getRef(PortfolioId portfolioId) {
-        return persistentEntities.refFor(PortfolioEntity.class, portfolioId.getId());
+    public PersistentEntityRef<PortfolioCommand> getRef(String portfolioId) {
+        return persistentEntities.refFor(PortfolioEntity.class, portfolioId);
+    }
+
+    public Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
+        return persistentEntities.eventStream(tag, offset).filter(eventOffset ->
+                eventOffset.first() instanceof PortfolioEvent.OrderPlaced
+        ).mapAsync(1, eventOffset -> {
+                PortfolioEvent.OrderPlaced order = (PortfolioEvent.OrderPlaced)eventOffset.first();
+                log.warn(String.format("Publishing order %s", order.getOrder().getOrderId()));
+                return CompletableFuture.completedFuture(Pair.create(
+                        order.getOrder(),
+                        eventOffset.second()
+                ));
+
+        });
     }
 
 }

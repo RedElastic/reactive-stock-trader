@@ -1,39 +1,30 @@
 package com.redelastic.stocktrader.portfolio.api;
 
-import static com.lightbend.lagom.javadsl.api.Service.named;
-import static com.lightbend.lagom.javadsl.api.Service.call;
-
 import akka.Done;
+import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.redelastic.stocktrader.order.Order;
 
-import java.math.BigDecimal;
+import static com.lightbend.lagom.javadsl.api.Service.*;
 
 /**
  *
  */
 public interface PortfolioService extends Service {
 
-    ServiceCall<NewPortfolioRequest, PortfolioId> openPortfolio();
+    ServiceCall<NewPortfolioRequest, String> openPortfolio();
 
-    ServiceCall<PortfolioId, Done> liquidatePortfolio();
+    ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
 
-    ServiceCall<Order, Done> placeOrder();
+    ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId);
 
-    ServiceCall<PortfolioId, PortfolioView> getPortfolio();
+    ServiceCall<Order, Done> placeOrder(String portfolioId);
 
-    /**
-     * Used by the wire transfer service to deposit a transfer.
-     */
-    ServiceCall<BigDecimal, Done> creditFunds();
-
-    /**
-     * Used by the wire transfer service to attempt to transfer funds out of the portfolio.
-     */
-    ServiceCall<BigDecimal, DebitResponse> debitFunds();
-
-
+    String ORDERS_TOPIC_ID = "PortfolioOrders";
+    Topic<Order> orders();
     /*
     String LOYALTY_LEVEL_TOPIC_ID = "LoyaltyLevelChanges";
     Topic<LoyaltyLevelChange> loyaltyLevelChanges();
@@ -46,17 +37,13 @@ public interface PortfolioService extends Service {
         // @formatter:off
         return named("portfolio").withCalls(
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
-                call(this::openPortfolio),
-                call(this::liquidatePortfolio),
-                call(this::placeOrder),
-                call(this::getPortfolio),
-                call(this::creditFunds),
-                call(this::debitFunds)
+                pathCall("/api/portfolio", this::openPortfolio),
+                pathCall("/api/portfolio/:portfolioId/liquidate", this::liquidatePortfolio),
+                pathCall("/api/portfolio/:portfolioId", this::getPortfolio),
+                pathCall("/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
+        ).withTopics(
+            topic(ORDERS_TOPIC_ID, this::orders)
         );
-        /*.withTopics(
-    topic(LOYALTY_LEVEL_TOPIC_ID, this::loyaltyLevelChanges)
-        .withProperty(KafkaProperties.partitionKeyStrategy(), llChange -> llChange.getPortfolioId().asString())
-        */
         // @formatter:on
 
     }

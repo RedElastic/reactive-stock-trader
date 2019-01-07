@@ -5,11 +5,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public class Order {
-
+public class Purchase {
+    String portfolioId;
+    String orderId;
     String symbol;
-
     int shares;
-
-    OrderType type;
 }

@@ -1,4 +1,4 @@
-package com.redelastic.stocktrader.portfolio.impl.entities;
+package com.redelastic.stocktrader.portfolio.impl;
 
 import com.lightbend.lagom.javadsl.api.transport.TransportErrorCode;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;

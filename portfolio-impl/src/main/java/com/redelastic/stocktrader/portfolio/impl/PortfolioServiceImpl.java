@@ -1,18 +1,29 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
+import akka.NotUsed;
+import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
+import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.OrderResult;
+import com.redelastic.stocktrader.broker.api.Trade;
+import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.*;
-import com.redelastic.stocktrader.portfolio.impl.entities.PortfolioCommand;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.math.BigDecimal;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 @Singleton
 public class PortfolioServiceImpl implements PortfolioService {
+
+    private final Logger log = LoggerFactory.getLogger(PortfolioServiceImpl.class);
 
     private final PortfolioRepository portfolioRepository;
     private final BrokerService brokerService;
@@ -22,43 +33,67 @@ public class PortfolioServiceImpl implements PortfolioService {
                                 BrokerService brokerService) {
         this.portfolioRepository = portfolioRepository;
         this.brokerService = brokerService;
+
+        // Listen for purchase order completions and send them to the corresponding portfolio
+        brokerService.orderResults()
+                .subscribe()
+                .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
+        // TODO: deal with duplicates
     }
 
     @Override
-    public ServiceCall<NewPortfolioRequest, PortfolioId> openPortfolio() { return portfolioRepository::open; }
+    public ServiceCall<NewPortfolioRequest, String> openPortfolio() { return portfolioRepository::open; }
 
     @Override
-    public ServiceCall<PortfolioId, Done> liquidatePortfolio() {
+    public ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId) {
         return null;
     }
 
     @Override
-    public ServiceCall<Order, Done> placeOrder() {
+    public ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId) {
+        return notUsed ->
+            portfolioRepository.get(portfolioId);
+    }
+
+    @Override
+    public ServiceCall<Order, Done> placeOrder(String portfolioId) {
+        return order ->
+                portfolioRepository.getRef(portfolioId)
+                    .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(UUID.randomUUID().toString())));
+    }
+
+    /**
+     * Illustrate synchronous interservice communication pattern by making service call
+     * to broker directly.
+     * @param portfolioId
+     * @return
+     */
+    /*
+    public ServiceCall<Order, Done> placeOrderSync(String portfolioId) {
         return order -> {
-            PortfolioId portfolioId = new PortfolioId(order.getPortfolioId());
-            // TODO map order to appropriate order
-            PortfolioCommand.BuyOrder orderCmd = PortfolioCommand.BuyOrder.builder()
-                    .symbol(order.getStockSymbol())
-                    .shares(order.getShares())
-                    .brokerService(brokerService)
-                    .build();
-            return portfolioRepository.getRef(portfolioId)
-                    .ask(orderCmd);
-        };
+            String orderId = UUID.randomUUID().toString();
+            portfolioRepository.getRef(portfolioId)
+                    .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(orderId)))
+                    .thenApply(brokerService.placeOrder().invoke(order));
+        }
     }
+    */
 
-
-    @Override
-    public ServiceCall<PortfolioId, PortfolioView> getPortfolio() { return portfolioRepository::get; }
-
-    @Override
-    public ServiceCall<BigDecimal, Done> creditFunds() {
-        return null;
+    private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
+        if (orderResult instanceof OrderResult.OrderCompleted) {
+            Trade trade = ((OrderResult.OrderCompleted)orderResult).getTrade();
+            return portfolioRepository.getRef(orderResult.getPortfolioId())
+                    .ask(new PortfolioCommand.CompleteTrade(trade));
+        } else {
+            // TODO: handle this
+            return CompletableFuture.completedFuture(Done.getInstance());
+        }
     }
 
     @Override
-    public ServiceCall<BigDecimal, DebitResponse> debitFunds() {
-        return null;
+    public Topic<Order> orders() {
+        return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
     }
+
 
 }

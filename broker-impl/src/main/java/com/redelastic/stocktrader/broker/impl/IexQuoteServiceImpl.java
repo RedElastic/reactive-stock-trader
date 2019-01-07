@@ -23,6 +23,7 @@ public class IexQuoteServiceImpl implements QuoteService {
         // TODO move this out into a configuration file
         String url = String.format("https://api.iextrading.com/1.0/stock/%s/quote", symbol);
         CompletionStage<WSResponse> request = wsClient.url(url).get();
+        // TODO: handle response from Iex
         return request.thenApply(response ->
             Quote.builder()
                     .symbol(symbol)

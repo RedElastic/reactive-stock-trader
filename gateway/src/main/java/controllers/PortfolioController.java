@@ -1,14 +1,11 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redelastic.stocktrader.portfolio.api.NewPortfolioRequest;
-import com.redelastic.stocktrader.portfolio.api.PortfolioId;
-import com.redelastic.stocktrader.portfolio.api.PortfolioService;
+import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.portfolio.api.*;
 import play.libs.Json;
-import play.mvc.BodyParser;
-import play.mvc.Controller;
-import play.mvc.Result;
-import play.mvc.Results;
+import play.mvc.*;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
@@ -24,8 +21,8 @@ public class PortfolioController extends Controller {
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
         return portfolioService
-            .getPortfolio()
-            .invoke(new PortfolioId(portfolioId))
+            .getPortfolio(portfolioId)
+            .invoke()
             .thenApply(Json::toJson)
             .thenApply(Results::ok);
     }
@@ -37,7 +34,23 @@ public class PortfolioController extends Controller {
         return portfolioService
                 .openPortfolio()
                 .invoke(openRequest)
-                .thenApply(portfolioId -> ok(portfolioId.getId()));
+                .thenApply(portfolioId -> ok(portfolioId));
+    }
+
+    public CompletionStage<Result> placeOrder(String portfolioId) {
+        JsonNode json = request().body().asJson();
+        // TODO: Parse and generate order
+        //Order order = Json.fromJson(json, Order.class);
+        Order order = Order.builder()
+                .orderType(OrderType.BUY)
+                .symbol("IBM")
+                .shares(10)
+                .portfolioId(portfolioId)
+                .build();
+        return portfolioService
+                .placeOrder(portfolioId)
+                .invoke(order)
+                .thenApply(done -> ok());
     }
 
 }

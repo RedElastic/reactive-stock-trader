@@ -1,2 +1,3 @@
 GET     /portfolio/:portfolioId     controllers.PortfolioController.getPortfolio(portfolioId)
 POST    /portfolio                  controllers.PortfolioController.openPortfolio()
+POST    /portfolio/:portfolioId/order     controllers.PortfolioController.placeOrder(portfolioId)

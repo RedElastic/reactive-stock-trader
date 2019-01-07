@@ -1,19 +1,23 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
-import akka.Done;
+import akka.japi.Pair;
+import akka.stream.javadsl.Source;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
+import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
+import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.NewPortfolioRequest;
-import com.redelastic.stocktrader.portfolio.api.PortfolioId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
-import com.redelastic.stocktrader.portfolio.impl.entities.PortfolioCommand;
 
 import java.util.concurrent.CompletionStage;
 
 public interface PortfolioRepository {
 
-    CompletionStage<PortfolioId> open(NewPortfolioRequest request);
+    CompletionStage<String> open(NewPortfolioRequest request);
 
-    CompletionStage<PortfolioView> get(PortfolioId portfolioId);
+    CompletionStage<PortfolioView> get(String portfolioId);
 
-    PersistentEntityRef<PortfolioCommand> getRef(PortfolioId portfolioId);
+    PersistentEntityRef<PortfolioCommand> getRef(String portfolioId);
+
+    Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset);
 }

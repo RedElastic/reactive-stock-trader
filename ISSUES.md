@@ -18,4 +18,10 @@
     
 # Design
 
-We'll treat Lagom as purely internally facing, and we won't care too much about the HTTP interface it is exposing, relying on Play as a service client to moderate external requests to the Lagom space. Thus we'll treat all service calls as parameterless, pure request-response.    
+We'll treat Lagom as purely internally facing, and we won't care too much about the HTTP interface it is exposing, relying on Play as a service client to moderate external requests to the Lagom space. Thus we'll treat all service calls as parameterless, pure request-response.
+
+# Notes
+
+Caution: be careful not to reference the initial state in a behaviour in a command, for example, but instead use the state()
+method. It may be best to split all command/event handlers out as separate methods from the behaviour defining method
+to ensure that the initial state passed to the behaviour method (used in the newBehaviorBuilder) is not referenced.     

@@ -10,7 +10,9 @@ import java.math.BigDecimal;
 @Builder
 public class PortfolioView {
 
-    PortfolioId portfolioId;
+    String portfolioId;
+
+    String name;
 
     BigDecimal funds;
 

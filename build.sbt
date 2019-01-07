@@ -7,6 +7,7 @@ EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 lazy val root = (project in file("."))
   .settings(name := "reactive-stock-trader")
   .aggregate(
+    orderModel,
     portfolioApi,
     portfolioImpl,
     brokerApi,
@@ -16,12 +17,19 @@ lazy val root = (project in file("."))
   )
   .settings(commonSettings)
 
+lazy val orderModel = (project in file("order"))
+  .settings(commonSettings)
+  .settings(
+    version := "1.0-SNAPSHOT",
+    libraryDependencies += lombok
+  )
+
 lazy val portfolioApi = (project in file("portfolio-api"))
   .settings(commonSettings)
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
-  )
+  ).dependsOn(orderModel)
 
 lazy val portfolioImpl = (project in file("portfolio-impl"))
   .settings(commonSettings)
@@ -47,13 +55,13 @@ lazy val brokerApi = (project in file("broker-api"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
-  )
+  ).dependsOn(orderModel)
 
 
 lazy val brokerImpl = (project in file("broker-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava, SbtReactiveAppPlugin)
-  .dependsOn(brokerApi)
+  .dependsOn(brokerApi, portfolioApi)
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
@@ -62,7 +70,6 @@ lazy val brokerImpl = (project in file("broker-impl"))
       lagomJavadslKafkaBroker
     ),
     maxErrors := 10000
-
   )
 
 lazy val wireTransferApi = (project in file("wire-transfer-api"))
@@ -95,7 +102,8 @@ lazy val gateway = (project in file("gateway"))
   .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)
   .disablePlugins(PlayLayoutPlugin)
   .dependsOn(
-    portfolioApi
+    portfolioApi,
+    brokerApi
   )
   .settings(
     version := "1.0-SNAPSHOT",
