@@ -1,7 +1,6 @@
 package com.redelastic.stocktrader.broker.impl;
 
 import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderConditions;
@@ -50,8 +49,9 @@ public class TradeServiceImpl implements TradeService {
     }
 
     private CompletionStage<BigDecimal> priceOrder(Order order) {
-        CompletionStage<Quote> getQuote = quoteService.getQuote(order.getSymbol());
-        return  getQuote.thenApply(quote ->
-            quote.getSharePrice().multiply(BigDecimal.valueOf(order.getShares())));
+        return quoteService
+                .getQuote(order.getSymbol())
+                .thenApply(quote ->
+                    quote.getSharePrice().multiply(BigDecimal.valueOf(order.getShares())));
     }
 }
