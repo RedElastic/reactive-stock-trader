@@ -8,6 +8,7 @@ npm install bootstrap-vue
 npm install --save axios
 npm install vue-rollbar --save
 npm install lodash --save
+npm install --save moment
 ```
 
 If you receive an audit warning on lodash:

@@ -6,18 +6,31 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-6">
-        <div class="card">
+      <div class="col-6" 
+          v-for="(order, index) in this.orders.pending"
+          v-bind:order="order"
+          v-bind:index="index"
+          v-bind:key="order.symbol"
+        >
+        <div class="card mb-4">
           <div class="card-body">
-            <h5 class="card-title">NASDAQ:AAPL</h5>
-            <h6 class="card-subtitle mb-2 text-muted">Buy Pending</h6>
+            <h5 class="card-title">{{ order.symbol }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ order.status }}</h6>
             <p class="card-text">
+              <div class="row">
+                <div class="col">
+                  Confirmation
+                </div>
+                <div class="col">
+                  {{ order.id }}
+                </div>
+              </div> 
               <div class="row">
                 <div class="col">
                   Equity name
                 </div>
                 <div class="col">
-                  Apple Inc.
+                  {{ order.company }}
                 </div>
               </div>
               <div class="row">
@@ -25,7 +38,7 @@
                   Trade date/time
                 </div>
                 <div class="col">
-                  12/12/2018 12:13:12pm
+                  {{ order.timestamp | formatDate }}
                 </div>
               </div>
               <div class="row">
@@ -33,25 +46,25 @@
                   Shares
                 </div>
                 <div class="col">
-                  150
+                  {{ order.shares }}
                 </div>
               </div>
-              <div class="row">
+              <div class="row" v-if="order.limit">
                 <div class="col">
                   Limit Price
                 </div>
                 <div class="col">
-                  15012
+                  {{ order.limit | toCurrency }}
                 </div>
               </div> 
-              <div class="row">
+              <div class="row" v-if="order.stop">
                 <div class="col">
-                  Confirmation
+                  Stop Price
                 </div>
                 <div class="col">
-                  XKJNFKH123
+                  {{ order.stop | toCurrency }}
                 </div>
-              </div> 
+              </div>             
               <b-button size="sm" variant="danger" class="mt-3">
                 Cancel
               </b-button>             
@@ -64,7 +77,47 @@
 </template>
 
 <script>
-  export default {  
+  
+
+  export default {      
+    data: function () {
+      return {
+        orders: {
+          "pending": [
+              {
+                  "id": "XKJNFKH123",
+                  "symbol": "AAPL",
+                  "company": "Apple Inc.",
+                  "exchange": "Nasdaq",
+                  "status": "Buy pending",
+                  "timestamp": 1318781876,
+                  "shares": 150,
+                  "limit": 150,
+                  "stop": 150
+              },               
+              {
+                  "id": "JDHBFJHSDF",
+                  "symbol": "MSFT",
+                  "company": "Microsoft",
+                  "exchange": "Nasdaq",
+                  "status": "Sell pending",
+                  "timestamp": 1318781876,
+                  "shares": 100
+              },               
+              {
+                  "id": "JDHBFJHSDF",
+                  "symbol": "IBM",
+                  "company": "International Business Machines",
+                  "exchange": "Nasdaq",
+                  "status": "Sell pending",
+                  "timestamp": 1318781876,
+                  "shares": 100
+              }
+          ],
+          "version":1.0
+        }
+      }
+    }
   } 
 </script>
 
