@@ -15,9 +15,7 @@ public interface PortfolioRepository {
 
     CompletionStage<String> open(NewPortfolioRequest request);
 
-    CompletionStage<PortfolioView> get(String portfolioId);
-
-    PersistentEntityRef<PortfolioCommand> getRef(String portfolioId);
+    Portfolio get(String portfolioId);
 
     Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset);
 }

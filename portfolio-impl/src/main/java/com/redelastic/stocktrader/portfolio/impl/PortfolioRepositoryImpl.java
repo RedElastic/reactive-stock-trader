@@ -56,23 +56,6 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                 .thenApply(done -> portfolioId);
     }
 
-    @Override
-    public CompletionStage<PortfolioView> get(String portfolioId) {
-        return persistentEntities.refFor(PortfolioEntity.class, portfolioId)
-                .ask(PortfolioCommand.GetState.INSTANCE)
-                .thenCompose(portfolio ->
-                    priceHoldings(portfolio.getHoldings().asSequence())
-                    .thenApply(valuedHoldings ->
-                        PortfolioView.builder()
-                                .portfolioId(portfolioId)
-                                .funds(portfolio.getFunds())
-                                .loyaltyLevel(portfolio.getLoyaltyLevel())
-                                .holdings(valuedHoldings)
-                                .build()
-                    )
-                );
-    }
-
     private CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding> holdings) {
         // TODO deal with request failures
         // TODO timeout
@@ -98,6 +81,11 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
 
     public PersistentEntityRef<PortfolioCommand> getRef(String portfolioId) {
         return persistentEntities.refFor(PortfolioEntity.class, portfolioId);
+    }
+
+    @Override
+    public Portfolio get(String portfolioId) {
+        return new Portfolio(brokerService, persistentEntities, portfolioId);
     }
 
     public Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {

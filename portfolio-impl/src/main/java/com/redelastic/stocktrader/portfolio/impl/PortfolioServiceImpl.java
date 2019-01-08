@@ -52,15 +52,17 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId) {
         return notUsed ->
-            portfolioRepository.get(portfolioId);
+            portfolioRepository
+                    .get(portfolioId)
+                    .view();
     }
 
     @Override
     public ServiceCall<Order, Done> placeOrder(String portfolioId) {
         return order -> {
             String orderId = UUID.randomUUID().toString();
-            return portfolioRepository.getRef(portfolioId)
-                    .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(orderId)));
+            return portfolioRepository.get(portfolioId)
+                    .placeOrder(order.withOrderId(orderId));
         };
     }
 
@@ -81,8 +83,8 @@ public class PortfolioServiceImpl implements PortfolioService {
             String orderId = UUID.randomUUID().toString();
             // We'll wait for the broker to acknowledge the order before completing since we won't
             // be able to recover (resubmit the order) if the broker is not available.
-            return portfolioRepository.getRef(portfolioId)
-                    .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(orderId)))
+            return portfolioRepository.get(portfolioId)
+                    .placeOrder(order)
                     .thenCompose(done -> brokerService.placeOrder().invoke(order));
         };
     }
@@ -90,8 +92,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
         if (orderResult instanceof OrderResult.OrderCompleted) {
             Trade trade = ((OrderResult.OrderCompleted)orderResult).getTrade();
-            return portfolioRepository.getRef(orderResult.getPortfolioId())
-                    .ask(new PortfolioCommand.CompleteTrade(trade));
+            return portfolioRepository
+                    .get(orderResult.getPortfolioId())
+                    .processTrade(trade);
         } else {
             // TODO: handle this
             return CompletableFuture.completedFuture(Done.getInstance());
