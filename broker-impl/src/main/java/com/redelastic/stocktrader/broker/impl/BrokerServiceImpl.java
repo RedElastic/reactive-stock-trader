@@ -13,10 +13,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.*;
-import com.redelastic.stocktrader.broker.impl.buyOrder.BuyOrderEntity;
-import com.redelastic.stocktrader.broker.impl.buyOrder.BuyOrderEvent;
 import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +29,7 @@ import java.util.concurrent.CompletionStage;
 
 public class BrokerServiceImpl implements BrokerService {
 
-    private Logger log = LoggerFactory.getLogger(BrokerServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(BrokerServiceImpl.class);
 
     private final QuoteService quoteService;
 

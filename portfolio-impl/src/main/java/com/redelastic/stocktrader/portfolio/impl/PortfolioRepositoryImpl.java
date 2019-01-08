@@ -25,7 +25,7 @@ import static java.util.stream.Collectors.toList;
 
 public class PortfolioRepositoryImpl implements PortfolioRepository {
 
-    private Logger log = LoggerFactory.getLogger(PortfolioRepositoryImpl.class);
+    private final Logger log = LoggerFactory.getLogger(PortfolioRepositoryImpl.class);
 
     private final BrokerService brokerService;
 

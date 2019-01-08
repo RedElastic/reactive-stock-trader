@@ -14,9 +14,9 @@ import java.util.concurrent.CompletionStage;
 
 public class TradeServiceImpl implements TradeService {
 
-    private Logger log = LoggerFactory.getLogger(TradeServiceImpl.class);
+    private final Logger log = LoggerFactory.getLogger(TradeServiceImpl.class);
 
-    private QuoteService quoteService;
+    private final QuoteService quoteService;
 
     @Inject
     public TradeServiceImpl(QuoteService quoteService) {

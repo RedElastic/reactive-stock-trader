@@ -26,7 +26,6 @@ public class Portfolio {
     private final BrokerService brokerService;
     private final String portfolioId;
 
-
     Portfolio(BrokerService brokerService,
               PersistentEntityRegistry registry,
               String portfolioId) {

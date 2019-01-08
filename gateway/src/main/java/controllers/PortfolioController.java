@@ -7,6 +7,8 @@ import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import play.data.Form;
+import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.*;
 
@@ -15,13 +17,17 @@ import java.util.concurrent.CompletionStage;
 
 public class PortfolioController extends Controller {
 
-    private Logger log = LoggerFactory.getLogger(PortfolioController.class);
+    private final Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
     private final PortfolioService portfolioService;
 
+    private final Form<PlaceOrderForm> placeOrderForm;
+
     @Inject
-    public PortfolioController(PortfolioService portfolioService) {
+    public PortfolioController(PortfolioService portfolioService,
+                               FormFactory formFactory) {
         this.portfolioService = portfolioService;
+        this.placeOrderForm = formFactory.form(PlaceOrderForm.class);
     }
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
@@ -39,17 +45,16 @@ public class PortfolioController extends Controller {
         return portfolioService
                 .openPortfolio()
                 .invoke(openRequest)
-                .thenApply(portfolioId -> ok(portfolioId));
+                .thenApply(Results::ok);
     }
 
     public CompletionStage<Result> placeOrder(String portfolioId) {
-        JsonNode json = request().body().asJson();
-        // TODO: Parse and generate order
-        //Order order = Json.fromJson(json, Order.class);
+        PlaceOrderForm orderForm = placeOrderForm.bindFromRequest().get();
+
         Order order = Order.builder()
                 .orderType(OrderType.BUY)
-                .symbol("IBM")
-                .shares(10)
+                .symbol(orderForm.getSymbol())
+                .shares(orderForm.getShares())
                 .conditions(OrderConditions.Market.INSTANCE)
                 .portfolioId(portfolioId)
                 .build();

@@ -6,8 +6,6 @@ import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.order.Order;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
 
 interface OrderCommand {
     @Value
