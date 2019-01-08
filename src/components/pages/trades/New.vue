@@ -42,16 +42,16 @@
               </div>             
             </div>
             <div class="row" v-if="this.stopOrder || this.limitOrder">
-              <div class="col-6" v-if="this.limitOrder">
-                <b-form-group id="limitPriceGroup" label="Limit price" label-for="limitPrice">
-                  <b-form-input id="limitPrice" type="number" v-model.number="form.limitPrice" required></b-form-input>
-                </b-form-group>            
-              </div>                          
               <div class="col-6" v-if="this.stopOrder">
                 <b-form-group id="stopPriceGroup" label="Stop price" label-for="stopPrice">
                   <b-form-input id="stopPrice" type="number" v-model.number="form.stopPrice" required></b-form-input>
                 </b-form-group>            
-              </div>                          
+              </div>
+              <div class="col-6" v-if="this.limitOrder">
+                <b-form-group id="limitPriceGroup" label="Limit price" label-for="limitPrice">
+                  <b-form-input id="limitPrice" type="number" v-model.number="form.limitPrice" required></b-form-input>
+                </b-form-group>            
+              </div>                                                                
             </div>            
         </div>          
         <div class="col-5">          
@@ -73,13 +73,13 @@
             <div class="col">{{ quote.latestPrice | toCurrency }} </div>
           </div>
           <div class="row">
-            <div class="col">Order Type</div>
-            <div class="col">{{ this.formatOrderType() }}</div>
-          </div>
-          <div class="row">
             <div class="col">Number of Shares</div>
             <div class="col">{{ form.shares }}</div>
           </div>
+          <div class="row">
+            <div class="col">Order Type</div>
+            <div class="col">{{ this.formatOrderType() }}</div>
+          </div>          
           <div class="row" v-if="this.stopOrder">
             <div class="col">Stop price</div>
             <div class="col">{{ form.stopPrice | toCurrency }}</div>
@@ -139,7 +139,7 @@
             } else if (this.form.orderType === "stopLimit") {
               return "Buy Stop-Limit"
             }
-          } else {
+          } else if (this.form.order === "sell") {
             if (this.form.orderType === "market") {
               return "Sell"
             } else if (this.form.orderType === "limit") {
@@ -149,6 +149,8 @@
             } else if (this.form.orderType === "stopLimit") {
               return "Sell Stop-Limit"
             }
+          } else {
+            return "";
           }
         }
       },

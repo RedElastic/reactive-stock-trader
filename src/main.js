@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import BootstrapVue from 'bootstrap-vue'
 import App from './App.vue'
 import Rollbar from 'vue-rollbar';
+import moment from 'moment'
 
 import Portfolio from './components/pages/Portfolio.vue'
 import Home from './components/pages/Home.vue'
@@ -56,6 +57,12 @@ Vue.filter('iexPercent', function (value) {
         return value;
     }
     return (value * 100).toFixed(2);
+});
+
+Vue.filter('formatDate', function(value) {
+  if (value) {
+    return moment.unix(String(value)).format('MM/DD/YYYY hh:mm')
+  }
 });
 
 const routes = [
