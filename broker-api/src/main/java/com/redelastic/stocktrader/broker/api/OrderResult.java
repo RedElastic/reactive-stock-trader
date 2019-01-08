@@ -10,7 +10,7 @@ public interface OrderResult {
 
     @Value
     @Builder
-    class OrderCompleted implements OrderResult {
+    public class OrderCompleted implements OrderResult {
         String portfolioId;
         String orderId;
         Trade trade;

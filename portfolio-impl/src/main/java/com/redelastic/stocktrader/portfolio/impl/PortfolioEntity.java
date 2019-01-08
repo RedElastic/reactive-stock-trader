@@ -92,7 +92,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
     private void handleCompletedTrade(BehaviorBuilder builder) {
         builder.setCommandHandler(PortfolioCommand.CompleteTrade.class, (cmd, ctx) -> {
             Trade trade = cmd.getTrade();
-            switch(trade.getBuyOrSell()) {
+            switch(trade.getOrderType()) {
                 case BUY:
                     return ctx.thenPersistAll(Arrays.asList(
                             new PortfolioEvent.FundsDebited(entityId(), trade.getPrice()),

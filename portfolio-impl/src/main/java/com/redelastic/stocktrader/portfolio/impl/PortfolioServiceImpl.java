@@ -65,19 +65,17 @@ public class PortfolioServiceImpl implements PortfolioService {
     /**
      * Illustrate synchronous interservice communication pattern by making service call
      * to broker directly.
-     * @param portfolioId
      * @return
      */
-    /*
     public ServiceCall<Order, Done> placeOrderSync(String portfolioId) {
         return order -> {
             String orderId = UUID.randomUUID().toString();
-            portfolioRepository.getRef(portfolioId)
+            return portfolioRepository.getRef(portfolioId)
                     .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(orderId)))
-                    .thenApply(brokerService.placeOrder().invoke(order));
-        }
+                    .thenCompose(done -> brokerService.placeOrder().invoke(order));
+        };
     }
-    */
+
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
         if (orderResult instanceof OrderResult.OrderCompleted) {

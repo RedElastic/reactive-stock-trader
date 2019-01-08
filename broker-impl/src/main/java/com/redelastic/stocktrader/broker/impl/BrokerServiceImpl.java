@@ -10,6 +10,7 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
+import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.*;
 import com.redelastic.stocktrader.broker.impl.buyOrder.BuyOrderEntity;
@@ -21,8 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
+/**
+ * Note: The only supported way within Lagom to publish to a topic is tracking
+ * persistent entity state. This means we'll need to create persistent entities for
+ * all our orders, even market orders which we might be tempted not to otherwise.
+ */
 
 public class BrokerServiceImpl implements BrokerService {
 
@@ -30,14 +36,18 @@ public class BrokerServiceImpl implements BrokerService {
 
     private final QuoteService quoteService;
 
+    private final TradeService tradeService;
+
     private final PersistentEntityRegistry persistentEntities;
 
     @Inject
     public BrokerServiceImpl(PersistentEntityRegistry persistentEntities,
                              QuoteService quoteService,
-                             PortfolioService portfolioService) {
+                             PortfolioService portfolioService,
+                             TradeService tradeService) {
         this.quoteService = quoteService;
         this.persistentEntities = persistentEntities;
+        this.tradeService = tradeService;
         persistentEntities.register(BuyOrderEntity.class);
 
         portfolioService.orders().subscribe().atLeastOnce(processPortfolioOrders());
@@ -46,6 +56,28 @@ public class BrokerServiceImpl implements BrokerService {
     @Override
     public ServiceCall<String, Quote> getQuote() {
         return quoteService::getQuote;
+    }
+
+    @Override
+    public ServiceCall<NotUsed, OrderStatus> getOrderStatus(String orderId) {
+        return null;
+    }
+
+    @Override
+    public ServiceCall<Order, Done> placeOrder() {
+        return order -> {
+            PersistentEntityRef<OrderCommand> orderEntity = persistentEntities.refFor(OrderEntity.class, order.getOrderId());
+            CompletionStage<Done> placeOrder = orderEntity.ask(new OrderCommand.PlaceOrder(order));
+
+            placeOrder
+                    .thenCompose(done -> tradeService.placeOrder(order))
+                    .thenCompose(orderResult ->
+                            orderEntity.ask(new OrderCommand.Complete(orderResult)));
+
+            // Note that our service call responds with Done after the PlaceOrder command is accepted, it does not
+            // wait for the order to be fulfilled (which, in general, may require some time).
+            return placeOrder;
+        };
     }
 
     @Override
@@ -76,14 +108,8 @@ public class BrokerServiceImpl implements BrokerService {
 
     private Flow<Order, Done, NotUsed> processPortfolioOrders() {
         return Flow.<Order>create()
-                .mapAsync(1, this::processOrder);
+                .mapAsync(1, this.placeOrder()::invoke);
     }
 
-    private CompletionStage<Done> processOrder(Order order) {
-        log.warn(String.format("Broker received order %s from portfolio %s",
-                order.getOrderId(),
-                order.getPortfolioId()));
-        return CompletableFuture.completedFuture(Done.getInstance());
-    }
 
 }
