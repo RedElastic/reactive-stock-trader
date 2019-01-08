@@ -57,25 +57,35 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<Order, Done> placeOrder(String portfolioId) {
-        return order ->
-                portfolioRepository.getRef(portfolioId)
-                    .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(UUID.randomUUID().toString())));
+        return order -> {
+            String orderId = UUID.randomUUID().toString();
+            return portfolioRepository.getRef(portfolioId)
+                    .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(orderId)));
+        };
     }
 
     /**
-     * Illustrate synchronous interservice communication pattern by making service call
-     * to broker directly.
+     * Illustrate synchronous inter-service communication pattern by making service call
+     * to broker directly. The upside of this is that the call is made quicker (the
+     * read-side processor used for the asynchronous topic based inter-service communication
+     * introduces significant latency). The downside is that it couples the services in time,
+     * if the broker service is currently unavailable the call will fail. The topic based
+     * communication approach can handle such situations, resuming processing of orders once
+     * the service is available. Since we're not dealing with a high-frequency trading
+     * situation we can tolerate a few seconds latency between the trade being placed and
+     * being processed, so we've used the asynchronous topic based approach here.
      * @return
      */
-    public ServiceCall<Order, Done> placeOrderSync(String portfolioId) {
+    private ServiceCall<Order, Done> placeOrderSync(String portfolioId) {
         return order -> {
             String orderId = UUID.randomUUID().toString();
+            // We'll wait for the broker to acknowledge the order before completing since we won't
+            // be able to recover (resubmit the order) if the broker is not available.
             return portfolioRepository.getRef(portfolioId)
                     .ask(new PortfolioCommand.PlaceOrder(order.withOrderId(orderId)))
                     .thenCompose(done -> brokerService.placeOrder().invoke(order));
         };
     }
-
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
         if (orderResult instanceof OrderResult.OrderCompleted) {

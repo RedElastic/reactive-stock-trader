@@ -2,21 +2,22 @@ package com.redelastic.stocktrader.broker.impl;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import com.redelastic.stocktrader.broker.impl.buyOrder.BuyOrderCommand;
-import com.redelastic.stocktrader.broker.impl.buyOrder.BuyOrderEntity;
 import com.redelastic.stocktrader.order.Order;
 
+import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
-class OrderFactoryImpl {
+class OrderFactoryImpl implements OrderFactory {
 
     private final PersistentEntityRegistry persistentEntities;
 
+    @Inject
     OrderFactoryImpl(PersistentEntityRegistry persistentEntities) {
         this.persistentEntities = persistentEntities;
+        persistentEntities.register(OrderEntity.class);
     }
 
-    CompletionStage<Done> placeOrder(Order order) {
+    public CompletionStage<Done> placeOrder(Order order) {
         switch(order.getOrderType()) {
             case BUY:
                 return createBuyOrder(order);
@@ -28,8 +29,8 @@ class OrderFactoryImpl {
     }
 
     private CompletionStage<Done> createBuyOrder(Order order) {
-        return persistentEntities.refFor(BuyOrderEntity.class, order.getOrderId())
-                .ask(new BuyOrderCommand.Create(order));
+        return persistentEntities.refFor(OrderEntity.class, order.getOrderId())
+                .ask(new OrderCommand.PlaceOrder(order));
 
     }
 

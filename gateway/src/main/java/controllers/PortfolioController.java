@@ -1,9 +1,12 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import play.libs.Json;
 import play.mvc.*;
 
@@ -11,6 +14,8 @@ import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
 public class PortfolioController extends Controller {
+
+    private Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
     private final PortfolioService portfolioService;
 
@@ -45,8 +50,10 @@ public class PortfolioController extends Controller {
                 .orderType(OrderType.BUY)
                 .symbol("IBM")
                 .shares(10)
+                .conditions(OrderConditions.Market.INSTANCE)
                 .portfolioId(portfolioId)
                 .build();
+        log.warn(order.toString());
         return portfolioService
                 .placeOrder(portfolioId)
                 .invoke(order)

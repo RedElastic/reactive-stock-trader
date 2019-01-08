@@ -48,14 +48,14 @@ public class BrokerServiceImpl implements BrokerService {
         this.quoteService = quoteService;
         this.persistentEntities = persistentEntities;
         this.tradeService = tradeService;
-        persistentEntities.register(BuyOrderEntity.class);
+        persistentEntities.register(OrderEntity.class);
 
         portfolioService.orders().subscribe().atLeastOnce(processPortfolioOrders());
     }
 
     @Override
-    public ServiceCall<String, Quote> getQuote() {
-        return quoteService::getQuote;
+    public ServiceCall<NotUsed, Quote> getQuote(String symbol) {
+        return notUsed -> quoteService.getQuote(symbol);
     }
 
     @Override
@@ -69,8 +69,15 @@ public class BrokerServiceImpl implements BrokerService {
             PersistentEntityRef<OrderCommand> orderEntity = persistentEntities.refFor(OrderEntity.class, order.getOrderId());
             CompletionStage<Done> placeOrder = orderEntity.ask(new OrderCommand.PlaceOrder(order));
 
+            log.warn(String.format("Broker placing order %s", order.getOrderId()));
+            log.warn(String.format("Broker placing order %s", order.toString()));
+
             placeOrder
                     .thenCompose(done -> tradeService.placeOrder(order))
+                    .thenApply(orderResult -> {
+                        log.warn(String.format("Trade completed for order %s", order.getOrderId()));
+                        return orderResult;
+                    })
                     .thenCompose(orderResult ->
                             orderEntity.ask(new OrderCommand.Complete(orderResult)));
 
@@ -82,24 +89,23 @@ public class BrokerServiceImpl implements BrokerService {
 
     @Override
     public Topic<OrderResult> orderResults() {
-        return TopicProducer.taggedStreamWithOffset(BuyOrderEvent.TAG.allTags(), this::orderResults);
+        return TopicProducer.taggedStreamWithOffset(OrderEvent.TAG.allTags(), this::orderResults);
     }
 
 
-    private Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<BuyOrderEvent> tag, Offset offset) {
+    private Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset) {
         return persistentEntities.eventStream(tag, offset).filter(eventOffset ->
-                eventOffset.first() instanceof BuyOrderEvent.Fulfilled
+                eventOffset.first() instanceof OrderEvent.OrderFulfilled
         ).map(eventAndOffset -> {
-            BuyOrderEvent.Fulfilled fulfilled = (BuyOrderEvent.Fulfilled)eventAndOffset.first();
+            OrderEvent.OrderFulfilled fulfilled = (OrderEvent.OrderFulfilled)eventAndOffset.first();
+            Order order = fulfilled.getOrder();
+            Trade trade = fulfilled.getTrade();
 
-            Trade trade = Trade.builder()
-                    .orderType(OrderType.BUY)
-                    .symbol(fulfilled.getOrder().getSymbol())
-                    .shares(fulfilled.getOrder().getShares())
-                    .build();
+            log.warn(String.format("Order %s fulfilled.", order.getOrderId()));
+
             OrderResult.OrderCompleted completedOrder = OrderResult.OrderCompleted.builder()
-                    .orderId(fulfilled.getOrderId())
-                    .portfolioId(fulfilled.getOrder().getPortfolioId())
+                    .orderId(order.getOrderId())
+                    .portfolioId(order.getPortfolioId())
                     .trade(trade)
                     .build();
             return Pair.create(completedOrder, eventAndOffset.second());
@@ -110,6 +116,5 @@ public class BrokerServiceImpl implements BrokerService {
         return Flow.<Order>create()
                 .mapAsync(1, this.placeOrder()::invoke);
     }
-
 
 }

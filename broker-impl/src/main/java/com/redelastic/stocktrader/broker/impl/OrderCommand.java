@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 interface OrderCommand {
     @Value
     class PlaceOrder implements OrderCommand, ReplyType<Done> {
+
         Order order;
     }
 

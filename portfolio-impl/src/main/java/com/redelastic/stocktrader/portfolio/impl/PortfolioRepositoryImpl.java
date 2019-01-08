@@ -78,8 +78,8 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         // TODO timeout
         List<CompletableFuture<ValuedHolding>> requests = holdings.stream().map(valuedHolding ->
                 brokerService
-                        .getQuote()
-                        .invoke(valuedHolding.getSymbol())
+                        .getQuote(valuedHolding.getSymbol())
+                        .invoke()
                         .thenApply(quote ->
                                 new ValuedHolding(
                                         valuedHolding.getSymbol(),
@@ -106,6 +106,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         ).mapAsync(1, eventOffset -> {
                 PortfolioEvent.OrderPlaced order = (PortfolioEvent.OrderPlaced)eventOffset.first();
                 log.warn(String.format("Publishing order %s", order.getOrder().getOrderId()));
+                log.warn(order.toString());
                 return CompletableFuture.completedFuture(Pair.create(
                         order.getOrder(),
                         eventOffset.second()

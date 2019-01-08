@@ -5,12 +5,16 @@ import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.concurrent.CompletionStage;
 
 public class TradeServiceImpl implements TradeService {
+
+    private Logger log = LoggerFactory.getLogger(TradeServiceImpl.class);
 
     private QuoteService quoteService;
 
@@ -24,6 +28,7 @@ public class TradeServiceImpl implements TradeService {
         if (order.getConditions() instanceof OrderConditions.Market) {
             return completeMarketOrder(order);
         } else {
+            log.error(String.format("Unhandled order placed: %s", order.getConditions()));
             throw new UnsupportedOperationException();
         }
     }

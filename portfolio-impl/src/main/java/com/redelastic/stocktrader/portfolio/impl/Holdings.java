@@ -6,6 +6,8 @@ import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 import org.pcollections.PSequence;
 
+import javax.annotation.Nonnegative;
+
 import static java.util.stream.Collectors.toList;
 
 
@@ -22,6 +24,24 @@ public class Holdings {
             currentShares = holdings.get(symbol);
         }
         return new Holdings(holdings.plus(symbol, currentShares + newShares));
+    }
+
+    public Holdings remove(String symbol, int sharesToRemove) {
+        // TODO: check sharesToRemove is positive
+        int currentShares = 0;
+        if (holdings.containsKey(symbol)) {
+            currentShares = holdings.get(symbol);
+            int remainingShares = currentShares - sharesToRemove;
+            if (remainingShares > 0) {
+                return new Holdings(holdings.plus(symbol, remainingShares));
+            } else if (remainingShares == 0) {
+                return new Holdings(holdings.minus(symbol));
+            } else {
+                throw new IllegalStateException(); // FIXME
+            }
+        } else {
+            throw new IllegalStateException(); // FIXME
+        }
     }
 
     public static Holdings EMPTY = new Holdings(HashTreePMap.empty());

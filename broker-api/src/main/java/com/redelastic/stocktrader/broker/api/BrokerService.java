@@ -15,7 +15,7 @@ import static com.lightbend.lagom.javadsl.api.Service.topic;
 
 public interface BrokerService extends Service {
 
-  ServiceCall<String, Quote> getQuote();
+  ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
   ServiceCall<NotUsed, OrderStatus> getOrderStatus(String orderId);
 
@@ -28,7 +28,8 @@ public interface BrokerService extends Service {
   default Descriptor descriptor() {
     // @formatter:off
     return named("broker").withCalls(
-        restCall(Method.GET, "/api/order/:orderId", this::getQuote)
+            restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
+        restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
     ).withTopics(
             topic(ORDER_RESULTS_TOPIC_ID, this::orderResults)
     );

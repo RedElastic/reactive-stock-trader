@@ -27,6 +27,10 @@ public interface PortfolioState extends Jsonable {
         public Open addShares(String symbol, int shares) {
             return this.withHoldings(holdings.add(symbol, shares));
         }
+
+        public Open removeShares(String symbol, int shares) {
+            return this.withHoldings(holdings.remove(symbol, shares));
+        }
     }
 
     @Value

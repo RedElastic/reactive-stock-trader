@@ -21,7 +21,9 @@ lazy val orderModel = (project in file("order"))
   .settings(commonSettings)
   .settings(
     version := "1.0-SNAPSHOT",
-    libraryDependencies += lombok
+    libraryDependencies ++= Seq(
+      lagomJavadslApi,
+      lombok)
   )
 
 lazy val portfolioApi = (project in file("portfolio-api"))

@@ -74,6 +74,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         handlePlaceOrder(builder);
         handleCompletedTrade(builder);
         handleFundEvents(builder);
+        handleShareEvents(builder);
         handleGetState(builder);
         return builder.build();
     }
@@ -122,9 +123,16 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         });
     }
 
+    private void handleShareEvents(BehaviorBuilder builder) {
+        builder.setEventHandler(PortfolioEvent.SharesCredited.class,
+                evt -> ((PortfolioState.Open)state()).addShares(evt.getSymbol(), evt.getShares()));
+        builder.setEventHandler(PortfolioEvent.SharesDebited.class,
+                evt -> ((PortfolioState.Open)state()).removeShares(evt.getSymbol(), evt.getShares()));
+    }
+
     private void handlePlaceOrder(BehaviorBuilder builder) {
         builder.setCommandHandler(PortfolioCommand.PlaceOrder.class, (placeOrder, ctx) -> {
-            log.warn("Placing order");
+            log.warn(String.format("Placing order %s", placeOrder.getOrder().toString()));
             Order order = placeOrder.getOrder();
             PortfolioState.Open state = (PortfolioState.Open)state();
             switch(order.getOrderType()) {
@@ -150,7 +158,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         });
 
         builder.setEventHandler(PortfolioEvent.OrderPlaced.class, evt -> {
-            log.warn("order event");
+            log.warn("Portfolio entity got OrderPlaced event.");
             return state(); // TODO: Track outstanding orders
             // TODO: update holdings for a sell
         });
