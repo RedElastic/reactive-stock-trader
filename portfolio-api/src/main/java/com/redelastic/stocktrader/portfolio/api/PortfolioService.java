@@ -16,7 +16,7 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  */
 public interface PortfolioService extends Service {
 
-    ServiceCall<OpenPortforlioRequest, String> openPortfolio();
+    ServiceCall<OpenPortfolioRequest, String> openPortfolio();
 
     ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
 

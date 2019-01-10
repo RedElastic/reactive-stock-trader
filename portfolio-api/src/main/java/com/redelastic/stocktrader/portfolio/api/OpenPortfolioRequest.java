@@ -7,7 +7,7 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonDeserialize(builder = OpenPortforlioRequest.NewPortfolioRequestBuilder.class)
-public class OpenPortforlioRequest {
+@JsonDeserialize(builder = OpenPortfolioRequest.OpenPortfolioRequestBuilder.class)
+public class OpenPortfolioRequest {
     @NonNull String name;
 }

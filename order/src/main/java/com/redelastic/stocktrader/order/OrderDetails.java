@@ -13,5 +13,5 @@ public class OrderDetails {
     @NonNull String symbol;
     int shares;
     @NonNull OrderType orderType;
-    OrderConditions conditions;
+    @NonNull OrderConditions conditions;
 }

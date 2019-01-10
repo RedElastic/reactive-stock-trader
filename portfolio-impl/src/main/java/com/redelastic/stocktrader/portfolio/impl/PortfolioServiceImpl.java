@@ -43,7 +43,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<OpenPortforlioRequest, String> openPortfolio() {
+    public ServiceCall<OpenPortfolioRequest, String> openPortfolio() {
         return portfolioRepository::open;
     }
 
