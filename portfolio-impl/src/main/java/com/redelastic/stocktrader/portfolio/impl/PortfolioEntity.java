@@ -95,6 +95,11 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
     private void handleCompletedTrade(BehaviorBuilder builder) {
         builder.setCommandHandler(PortfolioCommand.CompleteTrade.class, (cmd, ctx) -> {
             Trade trade = cmd.getTrade();
+            log.warn(String.format(
+                    "Portfolio %s processing trade %s",
+                    entityId(),
+                    trade.toString()
+            ));
             switch(trade.getOrderType()) {
                 case BUY:
                     return ctx.thenPersistAll(Arrays.asList(
@@ -103,9 +108,10 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
                             () -> ctx.reply(Done.getInstance()));
 
                 case SELL:
+                    // Note: for a sale the shares have already been removed when we initiated the sale
+
                     return ctx.thenPersistAll(Arrays.asList(
-                            new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
-                            new PortfolioEvent.SharesDebited(entityId(), trade.getSymbol(), trade.getShares())),
+                            new PortfolioEvent.FundsCredited(entityId(), trade.getPrice())),
                             () -> ctx.reply(Done.getInstance()));
 
                 default:

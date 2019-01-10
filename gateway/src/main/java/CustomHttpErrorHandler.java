@@ -13,7 +13,7 @@ import javax.inject.Provider;
 import java.util.concurrent.CompletionStage;
 
 
-public class CustomHttpErrorHandler extends DefaultHttpErrorHandler {
+class CustomHttpErrorHandler extends DefaultHttpErrorHandler {
 
     @Inject
     public CustomHttpErrorHandler(Config configuration,

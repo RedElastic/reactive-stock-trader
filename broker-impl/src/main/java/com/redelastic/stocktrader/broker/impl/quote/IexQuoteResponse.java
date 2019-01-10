@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class IexQuoteResponse {
+class IexQuoteResponse {
     String symbol;
     BigDecimal latestPrice;
 }
