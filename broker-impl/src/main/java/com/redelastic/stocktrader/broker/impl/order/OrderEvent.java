@@ -1,4 +1,4 @@
-package com.redelastic.stocktrader.broker.impl;
+package com.redelastic.stocktrader.broker.impl.order;
 
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
@@ -6,13 +6,12 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import lombok.Value;
 
-interface OrderEvent extends Jsonable, AggregateEvent<OrderEvent> {
+public interface OrderEvent extends Jsonable, AggregateEvent<OrderEvent> {
 
     Order getOrder();
-
-    default String getPortfolioId() { return getOrder().getPortfolioId(); }
 
 
     int NUM_SHARDS = 20; // TODO: Determine the appropriate value

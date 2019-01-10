@@ -1,8 +1,10 @@
-package com.redelastic.stocktrader.broker.impl;
+package com.redelastic.stocktrader.broker.impl.trade;
 
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
+import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
 import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,25 +26,27 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public CompletionStage<OrderResult> placeOrder(Order order) {
-        if (order.getConditions() instanceof OrderConditions.Market) {
+        if (order.getDetails().getConditions() instanceof OrderConditions.Market) {
             return completeMarketOrder(order);
         } else {
-            log.error(String.format("Unhandled order placed: %s", order.getConditions()));
+            log.error(String.format("Unhandled order placed: %s",
+                    order.getDetails().getConditions()));
             throw new UnsupportedOperationException();
         }
     }
 
     private CompletionStage<OrderResult> completeMarketOrder(Order order) {
         return priceOrder(order).thenApply(price -> {
+            OrderDetails details = order.getDetails();
             Trade trade = Trade.builder()
-                    .orderType(order.getOrderType())
-                    .symbol(order.getSymbol())
-                    .shares(order.getShares())
+                    .orderType(details.getOrderType())
+                    .symbol(details.getSymbol())
+                    .shares(details.getShares())
                     .price(price)
                     .build();
             return OrderResult.OrderCompleted.builder()
                     .orderId(order.getOrderId())
-                    .portfolioId(order.getPortfolioId())
+                    .portfolioId(details.getPortfolioId())
                     .trade(trade)
                     .build();
         });
@@ -50,8 +54,8 @@ public class TradeServiceImpl implements TradeService {
 
     private CompletionStage<BigDecimal> priceOrder(Order order) {
         return quoteService
-                .getQuote(order.getSymbol())
+                .getQuote(order.getDetails().getSymbol())
                 .thenApply(quote ->
-                    quote.getSharePrice().multiply(BigDecimal.valueOf(order.getShares())));
+                    quote.getSharePrice().multiply(BigDecimal.valueOf(order.getDetails().getShares())));
     }
 }

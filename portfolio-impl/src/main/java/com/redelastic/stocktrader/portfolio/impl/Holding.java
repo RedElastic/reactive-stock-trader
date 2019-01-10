@@ -4,7 +4,7 @@ import lombok.Value;
 
 
 @Value
-public class Holding {
+class Holding {
     String symbol;
 
     int shareCount;

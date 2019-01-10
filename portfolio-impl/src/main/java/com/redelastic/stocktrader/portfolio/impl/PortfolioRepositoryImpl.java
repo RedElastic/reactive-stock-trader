@@ -48,7 +48,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      */
     // TODO: Implement retry logic. Theoretically the chance of a collision is astronomically low *given* everything else works.
     @Override
-    public CompletionStage<String> open(NewPortfolioRequest request) {
+    public CompletionStage<String> open(OpenPortforlioRequest request) {
         UUID uuid = UUID.randomUUID();
         String portfolioId = uuid.toString();
         PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, portfolioId);

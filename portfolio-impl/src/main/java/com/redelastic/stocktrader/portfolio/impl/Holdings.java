@@ -12,11 +12,11 @@ import static java.util.stream.Collectors.toList;
 // TODO: preserve stable ordering? Maybe, or just order by symbol.
 
 @Value
-public class Holdings {
+class Holdings {
 
     PMap<String, Integer> holdings;
 
-    public Holdings add(String symbol, int newShares) {
+    Holdings add(String symbol, int newShares) {
         int currentShares = 0;
         if (holdings.containsKey(symbol)) {
             currentShares = holdings.get(symbol);
@@ -24,34 +24,36 @@ public class Holdings {
         return new Holdings(holdings.plus(symbol, currentShares + newShares));
     }
 
-    public Holdings remove(String symbol, int sharesToRemove) {
-        // TODO: check sharesToRemove is positive
-        int currentShares = 0;
+    static Holdings EMPTY = new Holdings(HashTreePMap.empty());
+
+    Holdings remove(String symbol, int sharesToRemove) {
+        if (sharesToRemove <= 0) {
+            throw new IllegalArgumentException("Number of shares to remove from Holdings must be positive.");
+        }
         if (holdings.containsKey(symbol)) {
-            currentShares = holdings.get(symbol);
+            int currentShares = holdings.get(symbol);
             int remainingShares = currentShares - sharesToRemove;
             if (remainingShares > 0) {
                 return new Holdings(holdings.plus(symbol, remainingShares));
             } else if (remainingShares == 0) {
                 return new Holdings(holdings.minus(symbol));
             } else {
-                throw new IllegalStateException(); // FIXME
+                throw new IllegalStateException("Attempt to remove more shares from Holdings than are currently available.");
             }
         } else {
-            throw new IllegalStateException(); // FIXME
+            throw new IllegalStateException(
+                    String.format("Attempt to remove shares for symbol %s not contained in Holdings.", symbol));
         }
     }
 
-    public static Holdings EMPTY = new Holdings(HashTreePMap.empty());
-
-    public PSequence<Holding> asSequence() {
+    PSequence<Holding> asSequence() {
          return ConsPStack.from(
                  holdings.keySet().stream()
                 .map(symbol -> new Holding(symbol, holdings.get(symbol)))
                 .collect(toList()));
     }
 
-    public int getShareCount(String symbol) {
+    int getShareCount(String symbol) {
         return holdings.getOrDefault(symbol, 0);
     }
 }

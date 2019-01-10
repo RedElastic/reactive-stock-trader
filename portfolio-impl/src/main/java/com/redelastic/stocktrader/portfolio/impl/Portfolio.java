@@ -20,7 +20,7 @@ import static java.util.stream.Collectors.toList;
 
 /* Facade for a Portfolio. Wraps up all the logic surrounding an individual PortfolioEntity.
  */
-public class Portfolio {
+class Portfolio {
 
     private final PersistentEntityRef<PortfolioCommand> portfolioEntity;
     private final BrokerService brokerService;
@@ -34,7 +34,7 @@ public class Portfolio {
         this.portfolioId = portfolioId;
     }
 
-    public CompletionStage<PortfolioView> view() {
+    CompletionStage<PortfolioView> view() {
         return portfolioEntity
                 .ask(PortfolioCommand.GetState.INSTANCE)
                 .thenCompose(portfolio ->
@@ -74,11 +74,11 @@ public class Portfolio {
                 ).thenApply(ConsPStack::from);
     }
 
-    public CompletionStage<Done> placeOrder(Order order) {
+    CompletionStage<Done> placeOrder(Order order) {
         return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(order));
     }
 
-    public CompletionStage<Done> processTrade(Trade trade) {
+    CompletionStage<Done> processTrade(Trade trade) {
         return portfolioEntity.ask(new PortfolioCommand.CompleteTrade(trade));
     }
 }

@@ -1,8 +1,6 @@
 package com.redelastic.stocktrader.broker.impl.quote;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.redelastic.stocktrader.broker.api.Quote;
-import com.redelastic.stocktrader.broker.impl.QuoteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;

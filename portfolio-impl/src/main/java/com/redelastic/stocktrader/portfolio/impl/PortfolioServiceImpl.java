@@ -10,6 +10,7 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<NewPortfolioRequest, String> openPortfolio() { return portfolioRepository::open; }
+    public ServiceCall<OpenPortforlioRequest, String> openPortfolio() {
+        return portfolioRepository::open;
+    }
 
     @Override
     public ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId) {
@@ -58,12 +61,12 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<Order, Done> placeOrder(String portfolioId) {
-        return order -> {
+    public ServiceCall<OrderDetails, Done> placeOrder(String portfolioId) {
+        return orderDetails -> {
             String orderId = UUID.randomUUID().toString();
             return portfolioRepository
                     .get(portfolioId)
-                    .placeOrder(order.withOrderId(orderId));
+                    .placeOrder(new Order(orderId, orderDetails));
         };
     }
 
@@ -79,17 +82,17 @@ public class PortfolioServiceImpl implements PortfolioService {
      * being processed, so we've used the asynchronous topic based approach here.
      * @return
      */
-    private ServiceCall<Order, Done> placeOrderSync(String portfolioId) {
-        return order -> {
+    private ServiceCall<OrderDetails, Done> placeOrderSync(String portfolioId) {
+        return orderDetails -> {
             String orderId = UUID.randomUUID().toString();
             // We'll wait for the broker to acknowledge the order before completing since we won't
             // be able to recover (resubmit the order) if the broker is not available.
-            Order orderWithId = order.withOrderId(orderId);
+            Order order = new Order(orderId, orderDetails);
             return portfolioRepository
                     .get(portfolioId)
-                    .placeOrder(orderWithId)
+                    .placeOrder(order)
                     .thenCompose(done ->
-                            brokerService.placeOrder().invoke(orderWithId));
+                            brokerService.placeOrder().invoke(order));
         };
     }
 

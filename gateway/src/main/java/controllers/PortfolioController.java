@@ -2,8 +2,8 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redelastic.stocktrader.order.OrderConditions;
+import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
-import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +22,14 @@ public class PortfolioController extends Controller {
     private final PortfolioService portfolioService;
 
     private final Form<PlaceOrderForm> placeOrderForm;
+    private final Form<OpenPortforlioRequest> openPortfolioForm;
 
     @Inject
     public PortfolioController(PortfolioService portfolioService,
                                FormFactory formFactory) {
         this.portfolioService = portfolioService;
         this.placeOrderForm = formFactory.form(PlaceOrderForm.class);
+        this.openPortfolioForm = formFactory.form(OpenPortforlioRequest.class);
     }
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
@@ -38,10 +40,8 @@ public class PortfolioController extends Controller {
             .thenApply(Results::ok);
     }
 
-    @BodyParser.Of(BodyParser.Json.class)
     public CompletionStage<Result> openPortfolio() {
-        JsonNode json = request().body().asJson();
-        NewPortfolioRequest openRequest = Json.fromJson(json, NewPortfolioRequest.class);
+        OpenPortforlioRequest openRequest = openPortfolioForm.bindFromRequest().get(); // TODO handle errors
         return portfolioService
                 .openPortfolio()
                 .invoke(openRequest)
@@ -49,16 +49,15 @@ public class PortfolioController extends Controller {
     }
 
     public CompletionStage<Result> placeOrder(String portfolioId) {
-        PlaceOrderForm orderForm = placeOrderForm.bindFromRequest().get();
+        PlaceOrderForm orderForm = placeOrderForm.bindFromRequest().get(); // TODO handle errors
 
-        Order order = Order.builder()
+        OrderDetails order = OrderDetails.builder()
                 .orderType(OrderType.BUY)
                 .symbol(orderForm.getSymbol())
                 .shares(orderForm.getShares())
                 .conditions(OrderConditions.Market.INSTANCE)
                 .portfolioId(portfolioId)
                 .build();
-        log.warn(order.toString());
         return portfolioService
                 .placeOrder(portfolioId)
                 .invoke(order)

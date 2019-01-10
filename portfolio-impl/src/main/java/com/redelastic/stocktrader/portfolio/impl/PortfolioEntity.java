@@ -4,6 +4,7 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.GetState;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
@@ -36,7 +37,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
 
     private void rejectOpen(BehaviorBuilder builder) {
         builder.setCommandHandler(Open.class, (setup, ctx) -> {
-            ctx.commandFailed(new PortfolioAlreadyInitialized(entityId()));
+            ctx.commandFailed(new PortfolioAlreadyOpened(entityId()));
             return ctx.done();
         });
     }
@@ -53,7 +54,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
                                     (e) -> ctx.reply(Done.getInstance()))
                 );
         builder.setEventHandlerChangingBehavior(PortfolioEvent.Opened.class, evt -> {
-            log.warn("Opened");
+            log.warn(String.format("Opened %s, named %s", entityId(), evt.getName()));
             PortfolioState.Open state = PortfolioState.Open.builder()
                     .funds(new BigDecimal("0"))
                     .name(evt.getName())
@@ -76,6 +77,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         handleFundEvents(builder);
         handleShareEvents(builder);
         handleGetState(builder);
+        handleLiquidate(builder);
         return builder.build();
     }
 
@@ -134,18 +136,19 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         builder.setCommandHandler(PortfolioCommand.PlaceOrder.class, (placeOrder, ctx) -> {
             log.warn(String.format("Placing order %s", placeOrder.getOrder().toString()));
             Order order = placeOrder.getOrder();
+            OrderDetails orderDetails = placeOrder.getOrder().getDetails();
             PortfolioState.Open state = (PortfolioState.Open)state();
-            switch(order.getOrderType()) {
+            switch(orderDetails.getOrderType()) {
                 case SELL:
-                    int available = state.getHoldings().getShareCount(order.getSymbol());
-                    if (available >= order.getShares()) {
+                    int available = state.getHoldings().getShareCount(orderDetails.getSymbol());
+                    if (available >= orderDetails.getShares()) {
                         return ctx.thenPersist(new PortfolioEvent.OrderPlaced(entityId(), order),
                                 evt -> ctx.reply(Done.getInstance()));
                     } else {
                         ctx.commandFailed(new InsufficientShares(
                                 String.format("Insufficient shares of %s for sell, %d required, %d held.",
-                                        order.getSymbol(),
-                                        order.getShares(),
+                                        orderDetails.getSymbol(),
+                                        orderDetails.getShares(),
                                         available)));
                         return ctx.done();
                     }

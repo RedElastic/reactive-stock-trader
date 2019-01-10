@@ -1,4 +1,4 @@
-package com.redelastic.stocktrader.broker.impl;
+package com.redelastic.stocktrader.broker.impl.quote;
 
 import com.redelastic.stocktrader.broker.api.Quote;
 

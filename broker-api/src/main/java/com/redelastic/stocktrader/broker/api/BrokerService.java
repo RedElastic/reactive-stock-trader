@@ -9,15 +9,15 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import com.redelastic.stocktrader.order.Order;
 
-import static com.lightbend.lagom.javadsl.api.Service.restCall;
-import static com.lightbend.lagom.javadsl.api.Service.named;
-import static com.lightbend.lagom.javadsl.api.Service.topic;
+import java.util.Optional;
+
+import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BrokerService extends Service {
 
   ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
-  ServiceCall<NotUsed, OrderStatus> getOrderStatus(String orderId);
+  ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId);
 
   ServiceCall<Order, Done> placeOrder();
 
@@ -29,7 +29,7 @@ public interface BrokerService extends Service {
     // @formatter:off
     return named("broker").withCalls(
             restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
-        restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
+            restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
     ).withTopics(
             topic(ORDER_RESULTS_TOPIC_ID, this::orderResults)
     );
