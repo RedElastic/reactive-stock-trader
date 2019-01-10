@@ -42,6 +42,7 @@ class Portfolio {
                                 .thenApply(valuedHoldings ->
                                         PortfolioView.builder()
                                                 .portfolioId(portfolioId)
+                                                .name(portfolio.getName())
                                                 .funds(portfolio.getFunds())
                                                 .loyaltyLevel(portfolio.getLoyaltyLevel())
                                                 .holdings(valuedHoldings)

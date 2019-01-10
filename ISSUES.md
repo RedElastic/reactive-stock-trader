@@ -6,8 +6,6 @@
 
     - `autoAcl` with gateway does not namespace the methods with a service name   
     
-- Would like to have type alias for PortfolioId
-
 -  Better way to handle rendering of BigDecimal as money on API than setting
 
 - Clear conventions around path parameters versus request body? Seems reasonable to include entity ID as part of path. Is there a reason to favour between "/api/broker/buyStock/IBM?shares=10" vs. "/api/broker/buyStock" vs. "/api/broker/buyStock?symbol=IBM&shares=10"    

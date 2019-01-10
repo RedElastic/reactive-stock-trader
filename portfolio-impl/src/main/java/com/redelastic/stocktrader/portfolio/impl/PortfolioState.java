@@ -3,43 +3,73 @@ package com.redelastic.stocktrader.portfolio.impl;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
 import org.pcollections.PSequence;
 
 import java.math.BigDecimal;
 
+
+/**
+ * We'll encapsulate all the state transition logic here. Each state will provide an overloaded update method which
+ * will accept applicable PortfolioEvents.
+ */
 public interface PortfolioState extends Jsonable {
 
-    enum Uninitialized implements PortfolioState {
-        INSTANCE
+    @Value
+    class Uninitialized implements PortfolioState {
+        private Uninitialized() {}
+        public static Uninitialized INSTANCE = new Uninitialized();
+
+        Open update(PortfolioEvent.Opened evt) {
+            return PortfolioState.Open.builder()
+                    .funds(new BigDecimal("0"))
+                    .name(evt.getName())
+                    .holdings(Holdings.EMPTY)
+                    .loyaltyLevel(LoyaltyLevel.BRONZE)
+                    .build();
+        }
     }
 
     @Value
     @Builder
     @Wither
     final class Open implements PortfolioState {
-        BigDecimal funds;
-        String name;
-        LoyaltyLevel loyaltyLevel;
-        Holdings holdings;
+        @NonNull BigDecimal funds;
+        @NonNull String name;
+        @NonNull LoyaltyLevel loyaltyLevel;
+        @NonNull Holdings holdings;
 
-        public Open addShares(String symbol, int shares) {
-            return this.withHoldings(holdings.add(symbol, shares));
+        Open update(PortfolioEvent.FundsCredited evt) {
+            return this.withFunds(getFunds().add(evt.getAmount()));
         }
 
-        public Open removeShares(String symbol, int shares) {
-            return this.withHoldings(holdings.remove(symbol, shares));
+        Open update(PortfolioEvent.FundsDebited evt) {
+            return this.withFunds(getFunds().subtract(evt.getAmount()));
         }
+
+        Open update(PortfolioEvent.SharesCredited evt) {
+            return this.withHoldings(holdings.add(evt.getSymbol(), evt.getShares()));
+        }
+
+        Open update(PortfolioEvent.SharesDebited evt) {
+            return this.withHoldings(holdings.remove(evt.getSymbol(), evt.getShares()));
+        }
+
+        Open update(PortfolioEvent.OrderPlaced evt) {
+            return this; // TODO: Track outstanding orders?
+        }
+
     }
 
     @Value
     @Builder
     final class Liquidating implements PortfolioState {
-        BigDecimal funds;
-        String name;
-        LoyaltyLevel loyaltyLevel;
-        PSequence<Holding> holdings;
+        @NonNull BigDecimal funds;
+        @NonNull String name;
+        @NonNull LoyaltyLevel loyaltyLevel;
+        @NonNull PSequence<Holding> holdings;
     }
 
     enum Closed implements PortfolioState {
