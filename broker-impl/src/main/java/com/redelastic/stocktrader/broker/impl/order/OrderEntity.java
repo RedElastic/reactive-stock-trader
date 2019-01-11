@@ -39,10 +39,14 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         Behavior getBehavior();
     }
 
+    /**
+     * Base class for OrderBehavior covering pending and completed orders.
+     * @param <State> The type of state associated to this behavior.
+     */
     private abstract class OrderBehaviourBuilder<State> implements OrderBehaviorBuilder {
 
-        public String entityId() { return OrderEntity.this.entityId(); }
-        public Logger getLogger() { return OrderEntity.this.log; }
+        String entityId() { return OrderEntity.this.entityId(); }
+        Logger getLogger() { return OrderEntity.this.log; }
 
         abstract OrderDetails getOrderDetails();
         abstract OrderStatus getOrderStatus();
@@ -71,6 +75,10 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             }
         }
 
+        /**
+         * Concrete behavior builders should invoke this to add the common behavior implemented here.
+         * @param builder
+         */
         void setCommonBehavior(BehaviorBuilder builder) {
             builder.setReadOnlyCommandHandler(OrderCommand.GetStatus.class, this::getStatus);
             builder.setReadOnlyCommandHandler(OrderCommand.PlaceOrder.class, this::ignoreDuplicatePlacements);
@@ -130,8 +138,6 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
 
         public OrderDetails getOrderDetails() { return orderDetails; }
         public OrderStatus getOrderStatus() { return OrderStatus.Pending; }
-        public String entityId() { return OrderEntity.this.entityId(); }
-        public Logger getLogger() { return OrderEntity.this.log; }
 
         public OrderState.Fulfilled state() { return new OrderState.Fulfilled(orderDetails, this.price); }
 
