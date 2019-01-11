@@ -2,22 +2,20 @@ package com.redelastic.stocktrader.broker.impl;
 
 import akka.Done;
 import akka.NotUsed;
-import akka.japi.Pair;
 import akka.stream.javadsl.Flow;
-import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
-import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
-import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import com.redelastic.stocktrader.broker.api.*;
+import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.OrderResult;
+import com.redelastic.stocktrader.broker.api.OrderStatus;
+import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.impl.order.OrderEntity;
 import com.redelastic.stocktrader.broker.impl.order.OrderEvent;
-import com.redelastic.stocktrader.broker.impl.order.OrderRepositoryImpl;
+import com.redelastic.stocktrader.broker.impl.order.OrderRepository;
 import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
 import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +33,13 @@ public class BrokerServiceImpl implements BrokerService {
 
     private final Logger log = LoggerFactory.getLogger(BrokerServiceImpl.class);
     private final QuoteService quoteService;
-    private final OrderRepositoryImpl orderRepository;
+    private final OrderRepository orderRepository;
 
     @Inject
     public BrokerServiceImpl(PersistentEntityRegistry persistentEntities,
                              QuoteService quoteService,
                              PortfolioService portfolioService,
-                             OrderRepositoryImpl orderRepository) {
+                             OrderRepository orderRepository) {
         this.quoteService = quoteService;
         this.orderRepository = orderRepository;
         persistentEntities.register(OrderEntity.class);
@@ -66,9 +64,7 @@ public class BrokerServiceImpl implements BrokerService {
 
     @Override
     public ServiceCall<Order, Done> placeOrder() {
-        return order ->
-                orderRepository
-                    .placeOrder(order);
+        return orderRepository::placeOrder;
     }
 
     @Override
