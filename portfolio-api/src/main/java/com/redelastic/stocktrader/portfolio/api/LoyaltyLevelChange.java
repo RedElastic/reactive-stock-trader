@@ -1,12 +1,13 @@
 package com.redelastic.stocktrader.portfolio.api;
 
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 public class LoyaltyLevelChange {
-    String portfolioId;
+    @NonNull String portfolioId;
 
-    LoyaltyLevel oldLoyaltyLevel;
+    @NonNull LoyaltyLevel oldLoyaltyLevel;
 
-    LoyaltyLevel newLoyaltyLevel;
+    @NonNull LoyaltyLevel newLoyaltyLevel;
 }

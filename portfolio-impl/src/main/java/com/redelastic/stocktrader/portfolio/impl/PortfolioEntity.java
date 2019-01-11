@@ -43,14 +43,19 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
     private Behavior becomeUninitialized() {
         BehaviorBuilder builder = newBehaviorBuilder(PortfolioState.Uninitialized.INSTANCE);
         builder.setCommandHandler(Open.class,
-                (init, ctx) ->
-                        ctx.thenPersist(
+                (init, ctx) -> {
+                    PortfolioEvent.Opened event = PortfolioEvent.Opened.builder()
+                            .name(init.getName())
+                            .portfolioId(entityId())
+                            .build();
+                    log.warn(event.toString());
+                    return ctx.thenPersist(
                             PortfolioEvent.Opened.builder()
                                     .name(init.getName())
                                     .portfolioId(entityId())
                                     .build(),
-                                    (e) -> ctx.reply(Done.getInstance()))
-                );
+                            (e) -> ctx.reply(Done.getInstance()));
+                });
         builder.setEventHandlerChangingBehavior(PortfolioEvent.Opened.class, evt -> {
             log.warn(String.format("Opened %s, named %s", entityId(), evt.getName()));
             PortfolioState.Open state = PortfolioState.Uninitialized.INSTANCE.update(evt);

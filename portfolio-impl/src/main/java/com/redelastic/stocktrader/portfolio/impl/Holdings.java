@@ -1,5 +1,6 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import lombok.NonNull;
 import lombok.Value;
 import org.pcollections.ConsPStack;
 import org.pcollections.HashTreePMap;
@@ -14,7 +15,9 @@ import static java.util.stream.Collectors.toList;
 @Value
 class Holdings {
 
-    PMap<String, Integer> holdings;
+    @NonNull PMap<String, Integer> holdings;
+
+    static Holdings EMPTY = new Holdings(HashTreePMap.empty());
 
     Holdings add(String symbol, int newShares) {
         int currentShares = 0;
@@ -23,8 +26,6 @@ class Holdings {
         }
         return new Holdings(holdings.plus(symbol, currentShares + newShares));
     }
-
-    static Holdings EMPTY = new Holdings(HashTreePMap.empty());
 
     Holdings remove(String symbol, int sharesToRemove) {
         if (sharesToRemove <= 0) {

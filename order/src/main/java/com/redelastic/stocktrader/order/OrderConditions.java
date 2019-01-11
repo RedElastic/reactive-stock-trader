@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.order;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -21,6 +22,6 @@ public interface OrderConditions {
 
     @Value
     class Limit implements OrderConditions {
-        BigDecimal price;
+        @NonNull BigDecimal price;
     }
 }

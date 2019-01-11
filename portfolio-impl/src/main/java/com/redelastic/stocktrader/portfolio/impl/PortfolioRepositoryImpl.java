@@ -89,18 +89,19 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     }
 
     public Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
-        return persistentEntities.eventStream(tag, offset).filter(eventOffset ->
-                eventOffset.first() instanceof PortfolioEvent.OrderPlaced
-        ).mapAsync(1, eventOffset -> {
-                PortfolioEvent.OrderPlaced order = (PortfolioEvent.OrderPlaced)eventOffset.first();
-                log.warn(String.format("Publishing order %s", order.getOrder().getOrderId()));
-                log.warn(order.toString());
-                return CompletableFuture.completedFuture(Pair.create(
-                        order.getOrder(),
-                        eventOffset.second()
-                ));
+        return persistentEntities.eventStream(tag, offset)
+            .filter(eventOffset ->
+                    eventOffset.first() instanceof PortfolioEvent.OrderPlaced
+            ).mapAsync(1, eventOffset -> {
+                    PortfolioEvent.OrderPlaced order = (PortfolioEvent.OrderPlaced)eventOffset.first();
+                    log.warn(String.format("Publishing order %s", order.getOrder().getOrderId()));
+                    log.warn(order.toString());
+                    return CompletableFuture.completedFuture(Pair.create(
+                            order.getOrder(),
+                            eventOffset.second()
+                    ));
 
-        });
+            });
     }
 
 }

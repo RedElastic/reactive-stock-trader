@@ -12,7 +12,8 @@ lazy val root = (project in file("."))
     portfolioImpl,
     brokerApi,
     brokerImpl,
-    wireTransferApi
+    wireTransferApi,
+    bff
     //wireTransferImpl
   )
   .settings(commonSettings)
@@ -99,7 +100,7 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
 
   )
 */
-lazy val gateway = (project in file("gateway"))
+lazy val bff = (project in file("bff"))
   .settings(commonSettings)
   .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)
   .disablePlugins(PlayLayoutPlugin)

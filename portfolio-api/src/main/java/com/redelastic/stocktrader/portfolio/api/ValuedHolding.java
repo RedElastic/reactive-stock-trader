@@ -1,14 +1,15 @@
 package com.redelastic.stocktrader.portfolio.api;
 
+import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
 
 @Value
 public class ValuedHolding {
-    String symbol;
+    @NonNull String symbol;
 
     int shareCount;
 
-    BigDecimal marketValue;
+    @NonNull BigDecimal marketValue;
 }

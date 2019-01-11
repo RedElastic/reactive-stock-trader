@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.broker.api;
 
 import com.redelastic.stocktrader.order.OrderType;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -9,8 +10,8 @@ import java.math.BigDecimal;
 @Value
 @Builder
 public class Trade {
-    String symbol;
+    @NonNull String symbol;
     int shares;
-    OrderType orderType;
-    BigDecimal price;
+    @NonNull OrderType orderType;
+    @NonNull BigDecimal price;
 }

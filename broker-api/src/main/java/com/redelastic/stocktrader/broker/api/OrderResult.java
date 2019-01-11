@@ -3,6 +3,7 @@ package com.redelastic.stocktrader.broker.api;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
@@ -18,14 +19,14 @@ public interface OrderResult {
     @Value
     @Builder
     class OrderCompleted implements OrderResult {
-        String portfolioId;
-        String orderId;
-        Trade trade;
+        @NonNull String portfolioId;
+        @NonNull String orderId;
+        @NonNull Trade trade;
     }
 
     @Value
     class OrderFailed implements OrderResult {
-        String portfolioId;
-        String orderId;
+        @NonNull String portfolioId;
+        @NonNull String orderId;
     }
 }

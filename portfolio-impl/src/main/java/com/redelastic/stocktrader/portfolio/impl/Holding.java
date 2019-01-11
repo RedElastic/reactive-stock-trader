@@ -1,11 +1,12 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import lombok.NonNull;
 import lombok.Value;
 
 
 @Value
 class Holding {
-    String symbol;
+    @NonNull String symbol;
 
     int shareCount;
 }

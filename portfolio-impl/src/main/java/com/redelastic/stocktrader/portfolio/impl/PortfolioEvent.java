@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.order.Order;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
@@ -32,53 +33,55 @@ public interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent>
     @Value
     @Builder
     class Opened implements PortfolioEvent {
-        String portfolioId;
-        String linkedAccount;
-        String name;
+        @NonNull String portfolioId;
+        String name; /* FIXME: Would like this to be @NonNull, but I have some events with nulls
+                      * in my journal. Tried to fix it with JsonMigrations, but these seem to be broken (or don't apply to event streams?)
+                      * and don't work in dev mode (but seem to work with `sbt runAll`).
+                      */
     }
 
     @Value
     class LiquidationStarted implements PortfolioEvent {
-        String portfolioId;
+        @NonNull String portfolioId;
     }
 
     @Value
     class Closed implements PortfolioEvent {
-        String portfolioId;
+        @NonNull String portfolioId;
     }
 
     @Value
     @Builder
     class SharesCredited implements PortfolioEvent {
-        String portfolioId;
-        String symbol;
+        @NonNull String portfolioId;
+        @NonNull String symbol;
         int shares;
     }
 
     @Value
     class SharesDebited implements PortfolioEvent {
-        String portfolioId;
-        String symbol;
+        @NonNull String portfolioId;
+        @NonNull String symbol;
         int shares;
     }
 
     @Value
     class FundsDebited implements PortfolioEvent {
-        String portfolioId;
-        BigDecimal amount;
+        @NonNull String portfolioId;
+        @NonNull BigDecimal amount;
     }
 
     @Value
     class FundsCredited implements PortfolioEvent {
-        String portfolioId;
-        BigDecimal amount;
+        @NonNull String portfolioId;
+        @NonNull BigDecimal amount;
     }
 
 
     @Value
     class OrderPlaced implements PortfolioEvent {
-        String portfolioId;
-        Order order;
+        @NonNull String portfolioId;
+        @NonNull Order order;
     }
 
 }

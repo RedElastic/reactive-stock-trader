@@ -19,6 +19,8 @@ import java.util.concurrent.CompletionStage;
 import static java.util.stream.Collectors.toList;
 
 /* Facade for a Portfolio. Wraps up all the logic surrounding an individual PortfolioEntity.
+ * The PersistentEntity class itself can get large, so this wrapper can hold some of the logic around interactions with
+ * the entity.
  */
 class Portfolio {
 
