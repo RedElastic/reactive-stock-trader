@@ -250,7 +250,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             return builder.build();
         }
 
-        private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Done> ctx) {
+        private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Order> ctx) {
             Order order = new Order(entityId(), cmd.getOrderDetails());
             return ctx.thenPersist(
                     new OrderEvent.ProcessingOrder(order),
