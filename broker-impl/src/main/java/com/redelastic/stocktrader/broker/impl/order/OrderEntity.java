@@ -3,7 +3,6 @@ package com.redelastic.stocktrader.broker.impl.order;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderDetails;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
                 .flatMap(Function.identity())
                 .map(orderState -> {
                     if (orderState instanceof OrderState.Pending) {
-                        return new PendingBehaviorBuilder((OrderState.Pending)orderState).getBehavior();
+                        return new PendingBehaviorBuilder((OrderState.Pending) orderState).getBehavior();
                     } else if (orderState instanceof OrderState.Fulfilled) {
                         return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
                     } else if (orderState instanceof OrderState.Failed) {
@@ -40,23 +39,23 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
     }
 
     /**
-     * Base class for OrderBehavior covering pending and completed orders.
+     * Base class for OrderBehavior covering pending and completed orders. Not this is not completely type safe, it is
+     * possible to set an event handler that produces a state that doesn't correspond to the current behaviour.
      * @param <State> The type of state associated to this behavior.
      */
-    private abstract class OrderBehaviourBuilder<State> implements OrderBehaviorBuilder {
+    private abstract class OrderBehaviourBuilder<State extends OrderState> implements OrderBehaviorBuilder {
 
         String entityId() { return OrderEntity.this.entityId(); }
         Logger getLogger() { return OrderEntity.this.log; }
 
-        abstract OrderDetails getOrderDetails();
-        abstract OrderStatus getOrderStatus();
-
-        abstract State state(); // shadow parent's state method to provide a more specific one for this behaviour.
+        OrderDetails getOrderDetails() { return state().getOrderDetails(); }
 
         Order getOrder() { return new Order(entityId(), getOrderDetails()); }
 
+        State state() { return (State)OrderEntity.this.state().get(); }
+
         void getStatus(OrderCommand.GetStatus cmd, ReadOnlyCommandContext ctx) {
-            ctx.reply(Optional.of(getOrderStatus()));
+            ctx.reply(Optional.of(state().getStatus()));
         }
 
         void ignoreDuplicatePlacements(OrderCommand.PlaceOrder cmd, ReadOnlyCommandContext<Order> ctx) {
@@ -87,19 +86,20 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
 
 
     private class PendingBehaviorBuilder extends OrderBehaviourBuilder<OrderState.Pending> {
-        private final OrderDetails orderDetails;
 
-        public OrderDetails getOrderDetails() { return orderDetails; }
-        public OrderStatus getOrderStatus() { return OrderStatus.Pending; }
-
-        public OrderState.Pending state() { return new OrderState.Pending(orderDetails); };
-
-        PendingBehaviorBuilder(OrderDetails orderDetails) {
-            this.orderDetails = orderDetails;
-        }
+        private final Behavior behavior;
 
         PendingBehaviorBuilder(OrderState.Pending state) {
-            this(state.getOrderDetails());
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state));
+            setCommonBehavior(builder);
+
+            builder.setCommandHandler(OrderCommand.Complete.class, this::complete);
+            builder.setEventHandlerChangingBehavior(OrderEvent.OrderFulfilled.class, this::fulfilled);
+            this.behavior = builder.build();
+        }
+
+        PendingBehaviorBuilder(OrderDetails orderDetails) {
+            this(new OrderState.Pending(orderDetails));
         }
 
         private Persist complete(OrderCommand.Complete cmd, CommandContext<Done> ctx) {
@@ -116,55 +116,48 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         private Behavior fulfilled(OrderEvent.OrderFulfilled evt) {
-            return new FulfilledOrderBehaviorBuilder(orderDetails, evt.getTrade().getPrice()).getBehavior();
+            return new FulfilledOrderBehaviorBuilder(state().getOrderDetails(), evt.getTrade().getPrice()).getBehavior();
         }
 
         public Behavior getBehavior() {
-            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(new OrderState.Pending(this.orderDetails)));
-            setCommonBehavior(builder);
-
-            builder.setCommandHandler(OrderCommand.Complete.class, this::complete);
-            builder.setEventHandlerChangingBehavior(OrderEvent.OrderFulfilled.class, this::fulfilled);
-
-            return builder.build();
+            return behavior;
         }
 
     }
 
     private class FulfilledOrderBehaviorBuilder extends OrderBehaviourBuilder<OrderState.Fulfilled> {
-        private final OrderDetails orderDetails;
 
-        private final BigDecimal price;
-
-        public OrderDetails getOrderDetails() { return orderDetails; }
-        public OrderStatus getOrderStatus() { return OrderStatus.Pending; }
-
-        public OrderState.Fulfilled state() { return new OrderState.Fulfilled(orderDetails, this.price); }
-
-        FulfilledOrderBehaviorBuilder(OrderDetails orderDetails, BigDecimal price) {
-            this.orderDetails = orderDetails;
-            this.price = price;
-        }
+        private final Behavior behavior;
 
         FulfilledOrderBehaviorBuilder(OrderState.Fulfilled state) {
-            this(state.getOrderDetails(), state.getPrice());
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state));
+            setCommonBehavior(builder);
+
+            this.behavior = builder.build();
+        }
+
+        FulfilledOrderBehaviorBuilder(OrderDetails orderDetails, BigDecimal price) {
+            this(new OrderState.Fulfilled(orderDetails, price));
         }
 
         public Behavior getBehavior() {
-            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(new OrderState.Fulfilled(orderDetails, this.price)));
-            setCommonBehavior(builder);
 
-            return builder.build();
+            return this.behavior;
         }
     }
 
     private class UninitializedBehaviorBuilder implements OrderBehaviorBuilder {
-        public Behavior getBehavior() {
+        private final Behavior behavior;
+
+        UninitializedBehaviorBuilder() {
             BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
             builder.setCommandHandler(OrderCommand.PlaceOrder.class, this::placeOrder);
-
             builder.setEventHandlerChangingBehavior(OrderEvent.ProcessingOrder.class, this::processing);
-            return builder.build();
+            this.behavior = builder.build();
+        }
+
+        public Behavior getBehavior() {
+            return behavior;
         }
 
         private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Order> ctx) {
