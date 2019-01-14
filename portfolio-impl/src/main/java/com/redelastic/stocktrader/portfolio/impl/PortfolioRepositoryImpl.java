@@ -44,7 +44,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      * circumstance that the ID is already in use we'll get an exception when we send the initialize command, we should
      * retry with a new UUID.
      * @param request
-     * @return
+     * @return The Portfolio ID assigned.
      */
     // TODO: Implement retry logic. Theoretically the chance of a collision is astronomically low *given* everything else works.
     @Override
@@ -77,10 +77,6 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                             .map(response -> response.toCompletableFuture().join())
                         .collect(toList())
                 ).thenApply(ConsPStack::from);
-    }
-
-    public PersistentEntityRef<PortfolioCommand> getRef(String portfolioId) {
-        return persistentEntities.refFor(PortfolioEntity.class, portfolioId);
     }
 
     @Override

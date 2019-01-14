@@ -66,7 +66,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             String orderId = UUID.randomUUID().toString();
             return portfolioRepository
                     .get(portfolioId)
-                    .placeOrder(new Order(orderId, orderDetails));
+                    .placeOrder(Order.builder().orderId(orderId).details(orderDetails).build());
         };
     }
 
@@ -87,7 +87,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             String orderId = UUID.randomUUID().toString();
             // We'll wait for the broker to acknowledge the order before completing since we won't
             // be able to recover (resubmit the order) if the broker is not available.
-            Order order = new Order(orderId, orderDetails);
+            Order order = Order.builder().orderId(orderId).details(orderDetails).build();
             return portfolioRepository
                     .get(portfolioId)
                     .placeOrder(order)
