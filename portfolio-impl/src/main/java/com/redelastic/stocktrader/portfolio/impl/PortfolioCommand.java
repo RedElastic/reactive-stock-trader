@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 public interface PortfolioCommand extends Jsonable {
 
     @Value
@@ -34,6 +36,19 @@ public interface PortfolioCommand extends Jsonable {
     @Builder
     class CompleteTrade implements PortfolioCommand, ReplyType<Done> {
         @NonNull Trade trade;
+    }
+
+    @Value
+    @Builder
+    class ReceiveFunds implements PortfolioCommand, ReplyType<Done> {
+        BigDecimal amount;
+    }
+
+    @Value
+    @Builder
+    class SendFunds implements PortfolioCommand, ReplyType<Done> {
+        BigDecimal amount;
+        String recipientAccountId;
     }
 
 }

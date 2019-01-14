@@ -129,7 +129,8 @@ val lagomApiDependencies = Seq(
 
 def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8"),
-  javacOptions in(Compile, compile) ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-parameters")
+  javacOptions in (Compile, compile) ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-parameters"),
+  libraryDependencies += "org.hamcrest" % "hamcrest-all" % "1.3" % "test"
 )
 
 lagomCassandraCleanOnStart in ThisBuild := false

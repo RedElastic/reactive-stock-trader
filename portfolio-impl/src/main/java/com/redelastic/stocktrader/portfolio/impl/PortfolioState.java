@@ -69,7 +69,7 @@ public interface PortfolioState extends Jsonable {
         @NonNull BigDecimal funds;
         @NonNull String name;
         @NonNull LoyaltyLevel loyaltyLevel;
-        @NonNull PSequence<Holding> holdings;
+        @NonNull Holdings holdings;
     }
 
     enum Closed implements PortfolioState {

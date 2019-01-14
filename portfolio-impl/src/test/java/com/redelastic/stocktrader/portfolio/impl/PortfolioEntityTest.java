@@ -14,6 +14,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.junit.Assert.assertThat;
 
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.*;
@@ -81,31 +82,30 @@ public class PortfolioEntityTest {
     public void moneyTransfers() {
         String portfolioId = "portfolioId";
         String pName = "portfolioName";
-        String symbol = "IBM";
-        String orderId = "orderId";
-        int shareCount = 3;
-
-        OrderDetails orderDetails = OrderDetails.builder()
-                .portfolioId(portfolioId)
-                .symbol(symbol)
-                .shares(shareCount)
-                .orderType(OrderType.BUY)
-                .conditions(OrderConditions.Market.INSTANCE)
-                .build();
-
-        Order order = Order.builder()
-                .orderId(orderId)
-                .details(orderDetails)
-                .build();
-
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,PortfolioState> driver = openPortfolioEntity(portfolioId, pName);
 
+        BigDecimal amount = new BigDecimal("123.45");
+        BigDecimal difference = BigDecimal.valueOf(1);
+
+        PortfolioCommand.ReceiveFunds transferIn = PortfolioCommand.ReceiveFunds.builder()
+                .amount(amount)
+                .build();
+
+        PortfolioCommand.SendFunds transferOut = PortfolioCommand.SendFunds.builder()
+                .amount(amount.subtract(difference))
+                .build();
+
         PersistentEntityTestDriver.Outcome<PortfolioEvent,PortfolioState> outcome = driver.run(
-                new PortfolioCommand.PlaceOrder(order)
+                transferIn,
+                transferOut
         );
         assertThat(outcome.state(), instanceOf(PortfolioState.Open.class));
         assertTrue(outcome.events().contains(
-                new PortfolioEvent.OrderPlaced(portfolioId, order)));
+                new PortfolioEvent.FundsCredited(portfolioId, amount)));
+        assertTrue(outcome.events().contains(
+                new PortfolioEvent.FundsDebited(portfolioId, amount.subtract(difference))));
+        assertThat(difference, comparesEqualTo(((PortfolioState.Open)outcome.state()).getFunds()));
+
     }
 
     @Test

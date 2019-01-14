@@ -8,6 +8,7 @@ import com.redelastic.stocktrader.order.OrderDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -21,91 +22,155 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
                 .flatMap(Function.identity())
                 .map(orderState -> {
                     if (orderState instanceof OrderState.Pending) {
-                        return pendingOrderBehavior(((OrderState.Pending) orderState).getOrderDetails());
+                        return new PendingBehaviorBuilder((OrderState.Pending) orderState).getBehavior();
+                    } else if (orderState instanceof OrderState.Fulfilled) {
+                        return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
+                    } else if (orderState instanceof OrderState.Failed) {
+                        throw new IllegalStateException(); // FIXME: implement this behavior
                     } else {
                         throw new IllegalStateException();
                     }
-                }).orElse(uninitializedBehaviour());
+                }).orElse(new UninitializedBehaviorBuilder().getBehavior());
     }
 
-    private Behavior uninitializedBehaviour() {
-        BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
-        builder.setCommandHandler(OrderCommand.PlaceOrder.class, (cmd,ctx) -> {
-            Order order = new Order(entityId(), cmd.getOrderDetails());
-            return ctx.thenPersist(
-                    new OrderEvent.ProcessingOrder(order),
-                    evt -> ctx.reply(order));
-        });
-        builder.setEventHandlerChangingBehavior(OrderEvent.ProcessingOrder.class,
-                evt -> pendingOrderBehavior(evt.getOrder().getDetails()));
-        return builder.build();
+
+    private interface OrderBehaviorBuilder {
+        Behavior getBehavior();
     }
 
-    private Behavior pendingOrderBehavior(OrderDetails orderDetails) {
-        BehaviorBuilder builder = newBehaviorBuilder(
-                Optional.of(new OrderState.Pending(orderDetails)));
-
-        builder.setCommandHandler(OrderCommand.Complete.class, (cmd, ctx) -> {
-
-            if (cmd.getOrderResult() instanceof OrderResult.OrderCompleted) {
-                OrderResult.OrderCompleted orderCompleted = (OrderResult.OrderCompleted)cmd.getOrderResult();
-                return ctx.thenPersist(new OrderEvent.OrderFulfilled(order(), orderCompleted.getTrade()),
-                        evt -> ctx.reply(Done.getInstance()));
-            } else if (cmd.getOrderResult() instanceof OrderResult.OrderFailed) {
-                return ctx.thenPersist(new OrderEvent.OrderFailed(order()),
-                        evt -> ctx.reply(Done.getInstance()));
-            } else {
-                throw new IllegalStateException();
-            }
-        });
-        builder.setEventHandlerChangingBehavior(OrderEvent.OrderFulfilled.class,
-                evt -> completedOrderBehavior(
-                        new OrderState.Fulfilled(state().get().getOrderDetails(), evt.getTrade().getPrice())));
-        handleGetStatus(builder);
-        ignoreRepeats(builder);
-        return builder.build();
-    }
-
-    private Behavior completedOrderBehavior(OrderState orderState) {
-        BehaviorBuilder builder = newBehaviorBuilder(Optional.of(orderState));
-        handleGetStatus(builder);
-        ignoreRepeats(builder);
-        return builder.build();
-    }
-
-    private void handleGetStatus(BehaviorBuilder builder) {
-        builder.setReadOnlyCommandHandler(OrderCommand.GetStatus.class, (cmd,ctx) -> {
-            if (!state().isPresent()) {
-                ctx.reply(Optional.empty());
-            } else {
-                ctx.reply(Optional.of(state().get().getStatus()));
-            }
-        });
-    }
-
-    /* Ignore duplicate submissions of an order, provided the details are the same. Duplicates can happen due to
-     * at-least-once handling of the order placement process.
+    /**
+     * Base class for OrderBehavior covering pending and completed orders. Not this is not completely type safe, it is
+     * possible to set an event handler that produces a state that doesn't correspond to the current behaviour.
+     * @param <State> The type of state associated to this behavior.
      */
-    private void ignoreRepeats(BehaviorBuilder builder) {
-        builder.setReadOnlyCommandHandler(OrderCommand.PlaceOrder.class, (cmd, ctx) -> {
+    private abstract class OrderBehaviourBuilder<State extends OrderState> implements OrderBehaviorBuilder {
+
+        String entityId() { return OrderEntity.this.entityId(); }
+        Logger getLogger() { return OrderEntity.this.log; }
+
+        OrderDetails getOrderDetails() { return state().getOrderDetails(); }
+
+        Order getOrder() { return new Order(entityId(), getOrderDetails()); }
+
+        State state() { return (State)OrderEntity.this.state().get(); }
+
+        void getStatus(OrderCommand.GetStatus cmd, ReadOnlyCommandContext ctx) {
+            ctx.reply(Optional.of(state().getStatus()));
+        }
+
+        void ignoreDuplicatePlacements(OrderCommand.PlaceOrder cmd, ReadOnlyCommandContext<Order> ctx) {
             OrderDetails orderDetails = cmd.getOrderDetails();
-            if (orderDetails.equals(state().get().getOrderDetails())) {
-                ctx.reply(order());
+            if (orderDetails.equals(getOrderDetails())) {
+                ctx.reply(getOrder());
             } else {
-                log.warn(String.format(
+                getLogger().warn(String.format(
                         "Order %s, existing: %s, received %s",
                         entityId(),
-                        state().get().getOrderDetails(),
+                        getOrderDetails(),
                         orderDetails.toString()
                 ));
                 ctx.commandFailed(new InvalidCommandException(
                         String.format("Attempt to place different order with same order ID: %s", entityId())));
             }
-        });
+        }
+
+        /**
+         * Concrete behavior builders should invoke this to add the common behavior implemented here.
+         * @param builder
+         */
+        void setCommonBehavior(BehaviorBuilder builder) {
+            builder.setReadOnlyCommandHandler(OrderCommand.GetStatus.class, this::getStatus);
+            builder.setReadOnlyCommandHandler(OrderCommand.PlaceOrder.class, this::ignoreDuplicatePlacements);
+        }
     }
 
-    private Order order() {
-        return new Order(entityId(), state().get().getOrderDetails());
+
+    private class PendingBehaviorBuilder extends OrderBehaviourBuilder<OrderState.Pending> {
+
+        private final Behavior behavior;
+
+        PendingBehaviorBuilder(OrderState.Pending state) {
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state));
+            setCommonBehavior(builder);
+
+            builder.setCommandHandler(OrderCommand.Complete.class, this::complete);
+            builder.setEventHandlerChangingBehavior(OrderEvent.OrderFulfilled.class, this::fulfilled);
+            this.behavior = builder.build();
+        }
+
+        PendingBehaviorBuilder(OrderDetails orderDetails) {
+            this(new OrderState.Pending(orderDetails));
+        }
+
+        private Persist complete(OrderCommand.Complete cmd, CommandContext<Done> ctx) {
+            if (cmd.getOrderResult() instanceof OrderResult.OrderCompleted) {
+                OrderResult.OrderCompleted orderCompleted = (OrderResult.OrderCompleted)cmd.getOrderResult();
+                return ctx.thenPersist(new OrderEvent.OrderFulfilled(getOrder(), orderCompleted.getTrade()),
+                        evt -> ctx.reply(Done.getInstance()));
+            } else if (cmd.getOrderResult() instanceof OrderResult.OrderFailed) {
+                return ctx.thenPersist(new OrderEvent.OrderFailed(getOrder()),
+                        evt -> ctx.reply(Done.getInstance()));
+            } else {
+                throw new IllegalStateException();
+            }
+        }
+
+        private Behavior fulfilled(OrderEvent.OrderFulfilled evt) {
+            return new FulfilledOrderBehaviorBuilder(state().getOrderDetails(), evt.getTrade().getPrice()).getBehavior();
+        }
+
+        public Behavior getBehavior() {
+            return behavior;
+        }
+
     }
+
+    private class FulfilledOrderBehaviorBuilder extends OrderBehaviourBuilder<OrderState.Fulfilled> {
+
+        private final Behavior behavior;
+
+        FulfilledOrderBehaviorBuilder(OrderState.Fulfilled state) {
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state));
+            setCommonBehavior(builder);
+
+            this.behavior = builder.build();
+        }
+
+        FulfilledOrderBehaviorBuilder(OrderDetails orderDetails, BigDecimal price) {
+            this(new OrderState.Fulfilled(orderDetails, price));
+        }
+
+        public Behavior getBehavior() {
+
+            return this.behavior;
+        }
+    }
+
+    private class UninitializedBehaviorBuilder implements OrderBehaviorBuilder {
+        private final Behavior behavior;
+
+        UninitializedBehaviorBuilder() {
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
+            builder.setCommandHandler(OrderCommand.PlaceOrder.class, this::placeOrder);
+            builder.setEventHandlerChangingBehavior(OrderEvent.ProcessingOrder.class, this::processing);
+            this.behavior = builder.build();
+        }
+
+        public Behavior getBehavior() {
+            return behavior;
+        }
+
+        private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Order> ctx) {
+            Order order = new Order(entityId(), cmd.getOrderDetails());
+            return ctx.thenPersist(
+                    new OrderEvent.ProcessingOrder(order),
+                    evt -> ctx.reply(order));
+        }
+
+        private Behavior processing(OrderEvent.ProcessingOrder evt) {
+            return new PendingBehaviorBuilder(evt.getOrder().getDetails()).getBehavior();
+        }
+    }
+
 
 }
