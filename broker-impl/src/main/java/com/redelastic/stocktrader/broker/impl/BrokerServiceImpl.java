@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.broker.impl;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.stream.Attributes;
 import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Note: The only supported way within Lagom to publish to a topic is tracking
@@ -64,7 +66,7 @@ public class BrokerServiceImpl implements BrokerService {
 
     @Override
     public ServiceCall<Order, Done> placeOrder() {
-        return orderRepository::placeOrder;
+        return this::processOrder;
     }
 
     @Override
@@ -75,7 +77,16 @@ public class BrokerServiceImpl implements BrokerService {
 
     private Flow<Order, Done, NotUsed> processPortfolioOrders() {
         return Flow.<Order>create()
-                .mapAsync(1, this.placeOrder()::invoke);
+                .log("orders")
+                .addAttributes(Attributes.createLogLevels(
+                        Attributes.logLevelInfo(), // onElement
+                        Attributes.logLevelError(), // onFailure
+                        Attributes.logLevelInfo()))
+                .mapAsync(1, this::processOrder);
+    }
+
+    private CompletionStage<Done> processOrder(Order order) {
+        return orderRepository.get(order.getOrderId()).placeOrder(order.getDetails());
     }
 
 }

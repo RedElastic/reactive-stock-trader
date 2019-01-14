@@ -1,6 +1,5 @@
 package com.redelastic.stocktrader.broker.impl.order;
 
-import akka.Done;
 import akka.japi.Pair;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
@@ -14,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.concurrent.CompletionStage;
 
 public class OrderRepositoryImpl implements OrderRepository  {
 
@@ -37,12 +35,6 @@ public class OrderRepositoryImpl implements OrderRepository  {
                 tradeService);
     }
 
-    @Override
-    public CompletionStage<Done> placeOrder(Order order) {
-        return get(order.getOrderId())
-                .placeOrder(order.getDetails());
-    }
-
 
     public Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset) {
         return persistentEntities.eventStream(tag, offset).filter(eventOffset ->
@@ -54,7 +46,7 @@ public class OrderRepositoryImpl implements OrderRepository  {
 
             log.warn(String.format("Order %s fulfilled.", order.getOrderId()));
 
-            OrderResult.OrderCompleted completedOrder = OrderResult.OrderCompleted.builder()
+            OrderResult.OrderFulfilled completedOrder = OrderResult.OrderFulfilled.builder()
                     .orderId(order.getOrderId())
                     .portfolioId(order.getDetails().getPortfolioId())
                     .trade(trade)

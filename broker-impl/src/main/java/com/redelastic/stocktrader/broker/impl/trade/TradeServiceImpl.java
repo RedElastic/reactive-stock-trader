@@ -26,6 +26,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     public CompletionStage<OrderResult> placeOrder(Order order) {
+        log.info(String.format("Order placed: %s", order.toString()));
         if (order.getDetails().getConditions() instanceof OrderConditions.Market) {
             return completeMarketOrder(order);
         } else {
@@ -44,7 +45,7 @@ public class TradeServiceImpl implements TradeService {
                     .shares(details.getShares())
                     .price(price)
                     .build();
-            return OrderResult.OrderCompleted.builder()
+            return OrderResult.OrderFulfilled.builder()
                     .orderId(order.getOrderId())
                     .portfolioId(details.getPortfolioId())
                     .trade(trade)

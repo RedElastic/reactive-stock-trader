@@ -172,7 +172,8 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         }
 
         private Persist liquidate(PortfolioCommand.Liquidate cmd, CommandContext<Done> ctx) {
-            // TODO: Sell all stocks, transfer out all funds, then
+            // TODO: Sell all stocks, transfer out all funds, then move to closed.
+            // TODO: Handle overdrawn account (negative funds after all equities liquidated
             return ctx.thenPersist(new PortfolioEvent.LiquidationStarted(entityId()),
                     evt -> ctx.reply(Done.getInstance()));
         }

@@ -105,11 +105,10 @@ public class PortfolioEntityTest {
         assertTrue(outcome.events().contains(
                 new PortfolioEvent.FundsDebited(portfolioId, amount.subtract(difference))));
         assertThat(difference, comparesEqualTo(((PortfolioState.Open)outcome.state()).getFunds()));
-
     }
 
     @Test
-    public void overSellShares() {
+    public void denyOverSellingShares() {
         String portfolioId = "portfolioId";
         String portfolioName = "portfolio name";
         String symbol = "IBM";

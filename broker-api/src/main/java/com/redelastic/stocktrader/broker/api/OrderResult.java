@@ -8,7 +8,7 @@ import lombok.Value;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(OrderResult.OrderCompleted.class),
+        @JsonSubTypes.Type(OrderResult.OrderFulfilled.class),
         @JsonSubTypes.Type(OrderResult.OrderFailed.class)
 })
 public interface OrderResult {
@@ -18,7 +18,7 @@ public interface OrderResult {
 
     @Value
     @Builder
-    class OrderCompleted implements OrderResult {
+    class OrderFulfilled implements OrderResult {
         @NonNull String portfolioId;
         @NonNull String orderId;
         @NonNull Trade trade;

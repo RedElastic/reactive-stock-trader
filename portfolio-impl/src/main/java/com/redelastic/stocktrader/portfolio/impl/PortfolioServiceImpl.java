@@ -39,7 +39,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         brokerService.orderResults()
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
-        // TODO: deal with duplicates
+        // Note: Our order entity logic handles duplicate orders, hence at least once semantics work.
     }
 
     @Override
@@ -97,13 +97,13 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
-        if (orderResult instanceof OrderResult.OrderCompleted) {
-            Trade trade = ((OrderResult.OrderCompleted)orderResult).getTrade();
+        if (orderResult instanceof OrderResult.OrderFulfilled) {
+            Trade trade = ((OrderResult.OrderFulfilled)orderResult).getTrade();
             return portfolioRepository
                     .get(orderResult.getPortfolioId())
                     .processTrade(trade);
         } else {
-            // TODO: handle this
+            // TODO: handle order results other than completed
             return CompletableFuture.completedFuture(Done.getInstance());
         }
     }
