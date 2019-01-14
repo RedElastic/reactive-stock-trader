@@ -26,7 +26,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
                     } else if (orderState instanceof OrderState.Fulfilled) {
                         return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
                     } else if (orderState instanceof OrderState.Failed) {
-                        throw new IllegalStateException(); // FIXME: implement this behavior
+                        return new FailedOrderBehavior((OrderState.Failed) orderState).getBehavior();
                     } else {
                         throw new IllegalStateException();
                     }
@@ -94,7 +94,9 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             setCommonBehavior(builder);
 
             builder.setCommandHandler(OrderCommand.Complete.class, this::complete);
+
             builder.setEventHandlerChangingBehavior(OrderEvent.OrderFulfilled.class, this::fulfilled);
+            builder.setEventHandlerChangingBehavior(OrderEvent.OrderFailed.class, this::failed);
             this.behavior = builder.build();
         }
 
@@ -119,6 +121,10 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             return new FulfilledOrderBehaviorBuilder(state().getOrderDetails(), evt.getTrade().getPrice()).getBehavior();
         }
 
+        private Behavior failed(OrderEvent.OrderFailed evt) {
+            return new FailedOrderBehavior(evt.getOrder().getDetails()).getBehavior();
+        }
+
         public Behavior getBehavior() {
             return behavior;
         }
@@ -138,6 +144,26 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
 
         FulfilledOrderBehaviorBuilder(OrderDetails orderDetails, BigDecimal price) {
             this(new OrderState.Fulfilled(orderDetails, price));
+        }
+
+        public Behavior getBehavior() {
+
+            return this.behavior;
+        }
+    }
+
+    private class FailedOrderBehavior extends OrderBehaviourBuilder<OrderState.Failed> {
+        private final Behavior behavior;
+
+        FailedOrderBehavior(OrderState.Failed state) {
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state));
+            setCommonBehavior(builder);
+
+            this.behavior = builder.build();
+        }
+
+        FailedOrderBehavior(OrderDetails orderDetails) {
+            this(new OrderState.Failed(orderDetails));
         }
 
         public Behavior getBehavior() {

@@ -4,6 +4,7 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
@@ -83,5 +84,9 @@ class Portfolio {
 
     CompletionStage<Done> processTrade(Trade trade) {
         return portfolioEntity.ask(new PortfolioCommand.CompleteTrade(trade));
+    }
+
+    CompletionStage<Done> orderFailed(OrderResult.OrderFailed failed) {
+        return portfolioEntity.ask(new PortfolioCommand.HandleOrderFailure(failed));
     }
 }

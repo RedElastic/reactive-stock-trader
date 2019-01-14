@@ -3,6 +3,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.ReplyType;
 import com.lightbend.lagom.serialization.Jsonable;
+import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
 import lombok.Builder;
@@ -51,4 +52,9 @@ public interface PortfolioCommand extends Jsonable {
         String recipientAccountId;
     }
 
+    // FIXME: review this.
+    @Value
+    class HandleOrderFailure implements PortfolioCommand, ReplyType<Done> {
+        OrderResult.OrderFailed orderFailed;
+    }
 }

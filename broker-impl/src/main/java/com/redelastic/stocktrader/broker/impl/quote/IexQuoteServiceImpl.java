@@ -32,7 +32,6 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
 
     private WSRequest quoteRequest(String symbol) {
         String url = String.format("https://%s/1.0/stock/%s/quote", this.hostName, symbol);
-        log.info(url);
         return wsClient.url(url);
     }
 

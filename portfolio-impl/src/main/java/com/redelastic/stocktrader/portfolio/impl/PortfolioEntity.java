@@ -95,6 +95,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
             builder.setCommandHandler(PortfolioCommand.Open.class, this::rejectOpen);
             builder.setCommandHandler(PortfolioCommand.PlaceOrder.class, this::placeOrder);
             builder.setCommandHandler(PortfolioCommand.CompleteTrade.class, this::completeTrade);
+            builder.setCommandHandler(PortfolioCommand.HandleOrderFailure.class, this::handleFailedOrder);
             builder.setCommandHandler(PortfolioCommand.Liquidate.class, this::liquidate);
             builder.setCommandHandler(PortfolioCommand.SendFunds.class, this::sendFunds);
             builder.setCommandHandler(PortfolioCommand.ReceiveFunds.class, this::receiveFunds);
@@ -196,6 +197,13 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
                     new PortfolioEvent.FundsCredited(entityId(), cmd.getAmount()),
                     evt -> ctx.reply(Done.getInstance())
             );
+        }
+
+        private Persist handleFailedOrder(PortfolioCommand.HandleOrderFailure cmd, CommandContext<Done> ctx) {
+            // TODO: record this
+            log.info(String.format("Order %s failed for Portfolio %s.", cmd.getOrderFailed().getOrderId(), entityId()));
+            ctx.reply(Done.getInstance());
+            return ctx.done();
         }
 
         Behavior getBehavior() { return this.behavior; }

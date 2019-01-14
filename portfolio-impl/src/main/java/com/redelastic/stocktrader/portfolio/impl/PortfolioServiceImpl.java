@@ -97,11 +97,13 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
+        Portfolio portfolio = portfolioRepository.get(orderResult.getPortfolioId());
         if (orderResult instanceof OrderResult.OrderFulfilled) {
-            Trade trade = ((OrderResult.OrderFulfilled)orderResult).getTrade();
-            return portfolioRepository
-                    .get(orderResult.getPortfolioId())
-                    .processTrade(trade);
+            Trade trade = ((OrderResult.OrderFulfilled) orderResult).getTrade();
+            return portfolio.processTrade(trade);
+        } else if (orderResult instanceof OrderResult.OrderFailed) {
+            log.info(String.format("Order %s failed for portfolio %s.", orderResult.getOrderId(), orderResult.getPortfolioId()));
+            return portfolio.orderFailed((OrderResult.OrderFailed)orderResult);
         } else {
             // TODO: handle order results other than completed
             return CompletableFuture.completedFuture(Done.getInstance());
