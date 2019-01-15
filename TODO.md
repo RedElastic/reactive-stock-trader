@@ -1,7 +1,7 @@
 # TODO
 
 - Portfolio view - handle failed quote
-- Portfolio - failed trade
+- Portfolio - failed order
 - Order - failed state
 - Portfolio order history
 

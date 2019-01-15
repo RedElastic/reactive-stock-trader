@@ -1,3 +1,11 @@
+# Install
+
+Install Java 8 SDK
+Install SBT (`brew install sbt` on Mac)
+`sbt runAll`
+
+The front end API is exposed on port 9000. 
+
 # Command line use of API
 
 Create a new portfolio named "piggy bank savings":
