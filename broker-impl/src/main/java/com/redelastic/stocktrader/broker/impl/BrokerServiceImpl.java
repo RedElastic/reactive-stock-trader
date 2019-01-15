@@ -86,7 +86,7 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     private CompletionStage<Done> processOrder(Order order) {
-        return orderRepository.get(order.getOrderId()).placeOrder(order.getDetails());
+        return orderRepository.get(order.getOrderId()).placeOrder(order.getPortfolioId(), order.getDetails());
     }
 
 }

@@ -1,14 +1,14 @@
 package controllers;
 
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioRequest;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import lombok.Data;
 
 @Data
 public class OpenPortfolioForm {
     String name;
 
-    OpenPortfolioRequest toRequest() {
-        return OpenPortfolioRequest.builder()
+    OpenPortfolioDetails toRequest() {
+        return OpenPortfolioDetails.builder()
                 .name(getName())
                 .build();
     }

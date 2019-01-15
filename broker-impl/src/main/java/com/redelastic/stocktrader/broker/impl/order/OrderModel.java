@@ -7,8 +7,8 @@ import com.redelastic.stocktrader.order.OrderDetails;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-public interface OrderProcess {
+public interface OrderModel {
     CompletionStage<Optional<OrderStatus>> getStatus();
 
-    CompletionStage<Done> placeOrder(OrderDetails orderDetails);
+    CompletionStage<Done> placeOrder(String portfolioId, OrderDetails orderDetails);
 }

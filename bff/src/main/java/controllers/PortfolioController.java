@@ -2,9 +2,8 @@ package controllers;
 
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.*;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioRequest;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
@@ -41,7 +40,7 @@ public class PortfolioController extends Controller {
     }
 
     public CompletionStage<Result> openPortfolio() {
-        OpenPortfolioRequest openRequest = openPortfolioForm.bindFromRequest().get().toRequest(); // TODO handle errors
+        OpenPortfolioDetails openRequest = openPortfolioForm.bindFromRequest().get().toRequest(); // TODO handle errors
         return portfolioService
                 .openPortfolio()
                 .invoke(openRequest)
@@ -56,7 +55,6 @@ public class PortfolioController extends Controller {
                 .symbol(orderForm.getSymbol())
                 .shares(orderForm.getShares())
                 .conditions(OrderConditions.Market.INSTANCE)
-                .portfolioId(portfolioId)
                 .build();
         return portfolioService
                 .placeOrder(portfolioId)

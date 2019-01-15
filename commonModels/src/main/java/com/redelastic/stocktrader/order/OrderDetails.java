@@ -9,7 +9,6 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 public class OrderDetails {
-    @NonNull String portfolioId;
     @NonNull String symbol;
     int shares;
     @NonNull OrderType orderType;

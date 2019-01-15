@@ -5,15 +5,15 @@ import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioRequest;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 
 import java.util.concurrent.CompletionStage;
 
 public interface PortfolioRepository {
 
-    CompletionStage<String> open(OpenPortfolioRequest request);
+    CompletionStage<String> open(OpenPortfolioDetails request);
 
-    Portfolio get(String portfolioId);
+    PortfolioModel get(String portfolioId);
 
     Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset);
 }

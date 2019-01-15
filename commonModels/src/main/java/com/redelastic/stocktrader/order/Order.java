@@ -10,5 +10,6 @@ import lombok.Value;
 @AllArgsConstructor
 public class Order {
     @NonNull String orderId;
+    @NonNull String portfolioId;
     @NonNull OrderDetails details;
 }

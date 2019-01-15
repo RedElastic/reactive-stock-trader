@@ -29,10 +29,8 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public OrderProcessImpl get(String orderId) {
-        return new OrderProcessImpl(
-                persistentEntities.refFor(OrderEntity.class, orderId),
-                tradeService);
+    public OrderModel get(String orderId) {
+        return createModel(orderId);
     }
 
     public Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset) {
@@ -50,20 +48,26 @@ public class OrderRepositoryImpl implements OrderRepository {
 
                 OrderResult.OrderFulfilled completedOrder = OrderResult.OrderFulfilled.builder()
                         .orderId(order.getOrderId())
-                        .portfolioId(order.getDetails().getPortfolioId())
+                        .portfolioId(order.getPortfolioId())
                         .trade(trade)
                         .build();
                 return Pair.create(completedOrder, eventAndOffset.second());
             } else if (eventAndOffset.first() instanceof OrderEvent.OrderFailed) {
                 OrderEvent.OrderFailed failed = (OrderEvent.OrderFailed) eventAndOffset.first();
                 return Pair.create(
-                        new OrderResult.OrderFailed(failed.getOrder().getDetails().getPortfolioId(), failed.getOrder().getOrderId()),
+                        new OrderResult.OrderFailed(failed.getOrder().getPortfolioId(), failed.getOrder().getOrderId()),
                         eventAndOffset.second()
                 );
             } else {
                 throw new IllegalStateException();
             }
         });
+    }
+
+    private OrderModel createModel(String orderId) {
+        return new OrderModelImpl(
+                persistentEntities.refFor(OrderEntity.class, orderId),
+                tradeService);
     }
 
 }

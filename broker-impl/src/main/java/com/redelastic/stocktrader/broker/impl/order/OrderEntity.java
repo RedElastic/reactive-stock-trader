@@ -60,7 +60,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         Order getOrder() {
-            return new Order(entityId(), getOrderDetails());
+            return new Order(entityId(), state().getPortfolioId(), getOrderDetails());
         }
 
         State state() {
@@ -114,8 +114,9 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        PendingBehaviorBuilder(OrderDetails orderDetails) {
-            this(new OrderState.Pending(orderDetails));
+        PendingBehaviorBuilder(String portfolioId, OrderDetails orderDetails) {
+
+            this(new OrderState.Pending(portfolioId, orderDetails));
         }
 
         private Persist complete(OrderCommand.Complete cmd, CommandContext<Done> ctx) {
@@ -132,11 +133,11 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         private Behavior fulfilled(OrderEvent.OrderFulfilled evt) {
-            return new FulfilledOrderBehaviorBuilder(state().getOrderDetails(), evt.getTrade().getPrice()).getBehavior();
+            return new FulfilledOrderBehaviorBuilder(state().getPortfolioId(), state().getOrderDetails(), evt.getTrade().getPrice()).getBehavior();
         }
 
         private Behavior failed(OrderEvent.OrderFailed evt) {
-            return new FailedOrderBehavior(evt.getOrder().getDetails()).getBehavior();
+            return new FailedOrderBehavior(evt.getOrder().getPortfolioId(), evt.getOrder().getDetails()).getBehavior();
         }
 
         public Behavior getBehavior() {
@@ -156,8 +157,8 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        FulfilledOrderBehaviorBuilder(OrderDetails orderDetails, BigDecimal price) {
-            this(new OrderState.Fulfilled(orderDetails, price));
+        FulfilledOrderBehaviorBuilder(String portfolioId, OrderDetails orderDetails, BigDecimal price) {
+            this(new OrderState.Fulfilled(portfolioId, orderDetails, price));
         }
 
         public Behavior getBehavior() {
@@ -176,8 +177,8 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        FailedOrderBehavior(OrderDetails orderDetails) {
-            this(new OrderState.Failed(orderDetails));
+        FailedOrderBehavior(String portfolioId, OrderDetails orderDetails) {
+            this(new OrderState.Failed(portfolioId, orderDetails));
         }
 
         public Behavior getBehavior() {
@@ -201,14 +202,14 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Order> ctx) {
-            Order order = new Order(entityId(), cmd.getOrderDetails());
+            Order order = new Order(entityId(), cmd.getPortfolioId(), cmd.getOrderDetails());
             return ctx.thenPersist(
                     new OrderEvent.ProcessingOrder(order),
                     evt -> ctx.reply(order));
         }
 
         private Behavior processing(OrderEvent.ProcessingOrder evt) {
-            return new PendingBehaviorBuilder(evt.getOrder().getDetails()).getBehavior();
+            return new PendingBehaviorBuilder(evt.getOrder().getPortfolioId(), evt.getOrder().getDetails()).getBehavior();
         }
     }
 

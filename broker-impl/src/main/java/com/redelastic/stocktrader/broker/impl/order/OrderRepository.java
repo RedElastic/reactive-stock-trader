@@ -8,7 +8,7 @@ import com.redelastic.stocktrader.broker.api.OrderResult;
 
 public interface OrderRepository {
 
-    OrderProcess get(String orderId);
+    OrderModel get(String orderId);
 
     Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset);
 }

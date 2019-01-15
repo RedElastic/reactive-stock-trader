@@ -8,7 +8,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioRequest;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,11 +38,11 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      * circumstance that the ID is already in use we'll get an exception when we send the initialize command, we should
      * retry with a new UUID.
      * @param request
-     * @return The Portfolio ID assigned.
+     * @return The PortfolioModel ID assigned.
      */
     // TODO: Implement retry logic. Theoretically the chance of a collision is astronomically low *given* everything else works.
     @Override
-    public CompletionStage<String> open(OpenPortfolioRequest request) {
+    public CompletionStage<String> open(OpenPortfolioDetails request) {
         UUID uuid = UUID.randomUUID();
         String portfolioId = uuid.toString();
         PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, portfolioId);
@@ -51,8 +51,8 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     }
 
     @Override
-    public Portfolio get(String portfolioId) {
-        return new Portfolio(brokerService, persistentEntities, portfolioId);
+    public PortfolioModel get(String portfolioId) {
+        return new PortfolioModel(brokerService, persistentEntities, portfolioId);
     }
 
     public Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {

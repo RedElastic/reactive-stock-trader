@@ -1,7 +1,5 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
-import static org.junit.Assert.*;
-
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
@@ -10,18 +8,19 @@ import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
+import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.PlaceOrder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.*;
 
 import java.math.BigDecimal;
 
-public class PortfolioEntityTest {
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.*;
+
+public class PortfolioModelEntityTest {
 
     private static ActorSystem system;
 
@@ -55,7 +54,6 @@ public class PortfolioEntityTest {
         int shareCount = 3;
 
         OrderDetails orderDetails = OrderDetails.builder()
-                .portfolioId(portfolioId)
                 .symbol(symbol)
                 .shares(shareCount)
                 .orderType(OrderType.BUY)
@@ -64,6 +62,7 @@ public class PortfolioEntityTest {
 
         Order order = Order.builder()
                 .orderId(orderId)
+                .portfolioId(portfolioId)
                 .details(orderDetails)
                 .build();
 
@@ -128,13 +127,13 @@ public class PortfolioEntityTest {
                 new PortfolioCommand.PlaceOrder(
                         Order.builder()
                             .orderId(orderId)
+                            .portfolioId(portfolioId)
                             .details(
                                     OrderDetails.builder()
                                         .symbol(symbol)
                                         .shares(shareCount+1)
                                         .orderType(OrderType.SELL)
                                         .conditions(OrderConditions.Market.INSTANCE)
-                                        .portfolioId(portfolioId)
                                         .build()
                             )
                             .build()

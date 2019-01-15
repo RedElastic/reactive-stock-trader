@@ -43,7 +43,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<OpenPortfolioRequest, String> openPortfolio() {
+    public ServiceCall<OpenPortfolioDetails, String> openPortfolio() {
         return portfolioRepository::open;
     }
 
@@ -64,9 +64,14 @@ public class PortfolioServiceImpl implements PortfolioService {
     public ServiceCall<OrderDetails, Done> placeOrder(String portfolioId) {
         return orderDetails -> {
             String orderId = UUID.randomUUID().toString();
+            Order order = Order.builder()
+                    .orderId(orderId)
+                    .portfolioId(portfolioId)
+                    .details(orderDetails)
+                    .build();
             return portfolioRepository
                     .get(portfolioId)
-                    .placeOrder(Order.builder().orderId(orderId).details(orderDetails).build());
+                    .placeOrder(order);
         };
     }
 
@@ -97,7 +102,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
-        Portfolio portfolio = portfolioRepository.get(orderResult.getPortfolioId());
+        PortfolioModel portfolio = portfolioRepository.get(orderResult.getPortfolioId());
         if (orderResult instanceof OrderResult.OrderFulfilled) {
             Trade trade = ((OrderResult.OrderFulfilled) orderResult).getTrade();
             return portfolio.processTrade(trade);

@@ -21,19 +21,19 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
-/* Facade for a Portfolio. Wraps up all the logic surrounding an individual PortfolioEntity.
+/* Facade for a PortfolioModel. Wraps up all the logic surrounding an individual PortfolioEntity.
  * The PersistentEntity class itself can get large, so this wrapper can hold some of the logic around interactions with
  * the entity.
  */
-class Portfolio {
+class PortfolioModel {
 
     private final PersistentEntityRef<PortfolioCommand> portfolioEntity;
     private final BrokerService brokerService;
     private final String portfolioId;
 
-    Portfolio(BrokerService brokerService,
-              PersistentEntityRegistry registry,
-              String portfolioId) {
+    PortfolioModel(BrokerService brokerService,
+                   PersistentEntityRegistry registry,
+                   String portfolioId) {
         this.portfolioEntity = registry.refFor(PortfolioEntity.class, portfolioId);
         this.brokerService = brokerService;
         this.portfolioId = portfolioId;

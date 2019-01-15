@@ -13,24 +13,27 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-public class OrderProcessImpl implements OrderProcess {
+public class OrderModelImpl implements OrderModel {
 
-    private final Logger log = LoggerFactory.getLogger(OrderProcessImpl.class);
+    private final Logger log = LoggerFactory.getLogger(OrderModelImpl.class);
 
     private final PersistentEntityRef<OrderCommand> orderEntity;
     private final TradeService tradeService;
 
-    OrderProcessImpl(PersistentEntityRef<OrderCommand> orderEntity,
-                     TradeService tradeService) {
+    OrderModelImpl(PersistentEntityRef<OrderCommand> orderEntity,
+                   TradeService tradeService) {
         this.orderEntity = orderEntity;
         this.tradeService = tradeService;
     }
 
-    public CompletionStage<Done> placeOrder(OrderDetails order) {
-        CompletionStage<Order> placeOrder = orderEntity.ask(new OrderCommand.PlaceOrder(order));
+    public CompletionStage<Done> placeOrder(String portfolioId, OrderDetails orderDetails) {
+        CompletionStage<Order> placeOrder = orderEntity.ask(new OrderCommand.PlaceOrder(portfolioId, orderDetails));
 
-        placeOrder
-                .thenCompose(tradeService::placeOrder)
+        // This is the process that will progress our order through to completion.
+        // FIXME: if the service is interrupted before this is completed we will not reattempt.
+        //  Consider the implications.
+        placeOrder.thenAccept(order ->
+                tradeService.placeOrder(order)
                 .exceptionally(ex -> {
                     log.info(String.format("Order %s failed.", orderEntity.entityId()));
                     return new OrderResult.OrderFailed(order.getPortfolioId(), orderEntity.entityId());
@@ -38,7 +41,8 @@ public class OrderProcessImpl implements OrderProcess {
                 .thenAccept(orderResult -> {
                     log.info(String.format("Order %s completing.", orderEntity.entityId()));
                     orderEntity.ask(new OrderCommand.Complete(orderResult));
-                });
+                })
+        );
         // Note that our service call responds with Done after the PlaceOrder command is accepted, it does not
         // wait for the order to be fulfilled (which, in general, may require some time).
         return placeOrder.thenApply(o -> Done.getInstance());

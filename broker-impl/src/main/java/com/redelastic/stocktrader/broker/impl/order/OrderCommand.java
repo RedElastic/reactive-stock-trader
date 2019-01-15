@@ -14,7 +14,7 @@ import java.util.Optional;
 interface OrderCommand {
     @Value
     class PlaceOrder implements OrderCommand, ReplyType<Order> {
-
+        String portfolioId;
         OrderDetails orderDetails;
     }
 

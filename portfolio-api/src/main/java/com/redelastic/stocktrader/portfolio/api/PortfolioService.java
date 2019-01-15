@@ -16,13 +16,19 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  */
 public interface PortfolioService extends Service {
 
-    ServiceCall<OpenPortfolioRequest, String> openPortfolio();
+    ServiceCall<OpenPortfolioDetails, String> openPortfolio();
 
-    ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
+    /**
+     *
+     * @param portfolioId
+     * @return Done when the order has been accepted. For a sell order this requires confirming that the
+     * requested number of shares are available to be sold.
+     */
+    ServiceCall<OrderDetails, Done> placeOrder(String portfolioId);
 
     ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId);
 
-    ServiceCall<OrderDetails, Done> placeOrder(String portfolioId);
+    ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
 
     String ORDERS_TOPIC_ID = "PortfolioOrders";
     Topic<Order> orders();

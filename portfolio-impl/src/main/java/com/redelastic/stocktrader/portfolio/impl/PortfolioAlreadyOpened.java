@@ -8,6 +8,6 @@ public class PortfolioAlreadyOpened extends RuntimeException implements Jsonable
 
     @JsonCreator
     public PortfolioAlreadyOpened(String portfolioId) {
-        super(String.format("Portfolio %s already initialized.", portfolioId));
+        super(String.format("PortfolioModel %s already initialized.", portfolioId));
     }
 }

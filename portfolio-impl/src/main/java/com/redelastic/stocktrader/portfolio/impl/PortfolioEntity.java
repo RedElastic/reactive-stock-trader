@@ -113,7 +113,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         private Persist completeTrade(PortfolioCommand.CompleteTrade cmd, CommandContext<Done> ctx) {
             Trade trade = cmd.getTrade();
             log.info(String.format(
-                    "Portfolio %s processing trade %s",
+                    "PortfolioModel %s processing trade %s",
                     entityId(),
                     trade.toString()
             ));
@@ -196,7 +196,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
 
         private Persist handleFailedOrder(PortfolioCommand.HandleOrderFailure cmd, CommandContext<Done> ctx) {
             // TODO: record this
-            log.info(String.format("Order %s failed for Portfolio %s.", cmd.getOrderFailed().getOrderId(), entityId()));
+            log.info(String.format("Order %s failed for PortfolioModel %s.", cmd.getOrderFailed().getOrderId(), entityId()));
             ctx.reply(Done.getInstance());
             return ctx.done();
         }
