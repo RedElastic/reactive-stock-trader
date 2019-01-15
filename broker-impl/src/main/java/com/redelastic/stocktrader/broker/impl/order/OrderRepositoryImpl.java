@@ -1,8 +1,6 @@
 package com.redelastic.stocktrader.broker.impl.order;
 
-import akka.japi.JavaPartialFunction;
 import akka.japi.Pair;
-import akka.japi.pf.PFBuilder;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
@@ -13,7 +11,6 @@ import com.redelastic.stocktrader.broker.impl.trade.TradeService;
 import com.redelastic.stocktrader.order.Order;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.PartialFunction;
 
 import javax.inject.Inject;
 
@@ -37,7 +34,6 @@ public class OrderRepositoryImpl implements OrderRepository {
                 persistentEntities.refFor(OrderEntity.class, orderId),
                 tradeService);
     }
-
 
     public Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset) {
         // FIXME: Even for Java this is awkward.

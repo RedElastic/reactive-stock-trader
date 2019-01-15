@@ -5,6 +5,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
+import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
@@ -54,21 +56,40 @@ class Portfolio {
                 );
     }
 
-
     private CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding> holdings) {
         // TODO deal with request failures
         // TODO timeout
-        List<CompletableFuture<ValuedHolding>> requests = holdings.stream().map(valuedHolding ->
-                brokerService
-                        .getQuote(valuedHolding.getSymbol())
-                        .invoke()
-                        .thenApply(quote ->
-                                new ValuedHolding(
+        List<CompletableFuture<ValuedHolding>> requests = holdings.stream()
+                .map(valuedHolding -> {
+                    CompletionStage<BigDecimal> getSharePrice = brokerService
+                            .getQuote(valuedHolding.getSymbol())
+                            .invoke()
+                            .thenApply(Quote::getSharePrice)
+                            .handle((sharePrice, ex) -> {
+                                if (ex == null) {
+                                    return CompletableFuture.completedFuture(sharePrice);
+                                } else {
+                                    CompletableFuture<BigDecimal> result = new CompletableFuture<>();
+                                    if (ex instanceof RuntimeException) {
+                                        result.complete(null);
+                                    } else {
+                                        result.completeExceptionally(ex);
+                                    }
+                                    return result;
+                                }
+                            })
+                            .thenCompose(Function.identity());
+                    return getSharePrice
+                            .thenApply(sharePrice -> {
+                                BigDecimal price = sharePrice == null ? null : sharePrice.multiply(BigDecimal.valueOf(valuedHolding.getShareCount()));
+                                return new ValuedHolding(
                                         valuedHolding.getSymbol(),
                                         valuedHolding.getShareCount(),
-                                        quote.getSharePrice().multiply(BigDecimal.valueOf(valuedHolding.getShareCount()))))
-                        .toCompletableFuture()
-        ).collect(toList());
+                                        price);
+                            })
+                            .toCompletableFuture();
+                })
+                .collect(toList());
 
         return CompletableFuture.allOf(requests.toArray(new CompletableFuture<?>[0]))
                 .thenApply(done ->

@@ -139,10 +139,9 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
             log.info(String.format("Placing order %s", placeOrder.getOrder().toString()));
             Order order = placeOrder.getOrder();
             OrderDetails orderDetails = placeOrder.getOrder().getDetails();
-            PortfolioState.Open state = (PortfolioState.Open)state();
             switch(orderDetails.getOrderType()) {
                 case SELL:
-                    int available = state.getHoldings().getShareCount(orderDetails.getSymbol());
+                    int available = state().getHoldings().getShareCount(orderDetails.getSymbol());
                     if (available >= orderDetails.getShares()) {
                         return ctx.thenPersistAll(Arrays.asList(
                                 new PortfolioEvent.OrderPlaced(entityId(), order),

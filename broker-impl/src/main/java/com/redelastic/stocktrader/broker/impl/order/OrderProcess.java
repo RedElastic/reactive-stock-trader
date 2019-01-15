@@ -9,5 +9,6 @@ import java.util.concurrent.CompletionStage;
 
 public interface OrderProcess {
     CompletionStage<Optional<OrderStatus>> getStatus();
+
     CompletionStage<Done> placeOrder(OrderDetails orderDetails);
 }

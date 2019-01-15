@@ -30,7 +30,8 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
                     } else {
                         throw new IllegalStateException();
                     }
-                }).orElse(new UninitializedBehaviorBuilder().getBehavior());
+                })
+                .orElse(new UninitializedBehaviorBuilder().getBehavior());
     }
 
 
@@ -41,18 +42,30 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
     /**
      * Base class for OrderBehavior covering pending and completed orders. Not this is not completely type safe, it is
      * possible to set an event handler that produces a state that doesn't correspond to the current behaviour.
+     *
      * @param <State> The type of state associated to this behavior.
      */
     private abstract class OrderBehaviourBuilder<State extends OrderState> implements OrderBehaviorBuilder {
 
-        String entityId() { return OrderEntity.this.entityId(); }
-        Logger getLogger() { return OrderEntity.this.log; }
+        String entityId() {
+            return OrderEntity.this.entityId();
+        }
 
-        OrderDetails getOrderDetails() { return state().getOrderDetails(); }
+        Logger getLogger() {
+            return OrderEntity.this.log;
+        }
 
-        Order getOrder() { return new Order(entityId(), getOrderDetails()); }
+        OrderDetails getOrderDetails() {
+            return state().getOrderDetails();
+        }
 
-        State state() { return (State)OrderEntity.this.state().get(); }
+        Order getOrder() {
+            return new Order(entityId(), getOrderDetails());
+        }
+
+        State state() {
+            return (State) OrderEntity.this.state().get();
+        }
 
         void getStatus(OrderCommand.GetStatus cmd, ReadOnlyCommandContext ctx) {
             ctx.reply(Optional.of(state().getStatus()));
@@ -76,6 +89,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
 
         /**
          * Concrete behavior builders should invoke this to add the common behavior implemented here.
+         *
          * @param builder
          */
         void setCommonBehavior(BehaviorBuilder builder) {
@@ -106,7 +120,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
 
         private Persist complete(OrderCommand.Complete cmd, CommandContext<Done> ctx) {
             if (cmd.getOrderResult() instanceof OrderResult.OrderFulfilled) {
-                OrderResult.OrderFulfilled orderFulfilled = (OrderResult.OrderFulfilled)cmd.getOrderResult();
+                OrderResult.OrderFulfilled orderFulfilled = (OrderResult.OrderFulfilled) cmd.getOrderResult();
                 return ctx.thenPersist(new OrderEvent.OrderFulfilled(getOrder(), orderFulfilled.getTrade()),
                         evt -> ctx.reply(Done.getInstance()));
             } else if (cmd.getOrderResult() instanceof OrderResult.OrderFailed) {

@@ -10,25 +10,35 @@ import java.math.BigDecimal;
 public interface OrderState {
 
     OrderDetails getOrderDetails();
+
     OrderStatus getStatus();
 
     @Value
     class Pending implements OrderState {
         OrderDetails orderDetails;
-        public OrderStatus getStatus() { return OrderStatus.Pending; }
+
+        public OrderStatus getStatus() {
+            return OrderStatus.Pending;
+        }
     }
 
     @Value
     class Fulfilled implements OrderState {
         OrderDetails orderDetails;
         BigDecimal price;
-        public OrderStatus getStatus() { return OrderStatus.Fulfilled; }
+
+        public OrderStatus getStatus() {
+            return OrderStatus.Fulfilled;
+        }
     }
 
     @Value
     class Failed implements OrderState {
         OrderDetails orderDetails;
-        public OrderStatus getStatus() { return OrderStatus.Failed; }
+
+        public OrderStatus getStatus() {
+            return OrderStatus.Failed;
+        }
     }
 
 }

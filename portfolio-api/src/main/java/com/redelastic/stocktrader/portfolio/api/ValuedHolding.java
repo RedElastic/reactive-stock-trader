@@ -10,6 +10,5 @@ public class ValuedHolding {
     @NonNull String symbol;
 
     int shareCount;
-
-    @NonNull BigDecimal marketValue;
+    BigDecimal marketValue; // Nullable
 }

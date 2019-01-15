@@ -44,9 +44,9 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                 })
                 .thenApply(json -> Json.fromJson(json, IexQuoteResponse.class))
                 .thenApply(iexResponse ->
-                    Quote.builder()
-                            .symbol(symbol)
-                            .sharePrice(iexResponse.getLatestPrice())
-                            .build());
+                        Quote.builder()
+                                .symbol(symbol)
+                                .sharePrice(iexResponse.getLatestPrice())
+                                .build());
     }
 }

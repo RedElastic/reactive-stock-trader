@@ -60,8 +60,8 @@ public class BrokerServiceImpl implements BrokerService {
 
         return notUsed ->
                 orderRepository
-                .get(orderId)
-                .getStatus();
+                        .get(orderId)
+                        .getStatus();
     }
 
     @Override

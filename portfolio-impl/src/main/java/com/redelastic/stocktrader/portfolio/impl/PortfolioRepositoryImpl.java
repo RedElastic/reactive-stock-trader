@@ -8,20 +8,14 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.portfolio.api.*;
-import org.pcollections.ConsPStack;
-import org.pcollections.PSequence;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.stream.Collectors.toList;
 
 public class PortfolioRepositoryImpl implements PortfolioRepository {
 
@@ -56,29 +50,6 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                 .thenApply(done -> portfolioId);
     }
 
-    private CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding> holdings) {
-        // TODO deal with request failures
-        // TODO timeout
-        List<CompletableFuture<ValuedHolding>> requests = holdings.stream().map(valuedHolding ->
-                brokerService
-                        .getQuote(valuedHolding.getSymbol())
-                        .invoke()
-                        .thenApply(quote ->
-                                new ValuedHolding(
-                                        valuedHolding.getSymbol(),
-                                        valuedHolding.getShareCount(),
-                                        quote.getSharePrice().multiply(BigDecimal.valueOf(valuedHolding.getShareCount()))))
-                        .toCompletableFuture()
-        ).collect(toList());
-
-        return CompletableFuture.allOf(requests.toArray(new CompletableFuture<?>[0]))
-                .thenApply(done ->
-                    requests.stream()
-                            .map(response -> response.toCompletableFuture().join())
-                        .collect(toList())
-                ).thenApply(ConsPStack::from);
-    }
-
     @Override
     public Portfolio get(String portfolioId) {
         return new Portfolio(brokerService, persistentEntities, portfolioId);
@@ -95,7 +66,6 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                             order.getOrder(),
                             eventOffset.second()
                     ));
-
             });
     }
 
