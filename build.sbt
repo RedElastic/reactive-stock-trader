@@ -7,7 +7,7 @@ EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 lazy val root = (project in file("."))
   .settings(name := "reactive-stock-trader")
   .aggregate(
-    orderModel,
+    commonModels,
     portfolioApi,
     portfolioImpl,
     brokerApi,
@@ -18,7 +18,7 @@ lazy val root = (project in file("."))
   )
   .settings(commonSettings)
 
-lazy val orderModel = (project in file("order"))
+lazy val commonModels = (project in file("commonModels"))
   .settings(commonSettings)
   .settings(
     version := "1.0-SNAPSHOT",
@@ -32,7 +32,7 @@ lazy val portfolioApi = (project in file("portfolio-api"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
-  ).dependsOn(orderModel)
+  ).dependsOn(commonModels)
 
 lazy val portfolioImpl = (project in file("portfolio-impl"))
   .settings(commonSettings)
@@ -58,7 +58,7 @@ lazy val brokerApi = (project in file("broker-api"))
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
-  ).dependsOn(orderModel)
+  ).dependsOn(commonModels)
 
 
 lazy val brokerImpl = (project in file("broker-impl"))
