@@ -63,7 +63,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             if (orderDetails.equals(getOrderDetails())) {
                 ctx.reply(getOrder());
             } else {
-                getLogger().warn(String.format(
+                getLogger().info(String.format(
                         "Order %s, existing: %s, received %s",
                         entityId(),
                         getOrderDetails(),

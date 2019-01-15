@@ -127,10 +127,14 @@ val lagomApiDependencies = Seq(
   lagomJavadslApi,
   lombok)
 
+
+
 def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8"),
   javacOptions in (Compile, compile) ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-parameters"),
-  libraryDependencies += "org.hamcrest" % "hamcrest-all" % "1.3" % "test"
+  libraryDependencies += "org.hamcrest" % "hamcrest-all" % "1.3" % Test,
+  libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test,
+  crossPaths := false // Work around JUnit issue with SBT
 )
 
 lagomCassandraCleanOnStart in ThisBuild := false

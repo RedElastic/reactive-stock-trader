@@ -90,8 +90,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                     eventOffset.first() instanceof PortfolioEvent.OrderPlaced
             ).mapAsync(1, eventOffset -> {
                     PortfolioEvent.OrderPlaced order = (PortfolioEvent.OrderPlaced)eventOffset.first();
-                    log.warn(String.format("Publishing order %s", order.getOrder().getOrderId()));
-                    log.warn(order.toString());
+                    log.info(String.format("Publishing order %s", order.getOrder().getOrderId()));
                     return CompletableFuture.completedFuture(Pair.create(
                             order.getOrder(),
                             eventOffset.second()

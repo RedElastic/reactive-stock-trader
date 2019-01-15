@@ -48,21 +48,17 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         }
 
         private Persist open(PortfolioCommand.Open cmd, CommandContext<Done> ctx) {
-            PortfolioEvent.Opened event = PortfolioEvent.Opened.builder()
+            PortfolioEvent.Opened openEvent = PortfolioEvent.Opened.builder()
                     .name(cmd.getName())
                     .portfolioId(entityId())
                     .build();
-            log.warn(event.toString());
-            return ctx.thenPersist(
-                    PortfolioEvent.Opened.builder()
-                            .name(cmd.getName())
-                            .portfolioId(entityId())
-                            .build(),
+            log.info(openEvent.toString());
+            return ctx.thenPersist(openEvent,
                     (e) -> ctx.reply(Done.getInstance()));
         }
 
         private Behavior opened(PortfolioEvent.Opened evt) {
-            log.warn(String.format("Opened %s, named %s", entityId(), evt.getName()));
+            log.info(String.format("Opened %s, named %s", entityId(), evt.getName()));
             PortfolioState.Open state = PortfolioState.Uninitialized.INSTANCE.update(evt);
             return new OpenPortfolioBehavior(state).getBehavior();
         }
@@ -116,7 +112,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
 
         private Persist completeTrade(PortfolioCommand.CompleteTrade cmd, CommandContext<Done> ctx) {
             Trade trade = cmd.getTrade();
-            log.warn(String.format(
+            log.info(String.format(
                     "Portfolio %s processing trade %s",
                     entityId(),
                     trade.toString()
@@ -140,7 +136,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         }
 
         private Persist placeOrder(PortfolioCommand.PlaceOrder placeOrder, CommandContext<Done> ctx) {
-            log.warn(String.format("Placing order %s", placeOrder.getOrder().toString()));
+            log.info(String.format("Placing order %s", placeOrder.getOrder().toString()));
             Order order = placeOrder.getOrder();
             OrderDetails orderDetails = placeOrder.getOrder().getDetails();
             PortfolioState.Open state = (PortfolioState.Open)state();
