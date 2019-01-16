@@ -13,3 +13,5 @@
 - Liquidation process
 - Portfolio search
 - Provide per portfolio stream of order events to client
+
+CommonModels probably not a good pattern to follow due to code coupling across services.
