@@ -13,7 +13,7 @@ import play.mvc.*;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
-class PortfolioController extends Controller {
+public class PortfolioController extends Controller {
 
     private final Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
