@@ -6,7 +6,7 @@ import com.redelastic.stocktrader.portfolio.impl.PortfolioRepositoryImpl;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioServiceImpl;
 
-public class Module extends AbstractModule implements ServiceGuiceSupport {
+class Module extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {
         bindService(PortfolioService.class, PortfolioServiceImpl.class);

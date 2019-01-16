@@ -16,7 +16,7 @@ import java.math.BigDecimal;
  * more easily.
  */
 
-public interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
+interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
 
     int NUM_SHARDS = 20; // TODO: Determine the appropriate value
 

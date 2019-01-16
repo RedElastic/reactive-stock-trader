@@ -3,7 +3,6 @@ package controllers;
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.*;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
@@ -14,7 +13,7 @@ import play.mvc.*;
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
 
-public class PortfolioController extends Controller {
+class PortfolioController extends Controller {
 
     private final Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
@@ -24,8 +23,8 @@ public class PortfolioController extends Controller {
     private final Form<OpenPortfolioForm> openPortfolioForm;
 
     @Inject
-    public PortfolioController(PortfolioService portfolioService,
-                               FormFactory formFactory) {
+    private PortfolioController(PortfolioService portfolioService,
+                                FormFactory formFactory) {
         this.portfolioService = portfolioService;
         this.placeOrderForm = formFactory.form(PlaceOrderForm.class);
         this.openPortfolioForm = formFactory.form(OpenPortfolioForm.class);

@@ -14,4 +14,6 @@
 - Portfolio search
 - Provide per portfolio stream of order events to client
 
+- CB and timeout on IEX (configuration)
+
 CommonModels probably not a good pattern to follow due to code coupling across services.

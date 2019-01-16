@@ -4,7 +4,7 @@ import com.lightbend.lagom.javadsl.api.transport.TransportErrorCode;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.lightbend.lagom.serialization.Jsonable;
 
-public class InsufficientShares extends TransportException implements Jsonable {
+class InsufficientShares extends TransportException implements Jsonable {
 
     public InsufficientShares(String message) {
         super(TransportErrorCode.BadRequest, message);

@@ -1,5 +1,7 @@
 package com.redelastic.stocktrader.broker.impl.quote;
 
+import akka.actor.ActorSystem;
+import akka.pattern.CircuitBreaker;
 import com.redelastic.stocktrader.broker.api.Quote;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
@@ -11,6 +13,7 @@ import play.libs.ws.WSRequest;
 import play.libs.ws.WSResponse;
 
 import javax.inject.Inject;
+import java.time.Duration;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -22,12 +25,26 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
 
     private final WSClient wsClient;
     private final String hostName;
+    private final Duration requestTimeout;
+
+    private final CircuitBreaker circuitBreaker;
 
     @Inject
     IexQuoteServiceImpl(WSClient wsClient,
-                        Config config) {
+                        Config config,
+                        ActorSystem actorSystem) {
         this.wsClient = wsClient;
         this.hostName = config.getString("quote.iex.hostname");
+        this.requestTimeout = Duration.ofMillis(1000); // TODO: Configurable
+        int maxFailures = 10;
+        Duration callTimeout = this.requestTimeout.minus(this.requestTimeout.dividedBy(10));
+        Duration resetTimeout = Duration.ofMillis(1000);
+        this.circuitBreaker = new CircuitBreaker(
+                actorSystem.getDispatcher(),
+                actorSystem.getScheduler(),
+                maxFailures,
+                callTimeout,
+                resetTimeout); // TODO
     }
 
     private WSRequest quoteRequest(String symbol) {
@@ -36,7 +53,11 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
     }
 
     public CompletionStage<Quote> getQuote(String symbol) {
-        CompletionStage<WSResponse> request = quoteRequest(symbol).get();
+        CompletionStage<WSResponse> request =
+                circuitBreaker.callWithCircuitBreakerCS(() ->
+                        quoteRequest(symbol)
+                                .setRequestTimeout(requestTimeout)
+                                .get());
         return request
                 .thenApply(response -> {
                     log.info(response.getBody());

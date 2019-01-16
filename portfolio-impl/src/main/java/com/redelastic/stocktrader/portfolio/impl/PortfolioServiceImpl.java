@@ -29,13 +29,11 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final Logger log = LoggerFactory.getLogger(PortfolioServiceImpl.class);
 
     private final PortfolioRepository portfolioRepository;
-    private final BrokerService brokerService;
 
     @Inject
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository,
                                 BrokerService brokerService) {
         this.portfolioRepository = portfolioRepository;
-        this.brokerService = brokerService;
 
         // Listen for purchase order completions and send them to the corresponding portfolio
         brokerService.orderResults()

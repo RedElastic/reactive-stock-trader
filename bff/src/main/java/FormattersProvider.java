@@ -29,7 +29,7 @@ class FormattersProvider implements Provider<Formatters> {
         return formatters;
     }
 
-    private SimpleFormatter<OrderType> orderTypeFormatter = new SimpleFormatter<OrderType>() {
+    private final SimpleFormatter<OrderType> orderTypeFormatter = new SimpleFormatter<OrderType>() {
         @Override
         public OrderType parse(String text, Locale locale) throws ParseException {
             try {

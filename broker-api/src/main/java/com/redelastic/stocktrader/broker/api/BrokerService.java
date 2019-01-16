@@ -15,10 +15,21 @@ public interface BrokerService extends Service {
 
   ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
+  /**
+   *
+   * @param orderId
+   * @return Status of the order, if it exists, empty if no such order ID is known.
+   */
   ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId);
 
-  String ORDER_RESULTS_TOPIC_ID = "OrderResults";
+  /**
+   * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
+   * or otherwise).
+   * @return
+   */
   Topic<OrderResult> orderResults();
+
+  String ORDER_RESULTS_TOPIC_ID = "Broker-OrderResults";
 
   @Override
   default Descriptor descriptor() {

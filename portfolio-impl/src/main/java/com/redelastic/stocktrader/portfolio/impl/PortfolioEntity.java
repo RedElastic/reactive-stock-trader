@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 // TODO: Note overdrawn status on purchase.
-public class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent, PortfolioState> {
+class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent, PortfolioState> {
     private final Logger log = LoggerFactory.getLogger(PortfolioEntity.class);
 
     @Override

@@ -7,6 +7,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
+/**
+ * Domain event representing the completion of an order, either successfully as a fulfillment of the order, or
+ * unsuccessfully.
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
 @JsonSubTypes({
         @JsonSubTypes.Type(OrderResult.OrderFulfilled.class),

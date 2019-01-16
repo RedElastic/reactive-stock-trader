@@ -4,7 +4,7 @@ import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import lombok.Data;
 
 @Data
-public class OpenPortfolioForm {
+class OpenPortfolioForm {
     String name;
 
     OpenPortfolioDetails toRequest() {

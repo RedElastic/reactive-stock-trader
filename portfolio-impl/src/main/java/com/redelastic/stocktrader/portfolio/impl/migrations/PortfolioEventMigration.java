@@ -7,7 +7,7 @@ import com.lightbend.lagom.serialization.JacksonJsonMigration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PortfolioEventMigration extends JacksonJsonMigration {
+class PortfolioEventMigration extends JacksonJsonMigration {
 
     private final Logger log = LoggerFactory.getLogger(PortfolioEventMigration.class);
     @Override

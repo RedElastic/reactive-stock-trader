@@ -66,7 +66,6 @@ public class PortfolioModelEntityTest {
                         new Open(pName),
                         new PlaceOrder(orderId, orderDetails));
         assertThat(outcome.state(), instanceOf(PortfolioState.Open.class));
-        outcome.events().forEach(e -> System.out.println(e.toString()));
         assertTrue(outcome.events().contains(
                 new PortfolioEvent.OrderPlaced(orderId, portfolioId, orderDetails)));
     }
@@ -130,4 +129,5 @@ public class PortfolioModelEntityTest {
         assertEquals(2, outcome.getReplies().size());
         assertEquals(outcome.getReplies().get(1).getClass(), InsufficientShares.class);
     }
+
 }

@@ -2,10 +2,9 @@ package controllers;
 
 import com.redelastic.stocktrader.order.OrderType;
 import lombok.Data;
-import lombok.NonNull;
 
 @Data
-public class PlaceOrderForm {
+class PlaceOrderForm {
 
     String symbol;
 

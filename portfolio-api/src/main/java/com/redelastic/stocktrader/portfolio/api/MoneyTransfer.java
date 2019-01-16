@@ -6,7 +6,7 @@ import lombok.Value;
 import java.math.BigDecimal;
 
 @Value
-public class MoneyTransfer {
+class MoneyTransfer {
     @NonNull String portfolioId;
     @NonNull BigDecimal funds;
 }

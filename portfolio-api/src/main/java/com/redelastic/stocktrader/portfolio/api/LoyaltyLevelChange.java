@@ -4,7 +4,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class LoyaltyLevelChange {
+class LoyaltyLevelChange {
     @NonNull String portfolioId;
 
     @NonNull LoyaltyLevel oldLoyaltyLevel;

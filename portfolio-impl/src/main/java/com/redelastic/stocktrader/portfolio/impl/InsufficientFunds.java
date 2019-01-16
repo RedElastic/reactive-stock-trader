@@ -4,7 +4,7 @@ import com.lightbend.lagom.javadsl.api.transport.TransportErrorCode;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.lightbend.lagom.serialization.Jsonable;
 
-public class InsufficientFunds extends TransportException implements Jsonable {
+class InsufficientFunds extends TransportException implements Jsonable {
 
     public InsufficientFunds(String message) {
         super(TransportErrorCode.BadRequest, message);
