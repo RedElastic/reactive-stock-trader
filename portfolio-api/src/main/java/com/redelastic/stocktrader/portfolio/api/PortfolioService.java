@@ -32,10 +32,6 @@ public interface PortfolioService extends Service {
 
     String ORDERS_TOPIC_ID = "PortfolioOrders";
     Topic<Order> orders();
-    /*
-    String LOYALTY_LEVEL_TOPIC_ID = "LoyaltyLevelChanges";
-    Topic<LoyaltyLevelChange> loyaltyLevelChanges();
-    */
 
     @Override
     default Descriptor descriptor() {
