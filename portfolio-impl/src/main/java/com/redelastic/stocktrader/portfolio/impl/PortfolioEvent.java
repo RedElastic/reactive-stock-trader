@@ -4,7 +4,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
-import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -80,8 +80,17 @@ public interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent>
 
     @Value
     class OrderPlaced implements PortfolioEvent {
+        @NonNull String orderId;
         @NonNull String portfolioId;
-        @NonNull Order order;
+        @NonNull OrderDetails orderDetails;
+
+        com.redelastic.stocktrader.portfolio.api.OrderPlaced asDomainEvent() {
+            return com.redelastic.stocktrader.portfolio.api.OrderPlaced.builder()
+                   .portfolioId(portfolioId)
+                    .orderId(orderId)
+                   .orderDetails(orderDetails)
+                    .build();
+        }
     }
 
 }

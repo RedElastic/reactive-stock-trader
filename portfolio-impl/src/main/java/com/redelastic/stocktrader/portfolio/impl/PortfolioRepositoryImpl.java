@@ -7,8 +7,8 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
-import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
+import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,15 +55,15 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         return new PortfolioModel(brokerService, persistentEntities, portfolioId);
     }
 
-    public Source<Pair<Order, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
+    public Source<Pair<OrderPlaced, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
         return persistentEntities.eventStream(tag, offset)
             .filter(eventOffset ->
                     eventOffset.first() instanceof PortfolioEvent.OrderPlaced
             ).mapAsync(1, eventOffset -> {
-                    PortfolioEvent.OrderPlaced order = (PortfolioEvent.OrderPlaced)eventOffset.first();
-                    log.info(String.format("Publishing order %s", order.getOrder().getOrderId()));
+                    PortfolioEvent.OrderPlaced orderPlaced = (PortfolioEvent.OrderPlaced)eventOffset.first();
+                    log.info(String.format("Publishing order %s", orderPlaced.getOrderId()));
                     return CompletableFuture.completedFuture(Pair.create(
-                            order.getOrder(),
+                            orderPlaced.asDomainEvent(),
                             eventOffset.second()
                     ));
             });

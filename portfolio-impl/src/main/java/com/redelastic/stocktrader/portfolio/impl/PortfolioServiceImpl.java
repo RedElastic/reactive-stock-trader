@@ -116,7 +116,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public Topic<Order> orders() {
+    public Topic<OrderPlaced> orders() {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
     }
 

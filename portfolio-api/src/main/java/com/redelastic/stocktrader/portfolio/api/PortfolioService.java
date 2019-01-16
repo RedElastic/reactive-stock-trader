@@ -6,7 +6,6 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
-import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderDetails;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
@@ -31,7 +30,7 @@ public interface PortfolioService extends Service {
     ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
 
     String ORDERS_TOPIC_ID = "PortfolioOrders";
-    Topic<Order> orders();
+    Topic<OrderPlaced> orders();
 
     @Override
     default Descriptor descriptor() {

@@ -100,7 +100,7 @@ class PortfolioModel {
     }
 
     CompletionStage<Done> placeOrder(Order order) {
-        return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(order));
+        return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(order.getOrderId(),  order.getDetails()));
     }
 
     CompletionStage<Done> processTrade(Trade trade) {

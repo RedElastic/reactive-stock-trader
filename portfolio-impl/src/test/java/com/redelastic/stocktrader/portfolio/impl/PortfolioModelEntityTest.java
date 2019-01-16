@@ -4,7 +4,6 @@ import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
@@ -60,21 +59,16 @@ public class PortfolioModelEntityTest {
                 .conditions(OrderConditions.Market.INSTANCE)
                 .build();
 
-        Order order = Order.builder()
-                .orderId(orderId)
-                .portfolioId(portfolioId)
-                .details(orderDetails)
-                .build();
-
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,PortfolioState> driver = createPortfolioEntity(portfolioId);
 
         PersistentEntityTestDriver.Outcome<PortfolioEvent, PortfolioState> outcome =
                 driver.run(
                         new Open(pName),
-                        new PlaceOrder(order));
+                        new PlaceOrder(orderId, orderDetails));
         assertThat(outcome.state(), instanceOf(PortfolioState.Open.class));
+        outcome.events().forEach(e -> System.out.println(e.toString()));
         assertTrue(outcome.events().contains(
-                new PortfolioEvent.OrderPlaced(portfolioId, order)));
+                new PortfolioEvent.OrderPlaced(orderId, portfolioId, orderDetails)));
     }
 
     @Test
@@ -124,18 +118,12 @@ public class PortfolioModelEntityTest {
                                 .orderType(OrderType.BUY)
                                 .build()
                 ),
-                new PortfolioCommand.PlaceOrder(
-                        Order.builder()
-                            .orderId(orderId)
-                            .portfolioId(portfolioId)
-                            .details(
-                                    OrderDetails.builder()
-                                        .symbol(symbol)
-                                        .shares(shareCount+1)
-                                        .orderType(OrderType.SELL)
-                                        .conditions(OrderConditions.Market.INSTANCE)
-                                        .build()
-                            )
+                new PortfolioCommand.PlaceOrder(orderId,
+                        OrderDetails.builder()
+                            .symbol(symbol)
+                            .shares(shareCount+1)
+                            .orderType(OrderType.SELL)
+                            .conditions(OrderConditions.Market.INSTANCE)
                             .build()
                 )
         );

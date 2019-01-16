@@ -5,7 +5,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity.ReplyType;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -30,7 +30,8 @@ public interface PortfolioCommand extends Jsonable {
     @Value
     @Builder
     class PlaceOrder implements PortfolioCommand, ReplyType<Done> {
-        @NonNull Order order;
+        @NonNull String orderId;
+        @NonNull OrderDetails orderDetails;
     }
 
     @Value

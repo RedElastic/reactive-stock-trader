@@ -3,7 +3,6 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,15 +135,14 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
         }
 
         private Persist placeOrder(PortfolioCommand.PlaceOrder placeOrder, CommandContext<Done> ctx) {
-            log.info(String.format("Placing order %s", placeOrder.getOrder().toString()));
-            Order order = placeOrder.getOrder();
-            OrderDetails orderDetails = placeOrder.getOrder().getDetails();
+            log.info(String.format("Placing order %s", placeOrder.toString()));
+            OrderDetails orderDetails = placeOrder.getOrderDetails();
             switch(orderDetails.getOrderType()) {
                 case SELL:
                     int available = state().getHoldings().getShareCount(orderDetails.getSymbol());
                     if (available >= orderDetails.getShares()) {
                         return ctx.thenPersistAll(Arrays.asList(
-                                new PortfolioEvent.OrderPlaced(entityId(), order),
+                                new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
                                 new PortfolioEvent.SharesDebited(entityId(), orderDetails.getSymbol(), orderDetails.getShares())),
                                 () -> ctx.reply(Done.getInstance()));
                     } else {
@@ -156,7 +154,7 @@ public class PortfolioEntity extends PersistentEntity<PortfolioCommand, Portfoli
                         return ctx.done();
                     }
                 case BUY:
-                    return ctx.thenPersist(new PortfolioEvent.OrderPlaced(entityId(), order),
+                    return ctx.thenPersist(new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
                             evt -> ctx.reply(Done.getInstance()));
                 default:
                     throw new IllegalStateException();
