@@ -1,13 +1,11 @@
 package com.redelastic.stocktrader.broker.api;
 
-import akka.Done;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.transport.Method;
-import com.redelastic.stocktrader.order.Order;
 
 import java.util.Optional;
 
@@ -18,8 +16,6 @@ public interface BrokerService extends Service {
   ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
   ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId);
-
-  ServiceCall<Order, Done> placeOrder();
 
   String ORDER_RESULTS_TOPIC_ID = "OrderResults";
   Topic<OrderResult> orderResults();

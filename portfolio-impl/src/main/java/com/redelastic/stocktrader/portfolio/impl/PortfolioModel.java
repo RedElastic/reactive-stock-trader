@@ -7,7 +7,7 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import com.redelastic.stocktrader.portfolio.api.ValuedHolding;
 import org.pcollections.ConsPStack;
@@ -99,8 +99,8 @@ class PortfolioModel {
                 ).thenApply(ConsPStack::from);
     }
 
-    CompletionStage<Done> placeOrder(Order order) {
-        return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(order.getOrderId(),  order.getDetails()));
+    CompletionStage<Done> placeOrder(String orderId, OrderDetails orderDetails) {
+        return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(orderId,  orderDetails));
     }
 
     CompletionStage<Done> processTrade(Trade trade) {

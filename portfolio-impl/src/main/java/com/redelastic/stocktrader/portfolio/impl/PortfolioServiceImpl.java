@@ -9,9 +9,11 @@ import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
+import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
+import com.redelastic.stocktrader.portfolio.api.PortfolioService;
+import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         brokerService.orderResults()
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
-        // Note: Our order entity logic handles duplicate orders, hence at least once semantics work.
+        // Note: Our order entity logic handles duplicate orderPlaced, hence at least once semantics work.
     }
 
     @Override
@@ -64,40 +66,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     public ServiceCall<OrderDetails, Done> placeOrder(String portfolioId) {
         return orderDetails -> {
             String orderId = UUID.randomUUID().toString();
-            Order order = Order.builder()
-                    .orderId(orderId)
-                    .portfolioId(portfolioId)
-                    .details(orderDetails)
-                    .build();
             return portfolioRepository
                     .get(portfolioId)
-                    .placeOrder(order);
-        };
-    }
-
-    /**
-     * Illustrate synchronous inter-service communication pattern by making service call
-     * to broker directly. The upside of this is that the call is made quicker (the
-     * read-side processor used for the asynchronous topic based inter-service communication
-     * introduces significant latency). The downside is that it couples the services in time,
-     * if the broker service is currently unavailable the call will fail. The topic based
-     * communication approach can handle such situations, resuming processing of orders once
-     * the service is available. Since we're not dealing with a high-frequency trading
-     * situation we can tolerate a few seconds latency between the trade being placed and
-     * being processed, so we've used the asynchronous topic based approach here.
-     * @return
-     */
-    private ServiceCall<OrderDetails, Done> placeOrderSync(String portfolioId) {
-        return orderDetails -> {
-            String orderId = UUID.randomUUID().toString();
-            // We'll wait for the broker to acknowledge the order before completing since we won't
-            // be able to recover (resubmit the order) if the broker is not available.
-            Order order = Order.builder().orderId(orderId).details(orderDetails).build();
-            return portfolioRepository
-                    .get(portfolioId)
-                    .placeOrder(order)
-                    .thenCompose(done ->
-                            brokerService.placeOrder().invoke(order));
+                    .placeOrder(orderId, orderDetails);
         };
     }
 
@@ -116,7 +87,7 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public Topic<OrderPlaced> orders() {
+    public Topic<OrderPlaced> orderPlaced() {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
     }
 

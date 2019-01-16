@@ -40,7 +40,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
     }
 
     /**
-     * Base class for OrderBehavior covering pending and completed orders. Not this is not completely type safe, it is
+     * Base class for OrderBehavior covering pending and completed orderPlaced. Not this is not completely type safe, it is
      * possible to set an event handler that produces a state that doesn't correspond to the current behaviour.
      *
      * @param <State> The type of state associated to this behavior.

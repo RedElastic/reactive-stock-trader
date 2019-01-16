@@ -29,8 +29,8 @@ public interface PortfolioService extends Service {
 
     ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
 
-    String ORDERS_TOPIC_ID = "PortfolioOrders";
-    Topic<OrderPlaced> orders();
+    String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
+    Topic<OrderPlaced> orderPlaced();
 
     @Override
     default Descriptor descriptor() {
@@ -44,7 +44,7 @@ public interface PortfolioService extends Service {
                 pathCall("/api/portfolio/:portfolioId", this::getPortfolio),
                 pathCall("/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
         ).withTopics(
-            topic(ORDERS_TOPIC_ID, this::orders)
+            topic(ORDERS_TOPIC_ID, this::orderPlaced)
         );
         // @formatter:on
 

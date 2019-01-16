@@ -16,7 +16,7 @@ import com.redelastic.stocktrader.broker.impl.order.OrderEntity;
 import com.redelastic.stocktrader.broker.impl.order.OrderEvent;
 import com.redelastic.stocktrader.broker.impl.order.OrderRepository;
 import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
-import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ import java.util.concurrent.CompletionStage;
 /**
  * Note: The only supported way within Lagom to publish to a topic is tracking
  * persistent entity state. This means we'll need to create persistent entities for
- * all our orders, even market orders which we might be tempted not to otherwise.
+ * all our orderPlaced, even market orderPlaced which we might be tempted not to otherwise.
  */
 
 public class BrokerServiceImpl implements BrokerService {
@@ -46,7 +46,7 @@ public class BrokerServiceImpl implements BrokerService {
         this.orderRepository = orderRepository;
         persistentEntities.register(OrderEntity.class);
 
-        portfolioService.orders().subscribe().atLeastOnce(processPortfolioOrders());
+        portfolioService.orderPlaced().subscribe().atLeastOnce(processPortfolioOrders());
     }
 
     @Override
@@ -65,19 +65,14 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     @Override
-    public ServiceCall<Order, Done> placeOrder() {
-        return this::processOrder;
-    }
-
-    @Override
     public Topic<OrderResult> orderResults() {
         return TopicProducer.taggedStreamWithOffset(OrderEvent.TAG.allTags(), orderRepository::orderResults);
     }
 
 
-    private Flow<Order, Done, NotUsed> processPortfolioOrders() {
-        return Flow.<Order>create()
-                .log("orders")
+    private Flow<OrderPlaced, Done, NotUsed> processPortfolioOrders() {
+        return Flow.<OrderPlaced>create()
+                .log("orderPlaced")
                 .addAttributes(Attributes.createLogLevels(
                         Attributes.logLevelInfo(), // onElement
                         Attributes.logLevelError(), // onFailure
@@ -85,8 +80,8 @@ public class BrokerServiceImpl implements BrokerService {
                 .mapAsync(1, this::processOrder);
     }
 
-    private CompletionStage<Done> processOrder(Order order) {
-        return orderRepository.get(order.getOrderId()).placeOrder(order.getPortfolioId(), order.getDetails());
+    private CompletionStage<Done> processOrder(OrderPlaced order) {
+        return orderRepository.get(order.getOrderId()).placeOrder(order.getPortfolioId(), order.getOrderDetails());
     }
 
 }
