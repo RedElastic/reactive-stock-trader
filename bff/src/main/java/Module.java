@@ -5,6 +5,7 @@ import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 
+@SuppressWarnings("WeakerAccess")
 public class Module extends AbstractModule implements ServiceClientGuiceSupport {
     @Override
     protected void configure() {

@@ -10,6 +10,7 @@ import com.redelastic.stocktrader.broker.impl.trade.TradeService;
 import com.redelastic.stocktrader.broker.impl.trade.TradeServiceImpl;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 
+@SuppressWarnings("WeakerAccess")
 public class Module extends AbstractModule implements ServiceGuiceSupport {
     @Override
     protected void configure() {

@@ -36,10 +36,7 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
     @Builder
     class Opened implements PortfolioEvent {
         @NonNull String portfolioId;
-        String name; /* FIXME: Would like this to be @NonNull, but I have some events with nulls
-                      * in my journal. Tried to fix it with JsonMigrations, but these seem to be broken (or don't apply to event streams?)
-                      * and don't work in dev mode (but seem to work with `sbt runAll`).
-                      */
+        @NonNull String name;
 
         @JsonCreator
         Opened(

@@ -2,6 +2,7 @@ import com.google.inject.AbstractModule;
 
 import play.data.format.Formatters;
 
+@SuppressWarnings("WeakerAccess")
 public class FormattersModule extends AbstractModule {
 
     @Override
