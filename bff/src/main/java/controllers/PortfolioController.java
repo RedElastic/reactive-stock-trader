@@ -53,7 +53,7 @@ public class PortfolioController extends Controller {
                 .orderType(orderForm.getOrderType())
                 .symbol(orderForm.getSymbol())
                 .shares(orderForm.getShares())
-                .conditions(OrderConditions.Market.INSTANCE)
+                .orderConditions(OrderConditions.Market.INSTANCE)
                 .build();
         return portfolioService
                 .placeOrder(portfolioId)

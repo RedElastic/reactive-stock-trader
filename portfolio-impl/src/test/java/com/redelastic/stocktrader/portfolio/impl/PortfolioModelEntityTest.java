@@ -56,7 +56,7 @@ public class PortfolioModelEntityTest {
                 .symbol(symbol)
                 .shares(shareCount)
                 .orderType(OrderType.BUY)
-                .conditions(OrderConditions.Market.INSTANCE)
+                .orderConditions(OrderConditions.Market.INSTANCE)
                 .build();
 
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,PortfolioState> driver = createPortfolioEntity(portfolioId);
@@ -122,7 +122,7 @@ public class PortfolioModelEntityTest {
                             .symbol(symbol)
                             .shares(shareCount+1)
                             .orderType(OrderType.SELL)
-                            .conditions(OrderConditions.Market.INSTANCE)
+                            .orderConditions(OrderConditions.Market.INSTANCE)
                             .build()
                 )
         );

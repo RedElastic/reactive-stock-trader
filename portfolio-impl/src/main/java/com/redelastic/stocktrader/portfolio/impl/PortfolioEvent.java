@@ -1,5 +1,7 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
@@ -38,6 +40,15 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
                       * in my journal. Tried to fix it with JsonMigrations, but these seem to be broken (or don't apply to event streams?)
                       * and don't work in dev mode (but seem to work with `sbt runAll`).
                       */
+
+        @JsonCreator
+        Opened(
+                @JsonProperty("portfolioId") String portfolioId,
+                @JsonProperty("name") String name
+        ) {
+            this.portfolioId = portfolioId;
+            this.name = name;
+        }
     }
 
     @Value
@@ -91,6 +102,18 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
                    .orderDetails(orderDetails)
                     .build();
         }
+
+        @JsonCreator
+        OrderPlaced(
+                @JsonProperty("orderId") String orderId,
+                @JsonProperty("portfolioId") String portfolioId,
+                @JsonProperty("orderDetails") OrderDetails orderDetails
+        ) {
+            this.orderId = orderId;
+            this.portfolioId = portfolioId;
+            this.orderDetails = orderDetails;
+        }
+
     }
 
 }

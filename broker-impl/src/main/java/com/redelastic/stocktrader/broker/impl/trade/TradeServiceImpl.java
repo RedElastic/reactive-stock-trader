@@ -27,11 +27,11 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public CompletionStage<OrderResult> placeOrder(Order order) {
         log.info(String.format("Order placed: %s", order.toString()));
-        if (order.getDetails().getConditions() instanceof OrderConditions.Market) {
+        if (order.getDetails().getOrderConditions() instanceof OrderConditions.Market) {
             return completeMarketOrder(order);
         } else {
             log.error(String.format("Unhandled order placed: %s",
-                    order.getDetails().getConditions()));
+                    order.getDetails().getOrderConditions()));
             throw new UnsupportedOperationException();
         }
     }
