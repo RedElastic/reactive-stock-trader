@@ -4,7 +4,7 @@ import com.redelastic.stocktrader.order.OrderType;
 import lombok.Data;
 
 @Data
-class PlaceOrderForm {
+public class PlaceOrderForm {
 
     String symbol;
 

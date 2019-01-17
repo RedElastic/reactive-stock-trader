@@ -2,7 +2,7 @@ import com.google.inject.AbstractModule;
 
 import play.data.format.Formatters;
 
-class FormattersModule extends AbstractModule {
+public class FormattersModule extends AbstractModule {
 
     @Override
     protected void configure() {
