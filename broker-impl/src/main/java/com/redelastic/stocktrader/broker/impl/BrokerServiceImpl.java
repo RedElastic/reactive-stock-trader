@@ -75,9 +75,10 @@ public class BrokerServiceImpl implements BrokerService {
                 .log("orderPlaced")
                 .addAttributes(Attributes.createLogLevels(
                         Attributes.logLevelInfo(), // onElement
-                        Attributes.logLevelError(), // onFailure
-                        Attributes.logLevelInfo()))
-                .mapAsync(1, this::processOrder);
+                        Attributes.logLevelInfo(), // onFinish
+                        Attributes.logLevelError()) // onFailure
+                )
+                .mapAsync(1, this::processOrder);   // TODO: Increase parallelism
     }
 
     private CompletionStage<Done> processOrder(OrderPlaced order) {

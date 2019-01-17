@@ -17,21 +17,6 @@ import java.math.BigDecimal;
 public interface PortfolioState extends Jsonable {
 
     @Value
-    class Uninitialized implements PortfolioState {
-        private Uninitialized() {}
-        public static Uninitialized INSTANCE = new Uninitialized();
-
-        Open update(PortfolioEvent.Opened evt) {
-            return PortfolioState.Open.builder()
-                    .funds(new BigDecimal("0"))
-                    .name(evt.getName())
-                    .holdings(Holdings.EMPTY)
-                    .loyaltyLevel(LoyaltyLevel.BRONZE)
-                    .build();
-        }
-    }
-
-    @Value
     @Builder
     @Wither
     final class Open implements PortfolioState {

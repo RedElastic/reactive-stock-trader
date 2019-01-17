@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.broker.impl.quote;
 
 import akka.actor.ActorSystem;
 import akka.pattern.CircuitBreaker;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.redelastic.stocktrader.broker.api.Quote;
 import com.typesafe.config.Config;
 import org.slf4j.Logger;
@@ -58,16 +59,22 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                         quoteRequest(symbol)
                                 .setRequestTimeout(requestTimeout)
                                 .get());
+
+        request.thenAccept(response -> {
+            if (response.getStatus() == 200) {
+                log.debug(response.toString());
+            } else {
+                log.info(response.toString());
+            }
+        });
         return request
                 .thenApply(response -> {
-                    log.info(response.getBody());
-                    return response.getBody(json());
-                })
-                .thenApply(json -> Json.fromJson(json, IexQuoteResponse.class))
-                .thenApply(iexResponse ->
-                        Quote.builder()
-                                .symbol(symbol)
-                                .sharePrice(iexResponse.getLatestPrice())
-                                .build());
+                    JsonNode json = response.getBody(json());
+                    IexQuoteResponse iexQuoteResponse = Json.fromJson(json, IexQuoteResponse.class);
+                    return Quote.builder()
+                            .symbol(symbol)
+                            .sharePrice(iexQuoteResponse.getLatestPrice())
+                            .build();
+                });
     }
 }

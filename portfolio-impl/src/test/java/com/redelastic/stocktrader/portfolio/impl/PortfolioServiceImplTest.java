@@ -81,7 +81,7 @@ public class PortfolioServiceImplTest {
 
 
     @Test
-    public void placeOrder() throws Exception {
+    public void placeBuyOrder() throws Exception {
         PortfolioService service = server.client(PortfolioService.class);
         OpenPortfolioDetails details = OpenPortfolioDetails.builder().name("portfolioName").build();
         String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);

@@ -4,20 +4,23 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 
 // TODO: Note overdrawn status on purchase.
-class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent, PortfolioState> {
+class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> {
     private final Logger log = LoggerFactory.getLogger(PortfolioEntity.class);
 
     @Override
-    public Behavior initialBehavior(Optional<PortfolioState> snapshotState) {
+    public Behavior initialBehavior(Optional<Optional<PortfolioState>> snapshotState) {
         return snapshotState
-                .filter(state -> !(state instanceof PortfolioState.Uninitialized))
+                .flatMap(Function.identity())
                 .map(state -> {
                     if (state instanceof PortfolioState.Open) {
                         return new OpenPortfolioBehavior((PortfolioState.Open) state).getBehavior();
@@ -38,7 +41,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
     class UninitializedBehavior {
 
         Behavior getBehaviour() {
-            BehaviorBuilder builder = newBehaviorBuilder(PortfolioState.Uninitialized.INSTANCE);
+            BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
 
             builder.setCommandHandler(PortfolioCommand.Open.class, this::open);
             builder.setEventHandlerChangingBehavior(PortfolioEvent.Opened.class, this::opened);
@@ -46,11 +49,12 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             return builder.build();
         }
 
-        private Persist open(PortfolioCommand.Open cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist open(PortfolioCommand.Open cmd, CommandContext<Done> ctx) {
             PortfolioEvent.Opened openEvent = PortfolioEvent.Opened.builder()
                     .name(cmd.getName())
                     .portfolioId(entityId())
                     .build();
+
             log.info(openEvent.toString());
             return ctx.thenPersist(openEvent,
                     (e) -> ctx.reply(Done.getInstance()));
@@ -58,19 +62,23 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
         private Behavior opened(PortfolioEvent.Opened evt) {
             log.info(String.format("Opened %s, named %s", entityId(), evt.getName()));
-            PortfolioState.Open state = PortfolioState.Uninitialized.INSTANCE.update(evt);
-            return new OpenPortfolioBehavior(state).getBehavior();
+
+            return new OpenPortfolioBehavior(evt).getBehavior();
         }
     }
 
 
-
+    /**
+     * Provides a stronger typed interface for defining state specific behavior when
+     * @param <State>
+     */
     abstract class PortfolioBehaviorBuilder<State extends PortfolioState> {
-        State state() { return (State)PortfolioEntity.this.state(); }
+        State state() { return (State)PortfolioEntity.this.state().get(); }
 
-        abstract Behavior getBehavior();
+        final BehaviorBuilder builder;
 
-        void rejectOpen(BehaviorBuilder builder) {
+        PortfolioBehaviorBuilder(PortfolioState state) {
+            builder = newBehaviorBuilder(Optional.of(state));
             builder.setCommandHandler(PortfolioCommand.Open.class, this::rejectOpen);
         }
 
@@ -78,14 +86,47 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             ctx.commandFailed(new PortfolioAlreadyOpened(entityId()));
             return ctx.done();
         }
+
+        <E extends PortfolioEvent> void setEventHandler(Class<E> event, Function<E, State> handler) {
+            builder.setEventHandler(event, handler.andThen(Optional::of));
+        }
+
+        <E extends PortfolioEvent> void setEventHandlerChangingState(Class<E> event, Function<E, PortfolioState> handler) {
+            Function<E, Behavior> stateHandler = handler.andThen(this::behaviourForState);
+            builder.setEventHandlerChangingBehavior(event, stateHandler);
+        }
+
+        Behavior getBehavior() {
+            return builder.build();
+        }
+
+        Behavior behaviourForState(PortfolioState state) {
+            if (state instanceof PortfolioState.Open) {
+                return new OpenPortfolioBehavior((PortfolioState.Open)state).getBehavior();
+            } else if (state instanceof PortfolioState.Liquidating) {
+                return new LiquidatingPortfolioBehaviour((PortfolioState.Liquidating)state).getBehavior();
+            } else if (state instanceof PortfolioState.Closed) {
+                return new ClosedPortfolioBehaviourBuilder().getBehavior();
+            } else {
+                throw new IllegalStateException();
+            }
+        }
     }
 
 
     private class OpenPortfolioBehavior extends PortfolioBehaviorBuilder<PortfolioState.Open> {
-        private final Behavior behavior;
 
-        OpenPortfolioBehavior(PortfolioState.Open state) {
-            BehaviorBuilder builder = newBehaviorBuilder(state);
+        OpenPortfolioBehavior(PortfolioEvent.Opened evt) {
+            this(PortfolioState.Open.builder()
+                    .funds(new BigDecimal("0"))
+                    .name(evt.getName())
+                    .holdings(Holdings.EMPTY)
+                    .loyaltyLevel(LoyaltyLevel.BRONZE)
+                    .build());
+        }
+
+        OpenPortfolioBehavior(PortfolioState.Open initialState) {
+            super(initialState);
 
             builder.setCommandHandler(PortfolioCommand.Open.class, this::rejectOpen);
             builder.setCommandHandler(PortfolioCommand.PlaceOrder.class, this::placeOrder);
@@ -97,19 +138,25 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
             builder.setReadOnlyCommandHandler(PortfolioCommand.GetState.class, this::getState);
 
-            builder.setEventHandler(PortfolioEvent.OrderPlaced.class, evt -> state().update(evt));
-            builder.setEventHandler(PortfolioEvent.SharesCredited.class, evt -> state().update(evt));
-            builder.setEventHandler(PortfolioEvent.FundsDebited.class, evt -> state().update(evt));
-            builder.setEventHandler(PortfolioEvent.FundsCredited.class, evt -> state().update(evt));
-            builder.setEventHandler(PortfolioEvent.SharesDebited.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.OrderPlaced.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.SharesCredited.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.FundsDebited.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.FundsCredited.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.SharesDebited.class, evt -> state().update(evt));
 
-            // TODO: builder.setEventHandlerChangingBehavior(PortfolioEvent.LiquidationStarted.class, evt -> );
+            setEventHandlerChangingState(PortfolioEvent.LiquidationStarted.class, evt ->
+                    PortfolioState.Liquidating.builder()
+                            .name(state().getName())
+                            .funds(state().getFunds())
+                            .loyaltyLevel(state().getLoyaltyLevel())
+                            .holdings(state().getHoldings())
+                            .build()
+            );
 
-            this.behavior = builder.build();
         }
 
 
-        private Persist completeTrade(PortfolioCommand.CompleteTrade cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist completeTrade(PortfolioCommand.CompleteTrade cmd, CommandContext<Done> ctx) {
             Trade trade = cmd.getTrade();
             log.info(String.format(
                     "PortfolioModel %s processing trade %s",
@@ -125,16 +172,16 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
                 case SELL:
                     // Note: for a sale the shares have already been removed when we initiated the sale
-                    return ctx.thenPersistAll(Arrays.asList(
-                            new PortfolioEvent.FundsCredited(entityId(), trade.getPrice())),
-                            () -> ctx.reply(Done.getInstance()));
+                    return ctx.thenPersist(
+                            new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
+                            evt -> ctx.reply(Done.getInstance()));
 
                 default:
                     throw new IllegalStateException(); // FIXME
             }
         }
 
-        private Persist placeOrder(PortfolioCommand.PlaceOrder placeOrder, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist placeOrder(PortfolioCommand.PlaceOrder placeOrder, CommandContext<Done> ctx) {
             log.info(String.format("Placing order %s", placeOrder.toString()));
             OrderDetails orderDetails = placeOrder.getOrderDetails();
             switch(orderDetails.getOrderType()) {
@@ -154,7 +201,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                         return ctx.done();
                     }
                 case BUY:
-                    return ctx.thenPersist(new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
+                    return ctx.thenPersist(
+                            new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
                             evt -> ctx.reply(Done.getInstance()));
                 default:
                     throw new IllegalStateException();
@@ -165,14 +213,14 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             ctx.reply(state());
         }
 
-        private Persist liquidate(PortfolioCommand.Liquidate cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist liquidate(PortfolioCommand.Liquidate cmd, CommandContext<Done> ctx) {
             // TODO: Sell all stocks, transfer out all funds, then move to closed.
             // TODO: Handle overdrawn account (negative funds after all equities liquidated
             return ctx.thenPersist(new PortfolioEvent.LiquidationStarted(entityId()),
                     evt -> ctx.reply(Done.getInstance()));
         }
 
-        private Persist sendFunds(PortfolioCommand.SendFunds cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist sendFunds(PortfolioCommand.SendFunds cmd, CommandContext<Done> ctx) {
             if (state().getFunds().compareTo(cmd.getAmount()) >= 0) {
                 return ctx.thenPersist(
                         new PortfolioEvent.FundsDebited(entityId(), cmd.getAmount()),
@@ -185,61 +233,36 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             }
         }
 
-        private Persist receiveFunds(PortfolioCommand.ReceiveFunds cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist receiveFunds(PortfolioCommand.ReceiveFunds cmd, CommandContext<Done> ctx) {
             return ctx.thenPersist(
                     new PortfolioEvent.FundsCredited(entityId(), cmd.getAmount()),
                     evt -> ctx.reply(Done.getInstance())
             );
         }
 
-        private Persist handleFailedOrder(PortfolioCommand.HandleOrderFailure cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist handleFailedOrder(PortfolioCommand.HandleOrderFailure cmd, CommandContext<Done> ctx) {
             // TODO: record this
             log.info(String.format("Order %s failed for PortfolioModel %s.", cmd.getOrderFailed().getOrderId(), entityId()));
             ctx.reply(Done.getInstance());
             return ctx.done();
         }
 
-        Behavior getBehavior() { return this.behavior; }
     }
 
     private class LiquidatingPortfolioBehaviour extends PortfolioBehaviorBuilder<PortfolioState.Liquidating> {
 
-        private final Behavior behavior;
-
         LiquidatingPortfolioBehaviour(PortfolioState.Liquidating state) {
-            BehaviorBuilder builder = newBehaviorBuilder(state);
-            this.behavior = builder.build();
+            super(state);
         }
 
-        LiquidatingPortfolioBehaviour(PortfolioState.Open openState) {
-            this(PortfolioState.Liquidating.builder()
-                    .name(openState.getName())
-                    .funds(openState.getFunds())
-                    .holdings(openState.getHoldings())
-                    .loyaltyLevel(openState.getLoyaltyLevel())
-                    .build());
-        }
-
-        @Override
-        Behavior getBehavior() {
-            return behavior;
-        }
     }
 
     private class ClosedPortfolioBehaviourBuilder extends PortfolioBehaviorBuilder<PortfolioState.Closed> {
-        private final Behavior behavior;
 
         ClosedPortfolioBehaviourBuilder() {
-            BehaviorBuilder builder = newBehaviorBuilder(PortfolioState.Closed.INSTANCE);
-            rejectOpen(builder);
-
-            this.behavior = builder.build();
+            super(PortfolioState.Closed.INSTANCE);
         }
 
-        @Override
-        Behavior getBehavior() {
-            return behavior;
-        }
     }
 
 }
