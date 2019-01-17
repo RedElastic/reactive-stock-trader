@@ -8,22 +8,21 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.testkit.ProducerStub;
 import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
-import com.redelastic.stocktrader.broker.api.BrokerService;
-import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.broker.api.OrderStatus;
-import com.redelastic.stocktrader.broker.api.Quote;
+import com.redelastic.stocktrader.broker.api.*;
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
-import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
-import com.redelastic.stocktrader.portfolio.api.PortfolioService;
+import com.redelastic.stocktrader.portfolio.api.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import scala.concurrent.duration.FiniteDuration;
 
 import javax.inject.Inject;
+import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -52,7 +51,11 @@ public class PortfolioServiceImplTest {
 
     private static ProducerStub<OrderResult> orderResultProducerStub;
 
+    // Could consider mocking this per test, however this will require creating a new server per test (to resolve DI),
+    // which will spin up C* each time and slow the tests down.
     static class BrokerStub implements BrokerService {
+
+        static BigDecimal sharePrice = new BigDecimal("152.12");
 
         @Inject
         BrokerStub(ProducerStubFactory producerFactory) {
@@ -61,7 +64,8 @@ public class PortfolioServiceImplTest {
 
         @Override
         public ServiceCall<NotUsed, Quote> getQuote(String symbol) {
-            return null;
+            return notUsed -> CompletableFuture.completedFuture(
+                    Quote.builder().symbol(symbol).sharePrice(sharePrice).build());
         }
 
         @Override
@@ -83,23 +87,46 @@ public class PortfolioServiceImplTest {
         String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
         Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
         TestSubscriber.Probe<OrderPlaced> probe =
-                source.runWith(
-                        TestSink.probe(server.system()), server.materializer()
-                );
+                source.runWith(TestSink.probe(server.system()), server.materializer());
+
+        String symbol = "IBM";
+        int shares = 31;
+        OrderType orderType = OrderType.BUY;
+        OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
         OrderDetails orderDetails = OrderDetails.builder()
-                .symbol("IBM")
-                .shares(31)
-                .orderType(OrderType.BUY)
-                .orderConditions(OrderConditions.Market.INSTANCE)
+                .symbol(symbol)
+                .shares(shares)
+                .orderType(orderType)
+                .orderConditions(orderConditions)
                 .build();
 
-        service.placeOrder(portfolioId).invoke(orderDetails)
-                .thenAccept(done -> {
-                    OrderPlaced orderPlaced = probe.request(1).expectNext();
-                    assertEquals(orderDetails, orderPlaced.getOrderDetails());
-                    assertEquals(portfolioId, orderPlaced.getPortfolioId());
-                })
-                .toCompletableFuture().get(5, SECONDS);
+        service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
+
+        OrderPlaced orderPlaced = probe.request(1).expectNext();
+        assertEquals(orderDetails, orderPlaced.getOrderDetails());
+        assertEquals(portfolioId, orderPlaced.getPortfolioId());
+
+        BigDecimal sharePrice = BrokerStub.sharePrice;
+        BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(shares));
+        OrderResult orderResult = OrderResult.OrderFulfilled.builder()
+                .orderId(orderPlaced.getOrderId())
+                .portfolioId(portfolioId)
+                .trade(Trade.builder()
+                    .symbol(symbol)
+                        .shares(shares)
+                        .orderType(orderType)
+                        .price(sharePrice)
+                        .build()
+                )
+                .build();
+        orderResultProducerStub.send(orderResult);
+
+        // Allow some time for the trade result to be processed by the portfolio
+        eventually(FiniteDuration.create(10, SECONDS), () -> {
+            PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
+            assertEquals(1, view.getHoldings().size());
+            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, shares, totalPrice)));
+        });
     }
 
 

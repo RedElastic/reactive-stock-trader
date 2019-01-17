@@ -23,3 +23,6 @@ We'll treat Lagom as purely internally facing, and we won't care too much about 
 Caution: be careful not to reference the initial state in a behaviour in a command, for example, but instead use the state()
 method. It may be best to split all command/event handlers out as separate methods from the behaviour defining method
 to ensure that the initial state passed to the behaviour method (used in the newBehaviorBuilder) is not referenced.     
+
+# Java issues
+- Choice between all arguments constructor or builder. Without named parameters the former can be error prone when there are multiple parameters with the same type (e.g. String). The builder option suffers from incomplete initialization, which can only resolved at runtime through @NonNull annotations. In short we need to either consign ourselves to being open to transposition errors (e.g. swapping the order of orderId and portfolioId), or incomplete initialization. Wrappers for these could help, but may be very cumbersome in Java and with serde.
