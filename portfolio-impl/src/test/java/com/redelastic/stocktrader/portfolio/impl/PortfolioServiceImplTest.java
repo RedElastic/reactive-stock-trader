@@ -100,7 +100,7 @@ public class PortfolioServiceImplTest {
                 .orderConditions(orderConditions)
                 .build();
 
-        service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
+        String orderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
 
         OrderPlaced orderPlaced = probe.request(1).expectNext();
         assertEquals(orderDetails, orderPlaced.getOrderDetails());
@@ -112,7 +112,8 @@ public class PortfolioServiceImplTest {
                 .orderId(orderPlaced.getOrderId())
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
-                    .symbol(symbol)
+                        .orderId(orderId)
+                        .symbol(symbol)
                         .shares(shares)
                         .orderType(orderType)
                         .price(sharePrice)
@@ -129,5 +130,82 @@ public class PortfolioServiceImplTest {
         });
     }
 
+    @Test
+    public void compensateForFailedSale() throws Exception {
+
+        PortfolioService service = server.client(PortfolioService.class);
+        OpenPortfolioDetails details = OpenPortfolioDetails.builder().name("portfolioName").build();
+        String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
+        Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
+        TestSubscriber.Probe<OrderPlaced> probe =
+                source.runWith(TestSink.probe(server.system()), server.materializer());
+
+        // 1. Successfully purchase shares
+        String symbol = "IBM";
+        int shares = 31;
+        OrderType orderType = OrderType.BUY;
+        OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
+        OrderDetails orderDetails = OrderDetails.builder()
+                .symbol(symbol)
+                .shares(shares)
+                .orderType(orderType)
+                .orderConditions(orderConditions)
+                .build();
+
+        String buyOrderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
+
+        OrderPlaced orderPlaced = probe.request(1).expectNext();
+        assertEquals(orderDetails, orderPlaced.getOrderDetails());
+        assertEquals(portfolioId, orderPlaced.getPortfolioId());
+
+        BigDecimal sharePrice = BrokerStub.sharePrice;
+        BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(shares));
+        OrderResult orderResult = OrderResult.OrderFulfilled.builder()
+                .orderId(orderPlaced.getOrderId())
+                .portfolioId(portfolioId)
+                .trade(Trade.builder()
+                        .orderId(buyOrderId)
+                        .symbol(symbol)
+                        .shares(shares)
+                        .orderType(orderType)
+                        .price(sharePrice)
+                        .build()
+                )
+                .build();
+        orderResultProducerStub.send(orderResult);
+
+        // Allow some time for the trade result to be processed by the portfolio
+        eventually(FiniteDuration.create(10, SECONDS), () -> {
+            PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
+            assertEquals(1, view.getHoldings().size());
+            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, shares, totalPrice)));
+        });
+
+        // 2. Unsuccessfully attempt to sell some of them
+        OrderDetails sellOrderDetails = OrderDetails.builder()
+                .orderType(OrderType.SELL)
+                .shares(10)
+                .symbol(symbol)
+                .orderConditions(OrderConditions.Market.INSTANCE)
+                .build();
+        String sellOrderId = service
+                .placeOrder(portfolioId)
+                .invoke(sellOrderDetails)
+                .toCompletableFuture()
+                .get(5, SECONDS);
+
+        OrderResult sellOrderResult = OrderResult.OrderFailed.builder()
+                .orderId(orderPlaced.getOrderId())
+                .portfolioId(portfolioId)
+                .build();
+
+        orderResultProducerStub.send(sellOrderResult);
+
+        eventually(FiniteDuration.create(10, SECONDS), () -> {
+            PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
+            assertEquals(1, view.getHoldings().size());
+            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, shares, totalPrice)));
+        });
+    }
 
 }
