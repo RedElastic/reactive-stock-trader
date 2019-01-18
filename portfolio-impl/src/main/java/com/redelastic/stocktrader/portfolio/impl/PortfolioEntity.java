@@ -4,12 +4,9 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sound.sampled.Port;
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
@@ -162,23 +159,31 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                     entityId(),
                     trade.toString()
             ));
-            switch(trade.getOrderType()) {
-                case BUY:
-                    return ctx.thenPersistAll(Arrays.asList(
-                            new PortfolioEvent.FundsDebited(entityId(), trade.getPrice()),
-                            new PortfolioEvent.SharesCredited(entityId(), trade.getSymbol(), trade.getShares()),
-                            new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
-                            () -> ctx.reply(Done.getInstance()));
+            if (state().getActiveOrders().get(cmd.getTrade().getOrderId()) == null) {
+                // This is a trade for an order that we don't believe to be active, presumably we've already processed
+                // the result of this order and this is a duplicate result.
+                // TODO: More complete tracking so we know that we're not dropping trades
+                ctx.reply(Done.getInstance());
+                return ctx.done();
+            } else {
+                switch (trade.getOrderType()) {
+                    case BUY:
+                        return ctx.thenPersistAll(Arrays.asList(
+                                new PortfolioEvent.FundsDebited(entityId(), trade.getPrice()),
+                                new PortfolioEvent.SharesCredited(entityId(), trade.getSymbol(), trade.getShares()),
+                                new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
+                                () -> ctx.reply(Done.getInstance()));
 
-                case SELL:
-                    // Note: for a sale the shares have already been removed when we initiated the sale
-                    return ctx.thenPersistAll(Arrays.asList(
-                            new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
-                            new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
-                            () -> ctx.reply(Done.getInstance()));
+                    case SELL:
+                        // Note: for a sale the shares have already been removed when we initiated the sale
+                        return ctx.thenPersistAll(Arrays.asList(
+                                new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
+                                new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
+                                () -> ctx.reply(Done.getInstance()));
 
-                default:
-                    throw new IllegalStateException(); // FIXME
+                    default:
+                        throw new IllegalStateException(); // FIXME
+                }
             }
         }
 

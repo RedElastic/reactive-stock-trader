@@ -230,4 +230,51 @@ public class PortfolioServiceImplTest {
         });
     }
 
+    /*
+     * Once we've processed a trade we should not reprocess it. The portfolio service consumes the trade results
+     * topic using at-least-once handling to avoid missing a trade, so we need to ensure we handle duplicates.
+     */
+    @Test
+    public void ignoreDuplicateTrades() throws Exception {
+        PortfolioService service = server.client(PortfolioService.class);
+        OpenPortfolioDetails details = new OpenPortfolioDetails("portfolioName");
+        String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
+        Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
+        TestSubscriber.Probe<OrderPlaced> probe =
+                source.runWith(TestSink.probe(server.system()), server.materializer());
+
+        String symbol = "IBM";
+        int sharesToBuy = 31;
+        OrderDetails buyOrderDetails = OrderDetails.builder()
+                .symbol(symbol)
+                .shares(sharesToBuy)
+                .orderType(OrderType.BUY)
+                .orderConditions(OrderConditions.Market.INSTANCE)
+                .build();
+
+        String orderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
+
+        BigDecimal price = new BigDecimal("123.45");
+        OrderResult tradeResult = OrderResult.OrderFulfilled.builder()
+                .orderId(orderId)
+                .portfolioId(portfolioId)
+                .trade(Trade.builder()
+                        .orderId(orderId)
+                        .orderType(OrderType.BUY)
+                        .symbol(symbol)
+                        .price(price)
+                        .shares(sharesToBuy)
+                        .build()
+                ).build();
+
+        orderResultProducerStub.send(tradeResult);
+        orderResultProducerStub.send(tradeResult);
+
+
+        PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
+        assertEquals(1, view.getHoldings().size());
+        assertEquals(sharesToBuy, view.getHoldings().get(0).getShareCount());
+
+    }
+
 }
