@@ -7,6 +7,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.order.OrderDetails;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,18 +35,11 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
 
     @Value
     @Builder
+    @AllArgsConstructor
     class Opened implements PortfolioEvent {
         @NonNull String portfolioId;
         @NonNull String name;
 
-        @JsonCreator
-        Opened(
-                @JsonProperty("portfolioId") String portfolioId,
-                @JsonProperty("name") String name
-        ) {
-            this.portfolioId = portfolioId;
-            this.name = name;
-        }
     }
 
     @Value
@@ -100,16 +94,6 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
                     .build();
         }
 
-        @JsonCreator
-        OrderPlaced(
-                @JsonProperty("orderId") String orderId,
-                @JsonProperty("portfolioId") String portfolioId,
-                @JsonProperty("orderDetails") OrderDetails orderDetails
-        ) {
-            this.orderId = orderId;
-            this.portfolioId = portfolioId;
-            this.orderDetails = orderDetails;
-        }
 
     }
 

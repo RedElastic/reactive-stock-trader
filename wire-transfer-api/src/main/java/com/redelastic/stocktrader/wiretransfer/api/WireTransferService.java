@@ -20,7 +20,7 @@ public interface WireTransferService extends Service {
 
   ServiceCall<PortfolioDebitRequest, Done> debitPortfolio();
 
-  Topic<PortfolioTransfer> portfolioTransfer();
+  //Topic<PortfolioTransfer> portfolioTransfer();
 
   String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
 
@@ -31,8 +31,9 @@ public interface WireTransferService extends Service {
             call(this::creditPortfolio),
             call(this::debitPortfolio)
         )
-        .withTopics(
-                topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::portfolioTransfer));
+        //.withTopics(
+        //        topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::portfolioTransfer))
+        ;
     // @formatter:on
   }
 }

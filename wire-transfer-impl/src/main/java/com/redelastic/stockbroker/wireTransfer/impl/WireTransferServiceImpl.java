@@ -1,8 +1,13 @@
 package com.redelastic.stockbroker.wireTransfer.impl;
 
 import akka.Done;
+import akka.japi.Pair;
+import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.broker.TopicProducer;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
+import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.redelastic.stocktrader.wiretransfer.api.PortfolioCreditRequest;
 import com.redelastic.stocktrader.wiretransfer.api.PortfolioDebitRequest;
 import com.redelastic.stocktrader.wiretransfer.api.PortfolioTransfer;
@@ -20,8 +25,8 @@ public class WireTransferServiceImpl implements WireTransferService {
         return null;
     }
 
-    @Override
-    public Topic<PortfolioTransfer> portfolioTransfer() {
-        return null;
+
+    private Source<Pair<PortfolioTransfer, Offset>, ?> transferStream() {
+        return Source.empty();
     }
 }
