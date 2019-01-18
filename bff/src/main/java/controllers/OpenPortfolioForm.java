@@ -9,8 +9,6 @@ public class OpenPortfolioForm {
     String name;
 
     OpenPortfolioDetails toRequest() {
-        return OpenPortfolioDetails.builder()
-                .name(getName())
-                .build();
+        return new OpenPortfolioDetails(getName());
     }
 }

@@ -87,7 +87,7 @@ public class PortfolioServiceImplTest {
     @Test
     public void placeBuyOrder() throws Exception {
         PortfolioService service = server.client(PortfolioService.class);
-        OpenPortfolioDetails details = OpenPortfolioDetails.builder().name("portfolioName").build();
+        OpenPortfolioDetails details = new OpenPortfolioDetails("portfolioName");
         String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
         Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
         TestSubscriber.Probe<OrderPlaced> probe =
@@ -106,14 +106,19 @@ public class PortfolioServiceImplTest {
 
         String orderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
 
-        OrderPlaced orderPlaced = probe.request(1).expectNext();
-        assertEquals(orderDetails, orderPlaced.getOrderDetails());
-        assertEquals(portfolioId, orderPlaced.getPortfolioId());
+        // Make sure we see the order published
+        eventually(FiniteDuration.create(5, SECONDS), () -> {
+            OrderPlaced orderPlaced = probe.request(1).expectNext();
+            assertEquals(orderDetails, orderPlaced.getOrderDetails());
+            assertEquals(portfolioId, orderPlaced.getPortfolioId());
+            assertEquals(orderId, orderPlaced.getOrderId());
+        });
+
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(shares));
         OrderResult orderResult = OrderResult.OrderFulfilled.builder()
-                .orderId(orderPlaced.getOrderId())
+                .orderId(orderId)
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
                         .orderId(orderId)
@@ -138,7 +143,7 @@ public class PortfolioServiceImplTest {
     public void compensateForFailedSale() throws Exception {
 
         PortfolioService service = server.client(PortfolioService.class);
-        OpenPortfolioDetails details = OpenPortfolioDetails.builder().name("portfolioName").build();
+        OpenPortfolioDetails details = new OpenPortfolioDetails("portfolioName");
         String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
         Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
         TestSubscriber.Probe<OrderPlaced> probe =
@@ -149,24 +154,26 @@ public class PortfolioServiceImplTest {
         int sharesToBuy = 31;
         OrderType orderType = OrderType.BUY;
         OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
-        OrderDetails orderDetails = OrderDetails.builder()
+        OrderDetails buyOrderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(sharesToBuy)
                 .orderType(orderType)
                 .orderConditions(orderConditions)
                 .build();
 
-        String buyOrderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
+        String buyOrderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
+        eventually(FiniteDuration.create(5, SECONDS), () -> {
+            OrderPlaced orderPlaced = probe.request(1).expectNext();
+            assertEquals(buyOrderDetails, orderPlaced.getOrderDetails());
+            assertEquals(portfolioId, orderPlaced.getPortfolioId());
+            assertEquals(buyOrderId, orderPlaced.getOrderId());
+        });
 
-        OrderPlaced orderPlaced = probe.request(1).expectNext();
-        assertEquals(orderDetails, orderPlaced.getOrderDetails());
-        log.info(orderPlaced);
-        assertEquals(portfolioId, orderPlaced.getPortfolioId());
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(sharesToBuy));
         OrderResult orderResult = OrderResult.OrderFulfilled.builder()
-                .orderId(orderPlaced.getOrderId())
+                .orderId(buyOrderId)
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
                         .orderId(buyOrderId)
@@ -202,7 +209,7 @@ public class PortfolioServiceImplTest {
                 .get(5, SECONDS);
 
         OrderResult sellOrderResult = OrderResult.OrderFailed.builder()
-                .orderId(orderPlaced.getOrderId())
+                .orderId(sellOrderId)
                 .portfolioId(portfolioId)
                 .build();
 

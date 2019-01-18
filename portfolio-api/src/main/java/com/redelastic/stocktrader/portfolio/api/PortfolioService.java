@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.api.transport.Method;
 import com.redelastic.stocktrader.order.OrderDetails;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
@@ -57,10 +58,10 @@ public interface PortfolioService extends Service {
         // @formatter:off
         return named("portfolio").withCalls(
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
-                pathCall("/api/portfolio", this::openPortfolio),
-                pathCall("/api/portfolio/:portfolioId/liquidate", this::liquidatePortfolio),
-                pathCall("/api/portfolio/:portfolioId", this::getPortfolio),
-                pathCall("/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
+                restCall(Method.POST, "/api/portfolio", this::openPortfolio),
+                restCall(Method.POST,"/api/portfolio/:portfolioId/liquidate", this::liquidatePortfolio),
+                restCall(Method.GET,"/api/portfolio/:portfolioId", this::getPortfolio),
+                restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
         ).withTopics(
             topic(ORDERS_TOPIC_ID, this::orderPlaced)
         );

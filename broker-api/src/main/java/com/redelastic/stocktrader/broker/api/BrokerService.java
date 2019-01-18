@@ -13,11 +13,16 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BrokerService extends Service {
 
+  /**
+   * Get the most recent share price for a stock.
+   * @param symbol Stock ticker symbol.
+   * @return
+   */
   ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
   /**
-   *
-   * @param orderId
+   * Get the current status of an order.
+   * @param orderId ID for the order.
    * @return Status of the order, if it exists, empty if no such order ID is known.
    */
   ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId);
@@ -25,7 +30,6 @@ public interface BrokerService extends Service {
   /**
    * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
    * or otherwise).
-   * @return
    */
   Topic<OrderResult> orderResults();
 

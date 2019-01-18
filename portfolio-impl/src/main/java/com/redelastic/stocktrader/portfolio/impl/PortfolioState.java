@@ -7,6 +7,10 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
 
+import org.pcollections.ConsPStack;
+import org.pcollections.HashTreePMap;
+import org.pcollections.PMap;
+
 import java.math.BigDecimal;
 
 
@@ -24,6 +28,17 @@ public interface PortfolioState extends Jsonable {
         @NonNull String name;
         @NonNull LoyaltyLevel loyaltyLevel;
         @NonNull Holdings holdings;
+        @NonNull PMap<String, PortfolioEvent.OrderPlaced> activeOrders;
+
+        public static Open initialState(String name) {
+            return Open.builder()
+                    .name(name)
+                    .loyaltyLevel(LoyaltyLevel.BRONZE)
+                    .funds(BigDecimal.valueOf(0))
+                    .activeOrders(HashTreePMap.empty())
+                    .holdings(Holdings.EMPTY)
+                    .build();
+        }
 
         Open update(PortfolioEvent.FundsCredited evt) {
             return this.withFunds(getFunds().add(evt.getAmount()));
@@ -42,7 +57,7 @@ public interface PortfolioState extends Jsonable {
         }
 
         Open update(PortfolioEvent.OrderPlaced evt) {
-            return this; // TODO: Track outstanding orders?
+            return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
         }
 
     }

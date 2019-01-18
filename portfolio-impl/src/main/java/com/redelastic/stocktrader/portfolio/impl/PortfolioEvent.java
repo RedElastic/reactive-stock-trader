@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
+import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -95,6 +96,18 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
         }
 
 
+    }
+
+    @Value
+    class OrderFulfilled implements PortfolioEvent {
+        @NonNull String portfolioId;
+        @NonNull String orderId;
+    }
+
+    @Value
+    class OrderFailed implements PortfolioEvent {
+        @NonNull String portfolioId;
+        @NonNull String orderId;
     }
 
 }

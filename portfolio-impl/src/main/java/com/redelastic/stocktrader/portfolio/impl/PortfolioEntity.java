@@ -8,6 +8,7 @@ import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.sound.sampled.Port;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
@@ -116,12 +117,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
     private class OpenPortfolioBehavior extends PortfolioBehaviorBuilder<PortfolioState.Open> {
 
         OpenPortfolioBehavior(PortfolioEvent.Opened evt) {
-            this(PortfolioState.Open.builder()
-                    .funds(new BigDecimal("0"))
-                    .name(evt.getName())
-                    .holdings(Holdings.EMPTY)
-                    .loyaltyLevel(LoyaltyLevel.BRONZE)
-                    .build());
+            this(PortfolioState.Open.initialState(evt.getName()));
         }
 
         OpenPortfolioBehavior(PortfolioState.Open initialState) {
@@ -142,6 +138,10 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             setEventHandler(PortfolioEvent.FundsDebited.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.FundsCredited.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.SharesDebited.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.OrderFulfilled.class, evt ->
+                    state().withActiveOrders(state().getActiveOrders().minus(evt.getOrderId())));
+            setEventHandler(PortfolioEvent.OrderFailed.class, evt ->
+                state().withActiveOrders(state().getActiveOrders().minus(evt.getOrderId())));
 
             setEventHandlerChangingState(PortfolioEvent.LiquidationStarted.class, evt ->
                     PortfolioState.Liquidating.builder()
@@ -166,14 +166,16 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 case BUY:
                     return ctx.thenPersistAll(Arrays.asList(
                             new PortfolioEvent.FundsDebited(entityId(), trade.getPrice()),
-                            new PortfolioEvent.SharesCredited(entityId(), trade.getSymbol(), trade.getShares())),
+                            new PortfolioEvent.SharesCredited(entityId(), trade.getSymbol(), trade.getShares()),
+                            new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
                             () -> ctx.reply(Done.getInstance()));
 
                 case SELL:
                     // Note: for a sale the shares have already been removed when we initiated the sale
-                    return ctx.thenPersist(
+                    return ctx.thenPersistAll(Arrays.asList(
                             new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
-                            evt -> ctx.reply(Done.getInstance()));
+                            new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
+                            () -> ctx.reply(Done.getInstance()));
 
                 default:
                     throw new IllegalStateException(); // FIXME
@@ -239,15 +241,46 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             );
         }
 
+        /**
+         * If a sell order failed then we can reclaim the shares.
+         * @param cmd
+         * @param ctx
+         * @return
+         */
         private PersistentEntity.Persist handleFailedOrder(PortfolioCommand.HandleOrderFailure cmd, CommandContext<Done> ctx) {
-            // TODO: record this
             log.info(String.format("Order %s failed for PortfolioModel %s.", cmd.getOrderFailed().getOrderId(), entityId()));
-            ctx.reply(Done.getInstance());
-            return ctx.done();
+            PortfolioEvent.OrderPlaced orderPlaced = state().getActiveOrders().get(cmd.getOrderFailed().getOrderId());
+            if (orderPlaced == null) {
+                // Not currently an active order, this may be a duplicate message.
+                log.info(String.format("Order failure for order %s, which is not currently active.", cmd.getOrderFailed().getOrderId()));
+                ctx.reply(Done.getInstance());
+                return ctx.done();
+            } else {
+                log.info(String.format("Order failure for order %s.", cmd.getOrderFailed().getOrderId()));
+                switch(orderPlaced.getOrderDetails().getOrderType()) {
+                    case SELL:
+                        return ctx.thenPersistAll(Arrays.asList(
+                                new PortfolioEvent.SharesCredited(entityId(), orderPlaced.getOrderDetails().getSymbol(), orderPlaced.getOrderDetails().getShares()),
+                                new PortfolioEvent.OrderFailed(entityId(), cmd.getOrderFailed().getOrderId())
+                            ), () -> ctx.reply(Done.getInstance()));
+                    case BUY:
+                        return ctx.thenPersist(
+                                new PortfolioEvent.OrderFailed(entityId(), cmd.getOrderFailed().getOrderId()),
+                                evt -> ctx.reply(Done.getInstance()));
+                    default:
+                        throw new IllegalStateException();
+                }
+
+            }
+
         }
 
     }
 
+    /**
+     * Once we've entered the liquidating state we're waiting for the shares of our stocks to be sold. Once this
+     * happens we can transfer the funds out of the portfolio and close it.
+     */
     private class LiquidatingPortfolioBehaviour extends PortfolioBehaviorBuilder<PortfolioState.Liquidating> {
 
         LiquidatingPortfolioBehaviour(PortfolioState.Liquidating state) {
