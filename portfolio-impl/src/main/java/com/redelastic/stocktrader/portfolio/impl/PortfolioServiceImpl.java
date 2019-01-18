@@ -61,12 +61,13 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<OrderDetails, Done> placeOrder(String portfolioId) {
+    public ServiceCall<OrderDetails, String> placeOrder(String portfolioId) {
         return orderDetails -> {
             String orderId = UUID.randomUUID().toString();
             return portfolioRepository
                     .get(portfolioId)
-                    .placeOrder(orderId, orderDetails);
+                    .placeOrder(orderId, orderDetails)
+                    .thenApply(done -> orderId);
         };
     }
 

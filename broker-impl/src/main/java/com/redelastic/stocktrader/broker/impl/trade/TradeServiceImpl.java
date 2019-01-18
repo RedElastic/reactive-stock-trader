@@ -40,6 +40,7 @@ public class TradeServiceImpl implements TradeService {
         return priceOrder(order).thenApply(price -> {
             OrderDetails details = order.getDetails();
             Trade trade = Trade.builder()
+                    .orderId(order.getOrderId())
                     .orderType(details.getOrderType())
                     .symbol(details.getSymbol())
                     .shares(details.getShares())

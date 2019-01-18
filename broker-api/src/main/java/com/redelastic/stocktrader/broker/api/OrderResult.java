@@ -2,10 +2,7 @@ package com.redelastic.stocktrader.broker.api;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Value;
+import lombok.*;
 
 /**
  * Domain event representing the completion of an order, either successfully as a fulfillment of the order, or
@@ -32,7 +29,9 @@ public abstract class OrderResult {
     }
 
     @Value
+    @Builder
     @EqualsAndHashCode(callSuper = false)
+    @AllArgsConstructor
     public static class OrderFailed extends OrderResult {
         @NonNull String portfolioId;
         @NonNull String orderId;

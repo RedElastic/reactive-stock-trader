@@ -20,10 +20,10 @@ public interface PortfolioService extends Service {
     /**
      * Place an order for a particular portfolio.
      * @param portfolioId ID for the portfolio placing the order.
-     * @return Done when the order has been accepted. For a sell order this requires confirming that the
+     * @return Order ID when the order has been accepted. For a sell order this requires confirming that the
      * requested number of shares are available to be sold.
      */
-    ServiceCall<OrderDetails, Done> placeOrder(String portfolioId);
+    ServiceCall<OrderDetails, String> placeOrder(String portfolioId);
 
     /**
      * Sell all equities (as market sell), then transfer all funds out, then close the portfolio.

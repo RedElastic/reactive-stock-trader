@@ -13,9 +13,11 @@ import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.*;
+import lombok.extern.log4j.Log4j;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.pcollections.PSequence;
 import scala.concurrent.duration.FiniteDuration;
 
 import javax.inject.Inject;
@@ -29,6 +31,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@Log4j
 public class PortfolioServiceImplTest {
 
     private static TestServer server;
@@ -75,6 +78,7 @@ public class PortfolioServiceImplTest {
 
         @Override
         public Topic<OrderResult> orderResults() {
+
             return orderResultProducerStub.topic();
         }
     }
@@ -142,12 +146,12 @@ public class PortfolioServiceImplTest {
 
         // 1. Successfully purchase shares
         String symbol = "IBM";
-        int shares = 31;
+        int sharesToBuy = 31;
         OrderType orderType = OrderType.BUY;
         OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
         OrderDetails orderDetails = OrderDetails.builder()
                 .symbol(symbol)
-                .shares(shares)
+                .shares(sharesToBuy)
                 .orderType(orderType)
                 .orderConditions(orderConditions)
                 .build();
@@ -156,17 +160,18 @@ public class PortfolioServiceImplTest {
 
         OrderPlaced orderPlaced = probe.request(1).expectNext();
         assertEquals(orderDetails, orderPlaced.getOrderDetails());
+        log.info(orderPlaced);
         assertEquals(portfolioId, orderPlaced.getPortfolioId());
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
-        BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(shares));
+        BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(sharesToBuy));
         OrderResult orderResult = OrderResult.OrderFulfilled.builder()
                 .orderId(orderPlaced.getOrderId())
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
                         .orderId(buyOrderId)
                         .symbol(symbol)
-                        .shares(shares)
+                        .shares(sharesToBuy)
                         .orderType(orderType)
                         .price(sharePrice)
                         .build()
@@ -178,13 +183,15 @@ public class PortfolioServiceImplTest {
         eventually(FiniteDuration.create(10, SECONDS), () -> {
             PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
             assertEquals(1, view.getHoldings().size());
-            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, shares, totalPrice)));
+            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, sharesToBuy, totalPrice)));
         });
+
+        int sharesToSell = 10;
 
         // 2. Unsuccessfully attempt to sell some of them
         OrderDetails sellOrderDetails = OrderDetails.builder()
                 .orderType(OrderType.SELL)
-                .shares(10)
+                .shares(sharesToSell)
                 .symbol(symbol)
                 .orderConditions(OrderConditions.Market.INSTANCE)
                 .build();
@@ -199,12 +206,20 @@ public class PortfolioServiceImplTest {
                 .portfolioId(portfolioId)
                 .build();
 
+        PSequence<ValuedHolding> holdingsDuringSale = service.getPortfolio(portfolioId)
+                .invoke()
+                .toCompletableFuture()
+                .get(5, SECONDS)
+                .getHoldings();
+
+        assertEquals(sharesToBuy-sharesToSell, holdingsDuringSale.get(0).getShareCount());
+
         orderResultProducerStub.send(sellOrderResult);
 
         eventually(FiniteDuration.create(10, SECONDS), () -> {
             PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
             assertEquals(1, view.getHoldings().size());
-            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, shares, totalPrice)));
+            assertEquals(sharesToBuy, view.getHoldings().get(0).getShareCount());
         });
     }
 

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 @Value
 @Builder
 public class Trade {
+    @NonNull String orderId;
     @NonNull String symbol;
     int shares;
     @NonNull OrderType orderType;
