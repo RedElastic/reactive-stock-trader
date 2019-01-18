@@ -4,8 +4,8 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-class PortfolioCreditRequest {
+public class PortfolioCreditRequest {
+    @NonNull String transferId;
     @NonNull String portfolioId;
-
     @NonNull String accountId;
 }

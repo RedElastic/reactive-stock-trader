@@ -82,7 +82,7 @@ lazy val wireTransferApi = (project in file("wire-transfer-api"))
     libraryDependencies ++= lagomApiDependencies
   )
   .dependsOn(portfolioApi)
-/*
+
 lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava, SbtReactiveAppPlugin)
@@ -99,7 +99,7 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
     maxErrors := 10000
 
   )
-*/
+
 lazy val bff = (project in file("bff"))
   .settings(commonSettings)
   .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)

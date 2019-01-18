@@ -34,33 +34,16 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
                 .orElse(new UninitializedBehaviorBuilder().getBehavior());
     }
 
-
-    private interface OrderBehaviorBuilder {
-        Behavior getBehavior();
-    }
-
     /**
      * Base class for OrderBehavior covering pending and completed orderPlaced. Not this is not completely type safe, it is
      * possible to set an event handler that produces a state that doesn't correspond to the current behaviour.
      *
      * @param <State> The type of state associated to this behavior.
      */
-    private abstract class OrderBehaviourBuilder<State extends OrderState> implements OrderBehaviorBuilder {
-
-        String entityId() {
-            return OrderEntity.this.entityId();
-        }
-
-        Logger getLogger() {
-            return OrderEntity.this.log;
-        }
-
-        OrderDetails getOrderDetails() {
-            return state().getOrderDetails();
-        }
+    private abstract class OrderBehaviourBuilder<State extends OrderState> {
 
         Order getOrder() {
-            return new Order(entityId(), state().getPortfolioId(), getOrderDetails());
+            return new Order(entityId(), state().getPortfolioId(), state().getOrderDetails());
         }
 
         State state() {
@@ -73,13 +56,13 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
 
         void ignoreDuplicatePlacements(OrderCommand.PlaceOrder cmd, ReadOnlyCommandContext<Order> ctx) {
             OrderDetails orderDetails = cmd.getOrderDetails();
-            if (orderDetails.equals(getOrderDetails())) {
+            if (orderDetails.equals(state().getOrderDetails())) {
                 ctx.reply(getOrder());
             } else {
-                getLogger().info(String.format(
+                log.info(String.format(
                         "Order %s, existing: %s, received %s",
                         entityId(),
-                        getOrderDetails(),
+                        state().getOrderDetails(),
                         orderDetails.toString()
                 ));
                 ctx.commandFailed(new InvalidCommandException(
@@ -140,7 +123,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             return new FailedOrderBehavior(evt.getOrder().getPortfolioId(), evt.getOrder().getDetails()).getBehavior();
         }
 
-        public Behavior getBehavior() {
+        Behavior getBehavior() {
             return behavior;
         }
 
@@ -161,7 +144,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this(new OrderState.Fulfilled(portfolioId, orderDetails, price));
         }
 
-        public Behavior getBehavior() {
+        Behavior getBehavior() {
 
             return this.behavior;
         }
@@ -181,13 +164,13 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this(new OrderState.Failed(portfolioId, orderDetails));
         }
 
-        public Behavior getBehavior() {
+        Behavior getBehavior() {
 
             return this.behavior;
         }
     }
 
-    private class UninitializedBehaviorBuilder implements OrderBehaviorBuilder {
+    private class UninitializedBehaviorBuilder {
         private final Behavior behavior;
 
         UninitializedBehaviorBuilder() {
@@ -197,7 +180,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        public Behavior getBehavior() {
+        Behavior getBehavior() {
             return behavior;
         }
 

@@ -37,7 +37,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 .orElse(new UninitializedBehavior().getBehaviour());
     }
 
-
     class UninitializedBehavior {
 
         Behavior getBehaviour() {
