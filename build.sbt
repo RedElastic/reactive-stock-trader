@@ -7,14 +7,13 @@ EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 lazy val root = (project in file("."))
   .settings(name := "reactive-stock-trader")
   .aggregate(
-    commonModels,
     portfolioApi,
     portfolioImpl,
     brokerApi,
     brokerImpl,
     wireTransferApi,
-    bff
-    //wireTransferImpl
+    bff,
+    wireTransferImpl
   )
   .settings(commonSettings)
 
@@ -48,6 +47,7 @@ lazy val portfolioImpl = (project in file("portfolio-impl"))
   )
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(
+    utils,
     portfolioApi,
     brokerApi,
     wireTransferApi
@@ -64,7 +64,11 @@ lazy val brokerApi = (project in file("broker-api"))
 lazy val brokerImpl = (project in file("broker-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava, SbtReactiveAppPlugin)
-  .dependsOn(brokerApi, portfolioApi)
+  .dependsOn(
+    utils,
+    brokerApi,
+    portfolioApi
+  )
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
@@ -119,6 +123,13 @@ lazy val bff = (project in file("bff"))
   // EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
   EclipseKeys.preTasks := Seq(compile in Compile)
 )
+
+lazy val utils = (project in file("utils"))
+  .settings(commonSettings)
+  .settings(
+    version := "1.0-SNAPSHOT"
+  )
+
 
 val lombok = "org.projectlombok" % "lombok" % "1.18.4"
 val cassandraExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.0.0"

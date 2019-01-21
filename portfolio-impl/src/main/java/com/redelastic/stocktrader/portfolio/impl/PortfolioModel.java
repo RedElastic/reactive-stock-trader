@@ -3,6 +3,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
+import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Quote;
@@ -17,7 +18,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
 
@@ -57,29 +57,17 @@ class PortfolioModel {
     }
 
     private CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding> holdings) {
-        // TODO deal with request failures
-        // TODO timeout
         List<CompletableFuture<ValuedHolding>> requests = holdings.stream()
                 .map(valuedHolding -> {
                     CompletionStage<BigDecimal> getSharePrice = brokerService
                             .getQuote(valuedHolding.getSymbol())
                             .invoke()
-                            .thenApply(Quote::getSharePrice)
-                            .handle((sharePrice, ex) -> {
-                                if (ex == null) {
-                                    return CompletableFuture.completedFuture(sharePrice);
-                                } else {
-                                    CompletableFuture<BigDecimal> result = new CompletableFuture<>();
-                                    if (ex instanceof RuntimeException) {
-                                        result.complete(null);
-                                    } else {
-                                        result.completeExceptionally(ex);
-                                    }
-                                    return result;
-                                }
-                            })
-                            .thenCompose(Function.identity());
-                    return getSharePrice
+                            .thenApply(Quote::getSharePrice);
+
+                    CompletionStage<BigDecimal> nullPriceOnFailure = CSHelper.recover(getSharePrice, RuntimeException.class, ex -> null);
+
+                    return nullPriceOnFailure
+
                             .thenApply(sharePrice -> {
                                 BigDecimal price = sharePrice == null ? null : sharePrice.multiply(BigDecimal.valueOf(valuedHolding.getShareCount()));
                                 return new ValuedHolding(
@@ -91,12 +79,7 @@ class PortfolioModel {
                 })
                 .collect(toList());
 
-        return CompletableFuture.allOf(requests.toArray(new CompletableFuture<?>[0]))
-                .thenApply(done ->
-                        requests.stream()
-                                .map(response -> response.toCompletableFuture().join())
-                                .collect(toList())
-                ).thenApply(ConsPStack::from);
+        return CSHelper.allOf(requests).thenApply(ConsPStack::from);
     }
 
     CompletionStage<Done> placeOrder(String orderId, OrderDetails orderDetails) {
