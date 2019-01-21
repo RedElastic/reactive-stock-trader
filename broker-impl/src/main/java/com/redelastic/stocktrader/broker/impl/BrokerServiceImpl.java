@@ -78,7 +78,10 @@ public class BrokerServiceImpl implements BrokerService {
                         Attributes.logLevelInfo(), // onFinish
                         Attributes.logLevelError()) // onFailure
                 )
-                .mapAsync(1, this::processOrder);   // TODO: Increase parallelism
+                // Note that order processing is asynchronous, so the parallelism parameter only limits how many
+                // orders place at once before we get acknowledgement that they have been placed (which should be
+                // essentially instant. It is not the maximum number of orders we can process concurrently.
+                .mapAsync(10, this::processOrder);
     }
 
     private CompletionStage<Done> processOrder(OrderPlaced order) {

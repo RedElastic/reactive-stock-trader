@@ -66,10 +66,12 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
 
     /**
-     * Provides a stronger typed interface for defining state specific behavior when
+     * Provides a stronger typed interface for defining state specific behavior. When we're in a specific state we
+     * should have the corresponding behaviour, and vice-versa.
      * @param <State>
      */
     abstract class PortfolioBehaviorBuilder<State extends PortfolioState> {
+        // Shadow parent state() method with behaviour specific state so we don't need downcasts throughout.
         State state() { return (State)PortfolioEntity.this.state().get(); }
 
         final BehaviorBuilder builder;
@@ -84,10 +86,12 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             return ctx.done();
         }
 
+        //
         <E extends PortfolioEvent> void setEventHandler(Class<E> event, Function<E, State> handler) {
             builder.setEventHandler(event, handler.andThen(Optional::of));
         }
 
+        // Let us change behaviours by switching to the corresponding state
         <E extends PortfolioEvent> void setEventHandlerChangingState(Class<E> event, Function<E, PortfolioState> handler) {
             Function<E, Behavior> stateHandler = handler.andThen(this::behaviourForState);
             builder.setEventHandlerChangingBehavior(event, stateHandler);
@@ -175,8 +179,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                                 () -> ctx.reply(Done.getInstance()));
 
                     case SELL:
-                        // Note: for a sale the shares have already been removed when we initiated the sale
                         return ctx.thenPersistAll(Arrays.asList(
+                                // Note: for a sale the shares have already been removed when we initiated the sale
                                 new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
                                 new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
                                 () -> ctx.reply(Done.getInstance()));
