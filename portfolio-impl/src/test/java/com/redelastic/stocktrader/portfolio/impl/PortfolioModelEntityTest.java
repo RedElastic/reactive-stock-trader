@@ -14,6 +14,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -130,6 +132,21 @@ public class PortfolioModelEntityTest {
         );
         assertEquals(2, outcome.getReplies().size());
         assertEquals(outcome.getReplies().get(1).getClass(), InsufficientShares.class);
+    }
+
+    @Test
+    public void receiveFunds() {
+        String portfolioId = "portfolioId";
+        String portfolioName = "portfolio name";
+        BigDecimal amount = new BigDecimal("101.40");
+        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
+        PersistentEntityTestDriver.Outcome<PortfolioEvent,Optional<PortfolioState>> outcome = driver.run(
+                new PortfolioCommand.ReceiveFunds(amount)
+        );
+
+        assertTrue(outcome.state().isPresent());
+        assertThat(outcome.state().get(), instanceOf(PortfolioState.Open.class));
+        assertEquals(amount, ((PortfolioState.Open)outcome.state().get()).getFunds());
     }
 
 }

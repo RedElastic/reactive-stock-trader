@@ -8,25 +8,41 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
-import com.redelastic.stocktrader.wiretransfer.api.PortfolioCreditRequest;
-import com.redelastic.stocktrader.wiretransfer.api.PortfolioDebitRequest;
-import com.redelastic.stocktrader.wiretransfer.api.PortfolioTransfer;
+import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferEvent;
+import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferRepository;
+import com.redelastic.stocktrader.wiretransfer.api.Transfer;
+import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
+
+import javax.inject.Inject;
 
 public class WireTransferServiceImpl implements WireTransferService {
 
+    private final TransferRepository transferRepository;
+
+    @Inject
+    WireTransferServiceImpl(TransferRepository transferRepository) {
+        this.transferRepository = transferRepository;
+    }
+
     @Override
-    public ServiceCall<PortfolioCreditRequest, Done> creditPortfolio() {
+    public ServiceCall<Transfer, Done> transferFunds() {
         return null;
     }
 
     @Override
-    public ServiceCall<PortfolioDebitRequest, Done> debitPortfolio() {
+    public Topic<Transfer> completedTransfers() {
+        return TopicProducer.taggedStreamWithOffset(TransferEvent.TAG.allTags(), this::completedTransfersStream);
+    }
+
+    @Override
+    public Topic<TransferRequest> transferRequests() {
         return null;
     }
 
 
-    private Source<Pair<PortfolioTransfer, Offset>, ?> transferStream() {
-        return Source.empty();
+    private Source<Pair<Transfer, Offset>, ?> completedTransfersStream(AggregateEventTag<TransferEvent> tag, Offset offset) {
+        return Source.empty(); // TODO
     }
+
 }

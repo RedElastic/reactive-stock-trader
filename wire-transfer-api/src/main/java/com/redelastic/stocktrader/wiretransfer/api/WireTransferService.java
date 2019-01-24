@@ -16,24 +16,22 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
  */
 public interface WireTransferService extends Service {
 
-  ServiceCall<PortfolioCreditRequest, Done> creditPortfolio();
+  ServiceCall<Transfer, Done> transferFunds();
 
-  ServiceCall<PortfolioDebitRequest, Done> debitPortfolio();
-
-  //Topic<PortfolioTransfer> portfolioTransfer();
-
+  Topic<Transfer> completedTransfers();
   String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
+
+  Topic<TransferRequest> transferRequests();
 
   @Override
   default Descriptor descriptor() {
     // @formatter:off
     return named("wire-transfer").withCalls(
-            call(this::creditPortfolio),
-            call(this::debitPortfolio)
+            call(this::transferFunds)
         )
-        //.withTopics(
-        //        topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::portfolioTransfer))
-        ;
+        .withTopics(
+                topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers)
+        );
     // @formatter:on
   }
 }
