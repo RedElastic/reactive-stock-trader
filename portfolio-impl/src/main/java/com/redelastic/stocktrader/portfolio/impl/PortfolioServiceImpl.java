@@ -70,22 +70,23 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
         PortfolioModel portfolio = portfolioRepository.get(orderResult.getPortfolioId());
-        if (orderResult instanceof OrderResult.OrderFulfilled) {
-            Trade trade = ((OrderResult.OrderFulfilled) orderResult).getTrade();
-            return portfolio.processTrade(trade);
-        } else if (orderResult instanceof OrderResult.OrderFailed) {
-            log.info(String.format("Order %s failed for portfolio %s.", orderResult.getOrderId(), orderResult.getPortfolioId()));
-            return portfolio.orderFailed((OrderResult.OrderFailed)orderResult);
-        } else {
-            // TODO: handle order results other than completed
-            return CompletableFuture.completedFuture(Done.getInstance());
-        }
+        return orderResult.visit(new OrderResult.Visitor<CompletionStage<Done>>() {
+            @Override
+            public CompletionStage<Done> visit(OrderResult.Fulfilled orderFulfilled) {
+                return portfolio.processTrade(orderFulfilled.getTrade());
+            }
+
+            @Override
+            public CompletionStage<Done> visit(OrderResult.Failed orderFailed) {
+                return portfolio.orderFailed(orderFailed);
+            }
+        });
     }
 
     @Override
     public Topic<OrderPlaced> orderPlaced() {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
     }
-    
+
 
 }

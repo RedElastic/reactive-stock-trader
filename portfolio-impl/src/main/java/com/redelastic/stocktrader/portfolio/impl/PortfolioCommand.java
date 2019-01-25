@@ -56,6 +56,6 @@ public interface PortfolioCommand extends Jsonable {
     // FIXME: review this.
     @Value
     class HandleOrderFailure implements PortfolioCommand, ReplyType<Done> {
-        OrderResult.OrderFailed orderFailed;
+        OrderResult.Failed orderFailed;
     }
 }

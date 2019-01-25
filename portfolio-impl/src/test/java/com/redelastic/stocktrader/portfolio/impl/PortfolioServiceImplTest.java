@@ -115,7 +115,7 @@ public class PortfolioServiceImplTest {
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
-        OrderResult orderResult = OrderResult.OrderFulfilled.builder()
+        OrderResult orderResult = OrderResult.Fulfilled.builder()
                 .orderId(orderId)
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
@@ -169,7 +169,7 @@ public class PortfolioServiceImplTest {
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
-        OrderResult orderResult = OrderResult.OrderFulfilled.builder()
+        OrderResult orderResult = OrderResult.Fulfilled.builder()
                 .orderId(buyOrderId)
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
@@ -205,7 +205,7 @@ public class PortfolioServiceImplTest {
                 .toCompletableFuture()
                 .get(5, SECONDS);
 
-        OrderResult sellOrderResult = OrderResult.OrderFailed.builder()
+        OrderResult sellOrderResult = OrderResult.Failed.builder()
                 .orderId(sellOrderId)
                 .portfolioId(portfolioId)
                 .build();
@@ -252,7 +252,7 @@ public class PortfolioServiceImplTest {
         String orderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
 
         BigDecimal price = new BigDecimal("123.45");
-        OrderResult tradeResult = OrderResult.OrderFulfilled.builder()
+        OrderResult tradeResult = OrderResult.Fulfilled.builder()
                 .orderId(orderId)
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()

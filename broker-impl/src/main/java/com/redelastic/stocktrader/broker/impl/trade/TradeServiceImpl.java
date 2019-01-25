@@ -54,7 +54,7 @@ public class TradeServiceImpl implements TradeService {
                     .shares(details.getShares())
                     .price(price)
                     .build();
-            return OrderResult.OrderFulfilled.builder()
+            return OrderResult.Fulfilled.builder()
                     .orderId(order.getOrderId())
                     .portfolioId(order.getPortfolioId())
                     .trade(trade)

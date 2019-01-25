@@ -36,7 +36,7 @@ public class OrderModelImpl implements OrderModel {
                 tradeService.placeOrder(order)
                 .exceptionally(ex -> {
                     log.info(String.format("Order %s failed, %s.", orderEntity.entityId(), ex.toString()));
-                    return new OrderResult.OrderFailed(order.getPortfolioId(), orderEntity.entityId());
+                    return new OrderResult.Failed(order.getPortfolioId(), orderEntity.entityId());
                 })
                 .thenAccept(orderResult -> {
                     log.info(String.format("Order %s completing.", orderEntity.entityId()));

@@ -46,7 +46,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
                 log.info(String.format("Order %s fulfilled.", order.getOrderId()));
 
-                OrderResult.OrderFulfilled completedOrder = OrderResult.OrderFulfilled.builder()
+                OrderResult.Fulfilled completedOrder = OrderResult.Fulfilled.builder()
                         .orderId(order.getOrderId())
                         .portfolioId(order.getPortfolioId())
                         .trade(trade)
@@ -55,7 +55,7 @@ public class OrderRepositoryImpl implements OrderRepository {
             } else if (eventAndOffset.first() instanceof OrderEvent.OrderFailed) {
                 OrderEvent.OrderFailed failed = (OrderEvent.OrderFailed) eventAndOffset.first();
                 return Pair.create(
-                        new OrderResult.OrderFailed(failed.getOrder().getPortfolioId(), failed.getOrder().getOrderId()),
+                        new OrderResult.Failed(failed.getOrder().getPortfolioId(), failed.getOrder().getOrderId()),
                         eventAndOffset.second()
                 );
             } else {

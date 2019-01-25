@@ -87,7 +87,7 @@ class PortfolioModel {
         return portfolioEntity.ask(new PortfolioCommand.CompleteTrade(trade));
     }
 
-    CompletionStage<Done> orderFailed(OrderResult.OrderFailed failed) {
+    CompletionStage<Done> orderFailed(OrderResult.Failed failed) {
         return portfolioEntity.ask(new PortfolioCommand.HandleOrderFailure(failed));
     }
 }

@@ -10,8 +10,8 @@ import lombok.*;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(OrderResult.OrderFulfilled.class),
-        @JsonSubTypes.Type(OrderResult.OrderFailed.class)
+        @JsonSubTypes.Type(OrderResult.Fulfilled.class),
+        @JsonSubTypes.Type(OrderResult.Failed.class)
 })
 public abstract class OrderResult {
     private OrderResult() {}
@@ -22,29 +22,29 @@ public abstract class OrderResult {
     @Value
     @Builder
     @EqualsAndHashCode(callSuper = false)
-    public static class OrderFulfilled extends OrderResult {
+    public static class Fulfilled extends OrderResult {
         @NonNull String portfolioId;
         @NonNull String orderId;
         @NonNull Trade trade;
 
-        <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
+        public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
 
     @Value
     @Builder
     @EqualsAndHashCode(callSuper = false)
     @AllArgsConstructor
-    public static class OrderFailed extends OrderResult {
+    public static class Failed extends OrderResult {
         @NonNull String portfolioId;
         @NonNull String orderId;
 
-        <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
+        public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
 
-    interface Visitor<T> {
-        T visit(OrderFulfilled orderFulfilled);
-        T visit(OrderFailed orderFailed);
+    public interface Visitor<T> {
+        T visit(Fulfilled orderFulfilled);
+        T visit(Failed orderFailed);
     }
 
-    abstract <T> T visit(Visitor<T> visitor);
+    public abstract <T> T visit(Visitor<T> visitor);
 }

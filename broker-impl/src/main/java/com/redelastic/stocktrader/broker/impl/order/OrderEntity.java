@@ -110,16 +110,19 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         private Persist complete(OrderCommand.Complete cmd, CommandContext<Done> ctx) {
-            if (cmd.getOrderResult() instanceof OrderResult.OrderFulfilled) {
-                OrderResult.OrderFulfilled orderFulfilled = (OrderResult.OrderFulfilled) cmd.getOrderResult();
-                return ctx.thenPersist(new OrderEvent.OrderFulfilled(getOrder(), orderFulfilled.getTrade()),
-                        evt -> ctx.reply(Done.getInstance()));
-            } else if (cmd.getOrderResult() instanceof OrderResult.OrderFailed) {
-                return ctx.thenPersist(new OrderEvent.OrderFailed(getOrder()),
-                        evt -> ctx.reply(Done.getInstance()));
-            } else {
-                throw new IllegalStateException();
-            }
+            return cmd.getOrderResult().visit(new OrderResult.Visitor<Persist>() {
+                @Override
+                public Persist visit(OrderResult.Fulfilled orderFulfilled) {
+                    return ctx.thenPersist(new OrderEvent.OrderFulfilled(getOrder(), orderFulfilled.getTrade()),
+                            evt -> ctx.reply(Done.getInstance()));
+                }
+
+                @Override
+                public Persist visit(OrderResult.Failed orderFailed) {
+                    return ctx.thenPersist(new OrderEvent.OrderFailed(getOrder()),
+                            evt -> ctx.reply(Done.getInstance()));
+                }
+            });
         }
 
         private Behavior fulfilled(OrderEvent.OrderFulfilled evt) {
