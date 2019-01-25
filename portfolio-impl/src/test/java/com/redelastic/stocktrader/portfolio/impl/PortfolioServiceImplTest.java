@@ -9,8 +9,8 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.testkit.ProducerStub;
 import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
 import com.redelastic.stocktrader.broker.api.*;
-import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.api.*;
 import lombok.extern.log4j.Log4j;
@@ -95,12 +95,12 @@ public class PortfolioServiceImplTest {
         String symbol = "IBM";
         int shares = 31;
         TradeType tradeType = TradeType.BUY;
-        OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
+        OrderType orderConditions = OrderType.Market.INSTANCE;
         OrderDetails orderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(shares)
                 .tradeType(tradeType)
-                .orderConditions(orderConditions)
+                .orderType(orderConditions)
                 .build();
 
         String orderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
@@ -152,12 +152,12 @@ public class PortfolioServiceImplTest {
         String symbol = "IBM";
         int sharesToBuy = 31;
         TradeType tradeType = TradeType.BUY;
-        OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
+        OrderType orderConditions = OrderType.Market.INSTANCE;
         OrderDetails buyOrderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(sharesToBuy)
                 .tradeType(tradeType)
-                .orderConditions(orderConditions)
+                .orderType(orderConditions)
                 .build();
 
         String buyOrderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
@@ -199,7 +199,7 @@ public class PortfolioServiceImplTest {
                 .tradeType(TradeType.SELL)
                 .shares(sharesToSell)
                 .symbol(symbol)
-                .orderConditions(OrderConditions.Market.INSTANCE)
+                .orderType(OrderType.Market.INSTANCE)
                 .build();
         String sellOrderId = service
                 .placeOrder(portfolioId)
@@ -248,7 +248,7 @@ public class PortfolioServiceImplTest {
                 .symbol(symbol)
                 .shares(sharesToBuy)
                 .tradeType(TradeType.BUY)
-                .orderConditions(OrderConditions.Market.INSTANCE)
+                .orderType(OrderType.Market.INSTANCE)
                 .build();
 
         String orderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);

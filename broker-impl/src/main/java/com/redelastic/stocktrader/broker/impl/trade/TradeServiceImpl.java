@@ -5,7 +5,7 @@ import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
 import com.redelastic.stocktrader.order.Order;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderConditions;
+import com.redelastic.stocktrader.order.OrderType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +27,11 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public CompletionStage<OrderResult> placeOrder(Order order) {
         log.info(String.format("Order placed: %s", order.toString()));
-        if (order.getDetails().getOrderConditions() instanceof OrderConditions.Market) {
+        if (order.getDetails().getOrderType() instanceof OrderType.Market) {
             return completeMarketOrder(order);
         } else {
             log.error(String.format("Unhandled order placed: %s",
-                    order.getDetails().getOrderConditions()));
+                    order.getDetails().getOrderType()));
             throw new UnsupportedOperationException();
         }
     }

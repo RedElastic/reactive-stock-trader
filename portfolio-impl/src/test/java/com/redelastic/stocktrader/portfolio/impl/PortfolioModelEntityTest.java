@@ -4,7 +4,7 @@ import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.OrderConditions;
+import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
@@ -57,7 +57,7 @@ public class PortfolioModelEntityTest {
                 .symbol(symbol)
                 .shares(shareCount)
                 .tradeType(TradeType.BUY)
-                .orderConditions(OrderConditions.Market.INSTANCE)
+                .orderType(OrderType.Market.INSTANCE)
                 .build();
 
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = createPortfolioEntity(portfolioId);
@@ -124,7 +124,7 @@ public class PortfolioModelEntityTest {
                             .symbol(symbol)
                             .shares(shareCount+1)
                             .tradeType(TradeType.SELL)
-                            .orderConditions(OrderConditions.Market.INSTANCE)
+                            .orderType(OrderType.Market.INSTANCE)
                             .build()
                 )
         );

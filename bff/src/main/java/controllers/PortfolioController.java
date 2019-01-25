@@ -1,14 +1,17 @@
 package controllers;
 
-import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
+import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
-import play.mvc.*;
+import play.mvc.Controller;
+import play.mvc.Result;
+import play.mvc.Results;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletionStage;
@@ -54,7 +57,7 @@ public class PortfolioController extends Controller {
                 .tradeType(orderForm.getTradeType())
                 .symbol(orderForm.getSymbol())
                 .shares(orderForm.getShares())
-                .orderConditions(OrderConditions.Market.INSTANCE)
+                .orderType(OrderType.Market.INSTANCE)
                 .build();
         return portfolioService
                 .placeOrder(portfolioId)

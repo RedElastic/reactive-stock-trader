@@ -10,22 +10,22 @@ import java.math.BigDecimal;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(OrderConditions.Market.class),
-        @JsonSubTypes.Type(OrderConditions.Limit.class)
+        @JsonSubTypes.Type(OrderType.Market.class),
+        @JsonSubTypes.Type(OrderType.Limit.class)
 })
-public abstract class OrderConditions {
-    private OrderConditions() {}
+public abstract class OrderType {
+    private OrderType() {}
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class Market extends OrderConditions {
+    public static class Market extends OrderType {
         private Market() {}
         public static Market INSTANCE = new Market();
     }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class Limit extends OrderConditions {
+    public static class Limit extends OrderType {
         @NonNull BigDecimal price;
     }
 }

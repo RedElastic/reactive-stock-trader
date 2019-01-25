@@ -12,5 +12,5 @@ public class OrderDetails {
     @NonNull String symbol;
     int shares;
     @NonNull TradeType tradeType;
-    @NonNull OrderConditions orderConditions;
+    @NonNull OrderType orderType;
 }
