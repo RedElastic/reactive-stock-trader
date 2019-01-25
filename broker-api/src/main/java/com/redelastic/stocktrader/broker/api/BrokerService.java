@@ -5,6 +5,7 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
 import java.util.Optional;
@@ -43,6 +44,7 @@ public interface BrokerService extends Service {
             restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
     ).withTopics(
             topic(ORDER_RESULTS_TOPIC_ID, this::orderResults)
+              .withProperty(KafkaProperties.partitionKeyStrategy(), OrderResult::getPortfolioId)
     );
     // @formatter:on
   }

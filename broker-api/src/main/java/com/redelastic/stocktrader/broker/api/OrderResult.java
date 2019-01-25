@@ -26,6 +26,8 @@ public abstract class OrderResult {
         @NonNull String portfolioId;
         @NonNull String orderId;
         @NonNull Trade trade;
+
+        <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
 
     @Value
@@ -35,5 +37,14 @@ public abstract class OrderResult {
     public static class OrderFailed extends OrderResult {
         @NonNull String portfolioId;
         @NonNull String orderId;
+
+        <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
+
+    interface Visitor<T> {
+        T visit(OrderFulfilled orderFulfilled);
+        T visit(OrderFailed orderFailed);
+    }
+
+    abstract <T> T visit(Visitor<T> visitor);
 }
