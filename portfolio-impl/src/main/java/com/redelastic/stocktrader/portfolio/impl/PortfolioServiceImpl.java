@@ -10,10 +10,7 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
-import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
-import com.redelastic.stocktrader.portfolio.api.PortfolioService;
-import com.redelastic.stocktrader.portfolio.api.PortfolioView;
+import com.redelastic.stocktrader.portfolio.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +85,11 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public Topic<OrderPlaced> orderPlaced() {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
+    }
+
+    @Override
+    public Topic<OrderCompleted> orderCompleted() {
+        return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::orderCompletedStream);
     }
 
 

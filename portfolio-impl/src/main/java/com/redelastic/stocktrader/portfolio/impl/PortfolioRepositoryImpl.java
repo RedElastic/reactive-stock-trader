@@ -8,6 +8,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
+import com.redelastic.stocktrader.portfolio.api.OrderCompleted;
 import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,11 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                             eventOffset.second()
                     ));
             });
+    }
+
+    @Override
+    public Source<Pair<OrderCompleted, Offset>, ?> orderCompletedStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
+        return Source.empty(); // TODO
     }
 
 }
