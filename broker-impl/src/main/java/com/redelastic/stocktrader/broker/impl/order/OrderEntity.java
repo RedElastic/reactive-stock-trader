@@ -20,17 +20,24 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
     public Behavior initialBehavior(Optional<Optional<OrderState>> snapshotState) {
         return snapshotState
                 .flatMap(Function.identity())
-                .map(orderState -> {
-                    if (orderState instanceof OrderState.Pending) {
-                        return new PendingBehaviorBuilder((OrderState.Pending) orderState).getBehavior();
-                    } else if (orderState instanceof OrderState.Fulfilled) {
-                        return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
-                    } else if (orderState instanceof OrderState.Failed) {
-                        return new FailedOrderBehavior((OrderState.Failed) orderState).getBehavior();
-                    } else {
-                        throw new IllegalStateException();
-                    }
-                })
+                .map(orderState ->
+                    orderState.visit(new OrderState.Visitor<Behavior>() {
+                        @Override
+                        public Behavior visit(OrderState.Pending pending) {
+                            return new PendingBehaviorBuilder((OrderState.Pending) orderState).getBehavior();
+                        }
+
+                        @Override
+                        public Behavior visit(OrderState.Fulfilled fulfilled) {
+                            return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
+                        }
+
+                        @Override
+                        public Behavior visit(OrderState.Failed failed) {
+                            return new FailedOrderBehavior((OrderState.Failed) orderState).getBehavior();
+                        }
+                    })
+                )
                 .orElse(new UninitializedBehaviorBuilder().getBehavior());
     }
 

@@ -1,5 +1,6 @@
 package com.redelastic.stocktrader.broker.impl.trade;
 
+import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
@@ -27,13 +28,20 @@ public class TradeServiceImpl implements TradeService {
     @Override
     public CompletionStage<OrderResult> placeOrder(Order order) {
         log.info(String.format("Order placed: %s", order.toString()));
-        if (order.getDetails().getOrderType() instanceof OrderType.Market) {
-            return completeMarketOrder(order);
-        } else {
-            log.error(String.format("Unhandled order placed: %s",
-                    order.getDetails().getOrderType()));
-            throw new UnsupportedOperationException();
-        }
+        return order.getDetails().getOrderType().visit(new OrderType.Visitor<CompletionStage<OrderResult>>() {
+
+            @Override
+            public CompletionStage<OrderResult> visit(OrderType.Market m) {
+                return completeMarketOrder(order);
+            }
+
+            @Override
+            public CompletionStage<OrderResult> visit(OrderType.Limit l) {
+                log.error(String.format("Unhandled order placed: %s",
+                        order.getDetails().getOrderType()));
+                return CSHelper.failedFuture(new UnsupportedOperationException()); // TODO
+            }
+        });
     }
 
     private CompletionStage<OrderResult> completeMarketOrder(Order order) {

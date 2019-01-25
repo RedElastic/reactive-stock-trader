@@ -19,19 +19,24 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
     public Behavior initialBehavior(Optional<Optional<PortfolioState>> snapshotState) {
         return snapshotState
                 .flatMap(Function.identity())
-                .map(state -> {
-                    if (state instanceof PortfolioState.Open) {
-                        return new OpenPortfolioBehavior((PortfolioState.Open) state).getBehavior();
-                    } else if (state instanceof PortfolioState.Liquidating) {
-                        return new LiquidatingPortfolioBehaviour((PortfolioState.Liquidating) state).getBehavior();
-                    } else if (state instanceof PortfolioState.Closed) {
-                        return new ClosedPortfolioBehaviourBuilder().getBehavior();
-                    } else {
-                        throw new IllegalStateException(
-                                String.format("Unhandled state %s", state.toString())
-                        );
-                    }
-                })
+                .map(state ->
+                        state.visit(new PortfolioState.Visitor<Behavior>() {
+                            @Override
+                            public Behavior visit(PortfolioState.Open open) {
+                                return new OpenPortfolioBehavior(open).getBehavior();
+                            }
+
+                            @Override
+                            public Behavior visit(PortfolioState.Liquidating liquidating) {
+                                return new LiquidatingPortfolioBehaviour(liquidating).getBehavior();
+                            }
+
+                            @Override
+                            public Behavior visit(PortfolioState.Closed closed) {
+                                return new ClosedPortfolioBehaviourBuilder().getBehavior();
+                            }
+                        })
+                )
                 .orElse(new UninitializedBehavior().getBehaviour());
     }
 

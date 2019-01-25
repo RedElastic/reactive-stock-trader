@@ -22,6 +22,11 @@ public interface OrderState {
         public OrderStatus getStatus() {
             return OrderStatus.Pending;
         }
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(this);
+        }
     }
 
     @Value
@@ -33,6 +38,11 @@ public interface OrderState {
         public OrderStatus getStatus() {
             return OrderStatus.Fulfilled;
         }
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(this);
+        }
     }
 
     @Value
@@ -43,6 +53,19 @@ public interface OrderState {
         public OrderStatus getStatus() {
             return OrderStatus.Failed;
         }
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(this);
+        }
     }
+
+    interface Visitor<T> {
+        T visit(Pending pending);
+        T visit(Fulfilled fulfilled);
+        T visit(Failed failed);
+    }
+
+    <T> T visit(Visitor<T> visitor);
 
 }

@@ -7,7 +7,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
 
-import org.pcollections.ConsPStack;
 import org.pcollections.HashTreePMap;
 import org.pcollections.PMap;
 
@@ -60,6 +59,11 @@ public interface PortfolioState extends Jsonable {
             return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
         }
 
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(this);
+        }
     }
 
     @Value
@@ -69,10 +73,30 @@ public interface PortfolioState extends Jsonable {
         @NonNull String name;
         @NonNull LoyaltyLevel loyaltyLevel;
         @NonNull Holdings holdings;
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(this);
+        }
+
     }
 
     enum Closed implements PortfolioState {
-        INSTANCE
+        INSTANCE;
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(INSTANCE);
+        }
+
     }
+
+    interface Visitor<T> {
+        T visit(Open open);
+        T visit(Liquidating liquidating);
+        T visit(Closed closed);
+    }
+
+    <T> T visit(Visitor<T> visitor);
 
 }
