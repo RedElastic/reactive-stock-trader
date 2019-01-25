@@ -115,7 +115,6 @@ public class PortfolioServiceImplTest {
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
-        BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(shares));
         OrderResult orderResult = OrderResult.OrderFulfilled.builder()
                 .orderId(orderId)
                 .portfolioId(portfolioId)
@@ -134,7 +133,7 @@ public class PortfolioServiceImplTest {
         eventually(FiniteDuration.create(10, SECONDS), () -> {
             PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
             assertEquals(1, view.getHoldings().size());
-            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, shares, totalPrice)));
+            assertTrue(view.getHoldings().contains(new Holding(symbol, shares)));
         });
     }
 
@@ -170,7 +169,6 @@ public class PortfolioServiceImplTest {
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
-        BigDecimal totalPrice = sharePrice.multiply(BigDecimal.valueOf(sharesToBuy));
         OrderResult orderResult = OrderResult.OrderFulfilled.builder()
                 .orderId(buyOrderId)
                 .portfolioId(portfolioId)
@@ -189,7 +187,7 @@ public class PortfolioServiceImplTest {
         eventually(FiniteDuration.create(10, SECONDS), () -> {
             PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
             assertEquals(1, view.getHoldings().size());
-            assertTrue(view.getHoldings().contains(new ValuedHolding(symbol, sharesToBuy, totalPrice)));
+            assertTrue(view.getHoldings().contains(new Holding(symbol, sharesToBuy)));
         });
 
         int sharesToSell = 10;
@@ -212,7 +210,7 @@ public class PortfolioServiceImplTest {
                 .portfolioId(portfolioId)
                 .build();
 
-        PSequence<ValuedHolding> holdingsDuringSale = service.getPortfolio(portfolioId)
+        PSequence<Holding> holdingsDuringSale = service.getPortfolio(portfolioId)
                 .invoke()
                 .toCompletableFuture()
                 .get(5, SECONDS)

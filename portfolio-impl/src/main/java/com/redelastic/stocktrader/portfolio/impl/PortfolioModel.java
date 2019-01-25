@@ -9,6 +9,7 @@ import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.Holding;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import com.redelastic.stocktrader.portfolio.api.ValuedHolding;
 import org.pcollections.ConsPStack;
@@ -42,17 +43,13 @@ class PortfolioModel {
     CompletionStage<PortfolioView> view() {
         return portfolioEntity
                 .ask(PortfolioCommand.GetState.INSTANCE)
-                .thenCompose(portfolio ->
-                        priceHoldings(portfolio.getHoldings().asSequence())
-                                .thenApply(valuedHoldings ->
-                                        PortfolioView.builder()
-                                                .portfolioId(portfolioId)
-                                                .name(portfolio.getName())
-                                                .funds(portfolio.getFunds())
-                                                .loyaltyLevel(portfolio.getLoyaltyLevel())
-                                                .holdings(valuedHoldings)
-                                                .build()
-                                )
+                .thenApply(portfolio ->
+                        PortfolioView.builder()
+                                .portfolioId(portfolioId)
+                                .name(portfolio.getName())
+                                .funds(portfolio.getFunds())
+                                .holdings(portfolio.getHoldings().asSequence())
+                                .build()
                 );
     }
 

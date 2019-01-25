@@ -17,7 +17,5 @@ public class PortfolioView {
 
     @NonNull BigDecimal funds;
 
-    @NonNull LoyaltyLevel loyaltyLevel;
-
-    @NonNull PSequence<ValuedHolding> holdings;
+    @NonNull PSequence<Holding> holdings;
 }

@@ -1,5 +1,6 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import com.redelastic.stocktrader.portfolio.api.Holding;
 import lombok.NonNull;
 import lombok.Value;
 import org.pcollections.ConsPStack;
