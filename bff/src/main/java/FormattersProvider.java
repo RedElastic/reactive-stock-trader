@@ -1,4 +1,4 @@
-import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.order.TradeType;
 import play.data.format.Formatters;
 import play.data.format.Formatters.SimpleFormatter;
 import play.i18n.MessagesApi;
@@ -24,25 +24,25 @@ class FormattersProvider implements Provider<Formatters> {
     public Formatters get() {
         Formatters formatters = new Formatters(messagesApi);
 
-        formatters.register(OrderType.class, orderTypeFormatter);
+        formatters.register(TradeType.class, orderTypeFormatter);
 
         return formatters;
     }
 
-    private final SimpleFormatter<OrderType> orderTypeFormatter = new SimpleFormatter<OrderType>() {
+    private final SimpleFormatter<TradeType> orderTypeFormatter = new SimpleFormatter<TradeType>() {
         @Override
-        public OrderType parse(String text, Locale locale) throws ParseException {
+        public TradeType parse(String text, Locale locale) throws ParseException {
             try {
-                return OrderType.valueOf(text.toUpperCase());
+                return TradeType.valueOf(text.toUpperCase());
             } catch (Exception ex) {
                 throw new ParseException(
-                        String.format("Unable to parse OrderType from %s", text), 0);
+                        String.format("Unable to parse TradeType from %s", text), 0);
             }
         }
 
         @Override
-        public String print(OrderType orderType, Locale locale) {
-            return orderType.name();
+        public String print(TradeType tradeType, Locale locale) {
+            return tradeType.name();
         }
     };
 }

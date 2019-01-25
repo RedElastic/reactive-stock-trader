@@ -1,6 +1,6 @@
 package controllers;
 
-import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.order.TradeType;
 import lombok.Data;
 
 @SuppressWarnings("WeakerAccess")
@@ -11,5 +11,5 @@ public class PlaceOrderForm {
 
     int shares;
 
-    OrderType orderType;
+    TradeType tradeType;
 }

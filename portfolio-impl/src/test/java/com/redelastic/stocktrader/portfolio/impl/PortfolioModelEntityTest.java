@@ -6,7 +6,7 @@ import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.PlaceOrder;
 import org.junit.AfterClass;
@@ -14,8 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -58,7 +56,7 @@ public class PortfolioModelEntityTest {
         OrderDetails orderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(shareCount)
-                .orderType(OrderType.BUY)
+                .tradeType(TradeType.BUY)
                 .orderConditions(OrderConditions.Market.INSTANCE)
                 .build();
 
@@ -118,14 +116,14 @@ public class PortfolioModelEntityTest {
                                 .symbol(symbol)
                                 .shares(shareCount)
                                 .price(price)
-                                .orderType(OrderType.BUY)
+                                .tradeType(TradeType.BUY)
                                 .build()
                 ),
                 new PortfolioCommand.PlaceOrder(orderId,
                         OrderDetails.builder()
                             .symbol(symbol)
                             .shares(shareCount+1)
-                            .orderType(OrderType.SELL)
+                            .tradeType(TradeType.SELL)
                             .orderConditions(OrderConditions.Market.INSTANCE)
                             .build()
                 )

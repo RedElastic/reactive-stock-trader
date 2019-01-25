@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import java.util.Optional;
 import java.util.function.Function;
 
+
 public class TransferEntity extends PersistentEntity<TransferCommand, TransferEvent, Optional<TransferState>> {
 
     @Override

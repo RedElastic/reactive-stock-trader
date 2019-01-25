@@ -51,7 +51,7 @@ public class PortfolioController extends Controller {
         PlaceOrderForm orderForm = placeOrderForm.bindFromRequest().get(); // TODO handle errors
 
         OrderDetails order = OrderDetails.builder()
-                .orderType(orderForm.getOrderType())
+                .tradeType(orderForm.getTradeType())
                 .symbol(orderForm.getSymbol())
                 .shares(orderForm.getShares())
                 .orderConditions(OrderConditions.Market.INSTANCE)

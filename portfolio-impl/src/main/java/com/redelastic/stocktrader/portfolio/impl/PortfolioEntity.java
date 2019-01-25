@@ -170,7 +170,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 ctx.reply(Done.getInstance());
                 return ctx.done();
             } else {
-                switch (trade.getOrderType()) {
+                switch (trade.getTradeType()) {
                     case BUY:
                         return ctx.thenPersistAll(Arrays.asList(
                                 new PortfolioEvent.FundsDebited(entityId(), trade.getPrice()),
@@ -194,7 +194,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         private PersistentEntity.Persist placeOrder(PortfolioCommand.PlaceOrder placeOrder, CommandContext<Done> ctx) {
             log.info(String.format("Placing order %s", placeOrder.toString()));
             OrderDetails orderDetails = placeOrder.getOrderDetails();
-            switch(orderDetails.getOrderType()) {
+            switch(orderDetails.getTradeType()) {
                 case SELL:
                     int available = state().getHoldings().getShareCount(orderDetails.getSymbol());
                     if (available >= orderDetails.getShares()) {
@@ -266,7 +266,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 return ctx.done();
             } else {
                 log.info(String.format("Order failure for order %s.", cmd.getOrderFailed().getOrderId()));
-                switch(orderPlaced.getOrderDetails().getOrderType()) {
+                switch(orderPlaced.getOrderDetails().getTradeType()) {
                     case SELL:
                         return ctx.thenPersistAll(Arrays.asList(
                                 new PortfolioEvent.SharesCredited(entityId(), orderPlaced.getOrderDetails().getSymbol(), orderPlaced.getOrderDetails().getShares()),

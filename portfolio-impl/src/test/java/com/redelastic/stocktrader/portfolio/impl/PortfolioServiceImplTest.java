@@ -11,7 +11,7 @@ import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
 import com.redelastic.stocktrader.broker.api.*;
 import com.redelastic.stocktrader.order.OrderConditions;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.api.*;
 import lombok.extern.log4j.Log4j;
 import org.junit.AfterClass;
@@ -24,7 +24,6 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -95,12 +94,12 @@ public class PortfolioServiceImplTest {
 
         String symbol = "IBM";
         int shares = 31;
-        OrderType orderType = OrderType.BUY;
+        TradeType tradeType = TradeType.BUY;
         OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
         OrderDetails orderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(shares)
-                .orderType(orderType)
+                .tradeType(tradeType)
                 .orderConditions(orderConditions)
                 .build();
 
@@ -124,7 +123,7 @@ public class PortfolioServiceImplTest {
                         .orderId(orderId)
                         .symbol(symbol)
                         .shares(shares)
-                        .orderType(orderType)
+                        .tradeType(tradeType)
                         .price(sharePrice)
                         .build()
                 )
@@ -152,12 +151,12 @@ public class PortfolioServiceImplTest {
         // 1. Successfully purchase shares
         String symbol = "IBM";
         int sharesToBuy = 31;
-        OrderType orderType = OrderType.BUY;
+        TradeType tradeType = TradeType.BUY;
         OrderConditions orderConditions = OrderConditions.Market.INSTANCE;
         OrderDetails buyOrderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(sharesToBuy)
-                .orderType(orderType)
+                .tradeType(tradeType)
                 .orderConditions(orderConditions)
                 .build();
 
@@ -179,7 +178,7 @@ public class PortfolioServiceImplTest {
                         .orderId(buyOrderId)
                         .symbol(symbol)
                         .shares(sharesToBuy)
-                        .orderType(orderType)
+                        .tradeType(tradeType)
                         .price(sharePrice)
                         .build()
                 )
@@ -197,7 +196,7 @@ public class PortfolioServiceImplTest {
 
         // 2. Unsuccessfully attempt to sell some of them
         OrderDetails sellOrderDetails = OrderDetails.builder()
-                .orderType(OrderType.SELL)
+                .tradeType(TradeType.SELL)
                 .shares(sharesToSell)
                 .symbol(symbol)
                 .orderConditions(OrderConditions.Market.INSTANCE)
@@ -248,7 +247,7 @@ public class PortfolioServiceImplTest {
         OrderDetails buyOrderDetails = OrderDetails.builder()
                 .symbol(symbol)
                 .shares(sharesToBuy)
-                .orderType(OrderType.BUY)
+                .tradeType(TradeType.BUY)
                 .orderConditions(OrderConditions.Market.INSTANCE)
                 .build();
 
@@ -260,7 +259,7 @@ public class PortfolioServiceImplTest {
                 .portfolioId(portfolioId)
                 .trade(Trade.builder()
                         .orderId(orderId)
-                        .orderType(OrderType.BUY)
+                        .tradeType(TradeType.BUY)
                         .symbol(symbol)
                         .price(price)
                         .shares(sharesToBuy)

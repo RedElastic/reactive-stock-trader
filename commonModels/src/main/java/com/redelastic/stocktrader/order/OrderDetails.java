@@ -11,6 +11,6 @@ import lombok.Value;
 public class OrderDetails {
     @NonNull String symbol;
     int shares;
-    @NonNull OrderType orderType;
+    @NonNull TradeType tradeType;
     @NonNull OrderConditions orderConditions;
 }

@@ -1,6 +1,6 @@
 package com.redelastic.stocktrader.broker.api;
 
-import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.order.TradeType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,6 +13,6 @@ public class Trade {
     @NonNull String orderId;
     @NonNull String symbol;
     int shares;
-    @NonNull OrderType orderType;
+    @NonNull TradeType tradeType;
     @NonNull BigDecimal price;
 }

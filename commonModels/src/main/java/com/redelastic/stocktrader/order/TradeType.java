@@ -1,6 +1,6 @@
 package com.redelastic.stocktrader.order;
 
-public enum OrderType {
+public enum TradeType {
     BUY,
     SELL
 }
