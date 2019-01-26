@@ -6,18 +6,21 @@ import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
+import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
+import com.redelastic.stocktrader.portfolio.api.PortfolioService;
+import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @Singleton
@@ -40,17 +43,18 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<OpenPortfolioDetails, String> openPortfolio() {
+    public ServiceCall<OpenPortfolioDetails, PortfolioId> openPortfolio() {
+
         return portfolioRepository::open;
     }
 
     @Override
-    public ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId) {
+    public ServiceCall<NotUsed, Done> liquidatePortfolio(PortfolioId portfolioId) {
         return null;
     }
 
     @Override
-    public ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId) {
+    public ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId) {
         return notUsed ->
             portfolioRepository
                     .get(portfolioId)
@@ -58,18 +62,18 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<OrderDetails, String> placeOrder(String portfolioId) {
+    public ServiceCall<OrderDetails, OrderId> placeOrder(PortfolioId portfolioId) {
         return orderDetails -> {
             String orderId = UUID.randomUUID().toString();
             return portfolioRepository
                     .get(portfolioId)
                     .placeOrder(orderId, orderDetails)
-                    .thenApply(done -> orderId);
+                    .thenApply(done -> new OrderId(orderId));
         };
     }
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
-        PortfolioModel portfolio = portfolioRepository.get(orderResult.getPortfolioId());
+        PortfolioModel portfolio = portfolioRepository.get(new PortfolioId(orderResult.getPortfolioId())); // FIXME: Push PortfolioId into OrderResult
         return orderResult.visit(new OrderResult.Visitor<CompletionStage<Done>>() {
             @Override
             public CompletionStage<Done> visit(OrderResult.Fulfilled orderFulfilled) {
