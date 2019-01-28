@@ -1,0 +1,45 @@
+@startuml
+!pragma teoz true
+title Sell order flow
+actor Browser
+control BFF
+entity Portfolio
+collections OrderPlaced
+collections OrderResult
+entity Broker
+box "Portfolio Service"
+  participant Portfolio
+  participant OrderPlaced
+end box
+box "Broker Service"
+  participant Broker
+  participant OrderResult
+end box
+Browser -> BFF: sell shares
+activate BFF
+BFF -> Portfolio: placeOrder
+activate Portfolio
+Portfolio -> Portfolio: confirm and\n remove shares
+Portfolio -> OrderPlaced: OrderPlaced
+activate OrderPlaced
+Portfolio -> BFF: Done
+& OrderPlaced ->> Broker: OrderPlaced
+activate Broker
+deactivate Portfolio
+deactivate OrderPlaced
+BFF -> Browser: OK
+deactivate BFF
+Broker -> Broker: Find buyer
+Broker -> OrderResult: Fulfilled
+activate OrderResult
+deactivate Broker
+OrderResult ->> Portfolio: Fulfilled
+& OrderResult ->> BFF: Fulfilled
+activate BFF
+activate Portfolio
+deactivate OrderResult
+BFF -> Browser: Order update
+& Portfolio -> Portfolio: Credit funds
+deactivate Portfolio
+deactivate BFF
+@enduml
