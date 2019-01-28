@@ -14,6 +14,8 @@ import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.api.*;
 import lombok.extern.log4j.Log4j;
+import lombok.val;
+import lombok.val;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -87,7 +89,7 @@ public class PortfolioServiceImplTest {
     public void placeBuyOrder() throws Exception {
         PortfolioService service = server.client(PortfolioService.class);
         OpenPortfolioDetails details = new OpenPortfolioDetails("portfolioName");
-        String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
+        val portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
         Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
         TestSubscriber.Probe<OrderPlaced> probe =
                 source.runWith(TestSink.probe(server.system()), server.materializer());
@@ -103,23 +105,23 @@ public class PortfolioServiceImplTest {
                 .orderType(orderConditions)
                 .build();
 
-        String orderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
+        val orderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
 
         // Make sure we see the order published
-        eventually(FiniteDuration.create(5, SECONDS), () -> {
-            OrderPlaced orderPlaced = probe.request(1).expectNext();
-            assertEquals(orderDetails, orderPlaced.getOrderDetails());
-            assertEquals(portfolioId, orderPlaced.getPortfolioId());
-            assertEquals(orderId, orderPlaced.getOrderId());
-        });
+
+        OrderPlaced orderPlaced = probe.request(1).expectNext();
+        assertEquals(orderDetails, orderPlaced.getOrderDetails());
+        assertEquals(portfolioId.getId(), orderPlaced.getPortfolioId());
+        assertEquals(orderId.getId(), orderPlaced.getOrderId());
+
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
-                .orderId(orderId)
-                .portfolioId(portfolioId)
+                .orderId(orderId.getId())
+                .portfolioId(portfolioId.getId())
                 .trade(Trade.builder()
-                        .orderId(orderId)
+                        .orderId(orderId.getId())
                         .symbol(symbol)
                         .shares(shares)
                         .tradeType(tradeType)
@@ -142,7 +144,7 @@ public class PortfolioServiceImplTest {
 
         PortfolioService service = server.client(PortfolioService.class);
         OpenPortfolioDetails details = new OpenPortfolioDetails("portfolioName");
-        String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
+        val portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
         Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
         TestSubscriber.Probe<OrderPlaced> probe =
                 source.runWith(TestSink.probe(server.system()), server.materializer());
@@ -159,21 +161,21 @@ public class PortfolioServiceImplTest {
                 .orderType(orderConditions)
                 .build();
 
-        String buyOrderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
+        val buyOrderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
         eventually(FiniteDuration.create(5, SECONDS), () -> {
             OrderPlaced orderPlaced = probe.request(1).expectNext();
             assertEquals(buyOrderDetails, orderPlaced.getOrderDetails());
-            assertEquals(portfolioId, orderPlaced.getPortfolioId());
-            assertEquals(buyOrderId, orderPlaced.getOrderId());
+            assertEquals(portfolioId.getId(), orderPlaced.getPortfolioId());
+            assertEquals(buyOrderId.getId(), orderPlaced.getOrderId());
         });
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
-                .orderId(buyOrderId)
-                .portfolioId(portfolioId)
+                .orderId(buyOrderId.getId())
+                .portfolioId(portfolioId.getId())
                 .trade(Trade.builder()
-                        .orderId(buyOrderId)
+                        .orderId(buyOrderId.getId())
                         .symbol(symbol)
                         .shares(sharesToBuy)
                         .tradeType(tradeType)
@@ -199,15 +201,15 @@ public class PortfolioServiceImplTest {
                 .symbol(symbol)
                 .orderType(OrderType.Market.INSTANCE)
                 .build();
-        String sellOrderId = service
+        val sellOrderId = service
                 .placeOrder(portfolioId)
                 .invoke(sellOrderDetails)
                 .toCompletableFuture()
                 .get(5, SECONDS);
 
         OrderResult sellOrderResult = OrderResult.Failed.builder()
-                .orderId(sellOrderId)
-                .portfolioId(portfolioId)
+                .orderId(sellOrderId.getId())
+                .portfolioId(portfolioId.getId())
                 .build();
 
         PSequence<Holding> holdingsDuringSale = service.getPortfolio(portfolioId)
@@ -235,7 +237,7 @@ public class PortfolioServiceImplTest {
     public void ignoreDuplicateTrades() throws Exception {
         PortfolioService service = server.client(PortfolioService.class);
         OpenPortfolioDetails details = new OpenPortfolioDetails("portfolioName");
-        String portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
+        val portfolioId = service.openPortfolio().invoke(details).toCompletableFuture().get(5, SECONDS);
         Source<OrderPlaced, ?> source = service.orderPlaced().subscribe().atMostOnceSource();
         TestSubscriber.Probe<OrderPlaced> probe =
                 source.runWith(TestSink.probe(server.system()), server.materializer());
@@ -249,14 +251,14 @@ public class PortfolioServiceImplTest {
                 .orderType(OrderType.Market.INSTANCE)
                 .build();
 
-        String orderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
+        val orderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
 
         BigDecimal price = new BigDecimal("123.45");
         OrderResult tradeResult = OrderResult.Fulfilled.builder()
-                .orderId(orderId)
-                .portfolioId(portfolioId)
+                .orderId(orderId.getId())
+                .portfolioId(portfolioId.getId())
                 .trade(Trade.builder()
-                        .orderId(orderId)
+                        .orderId(orderId.getId())
                         .tradeType(TradeType.BUY)
                         .symbol(symbol)
                         .price(price)

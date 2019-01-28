@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.OrderCompleted;
@@ -43,16 +44,16 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      */
     // TODO: Implement retry logic. Theoretically the chance of a collision is astronomically low *given* everything else works.
     @Override
-    public CompletionStage<String> open(OpenPortfolioDetails request) {
+    public CompletionStage<PortfolioId> open(OpenPortfolioDetails request) {
         UUID uuid = UUID.randomUUID();
         String portfolioId = uuid.toString();
         PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, portfolioId);
         return ref.ask(new PortfolioCommand.Open(request.getName()))
-                .thenApply(done -> portfolioId);
+                .thenApply(done -> new PortfolioId(portfolioId));
     }
 
     @Override
-    public PortfolioModel get(String portfolioId) {
+    public PortfolioModel get(PortfolioId portfolioId) {
         return new PortfolioModel(brokerService, persistentEntities, portfolioId);
     }
 

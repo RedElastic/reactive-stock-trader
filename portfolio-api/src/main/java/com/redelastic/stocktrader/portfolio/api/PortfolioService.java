@@ -6,8 +6,13 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.lightbend.lagom.javadsl.api.deser.PathParamSerializer;
 import com.lightbend.lagom.javadsl.api.transport.Method;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderId;
+import org.pcollections.ConsPStack;
+import org.pcollections.PSequence;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -16,7 +21,7 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  */
 public interface PortfolioService extends Service {
 
-    ServiceCall<OpenPortfolioDetails, String> openPortfolio();
+    ServiceCall<OpenPortfolioDetails, PortfolioId> openPortfolio();
 
     /**
      * Place an order for a particular portfolio.
@@ -24,7 +29,7 @@ public interface PortfolioService extends Service {
      * @return Order ID when the order has been accepted. For a sell order this requires confirming that the
      * requested number of shares are available to be sold.
      */
-    ServiceCall<OrderDetails, String> placeOrder(String portfolioId);
+    ServiceCall<OrderDetails, OrderId> placeOrder(PortfolioId portfolioId);
 
     /**
      * Sell all equities (as market sell), then transfer all funds out, then close the portfolio.
@@ -34,14 +39,14 @@ public interface PortfolioService extends Service {
      * @param portfolioId ID for the portfolio to liquidate.
      * @return Done when the liquidate command has been acknowledged.
      */
-    ServiceCall<NotUsed, Done> liquidatePortfolio(String portfolioId);
+    ServiceCall<NotUsed, Done> liquidatePortfolio(PortfolioId portfolioId);
 
     /**
      * Get a view of the portfolio, including the current valuation of the equities held in it.
      * @param portfolioId ID of the portfolio to view.
      * @return The current portfolio's state.
      */
-    ServiceCall<NotUsed, PortfolioView> getPortfolio(String portfolioId);
+    ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId);
 
     /**
      * The orders placed by portfolios managed by this service.
@@ -64,7 +69,17 @@ public interface PortfolioService extends Service {
                 restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
         ).withTopics(
             topic(ORDERS_TOPIC_ID, this::orderPlaced)
-        );
+        ).withPathParamSerializer(PortfolioId.class, new PathParamSerializer<PortfolioId>() {
+            @Override
+            public PSequence<String> serialize(PortfolioId parameter) {
+                return ConsPStack.singleton(parameter.getId());
+            }
+
+            @Override
+            public PortfolioId deserialize(PSequence<String> parameters) {
+                return new PortfolioId(parameters.get(0)); // FIXME: how do we handle errors?
+            }
+        });
         // @formatter:on
 
     }

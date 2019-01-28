@@ -1,5 +1,6 @@
 package controllers;
 
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
@@ -36,7 +37,7 @@ public class PortfolioController extends Controller {
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
         return portfolioService
-            .getPortfolio(portfolioId)
+            .getPortfolio(new PortfolioId(portfolioId))
             .invoke()
             .thenApply(Json::toJson)
             .thenApply(Results::ok);
@@ -47,6 +48,7 @@ public class PortfolioController extends Controller {
         return portfolioService
                 .openPortfolio()
                 .invoke(openRequest)
+                .thenApply(PortfolioId::getId)
                 .thenApply(Results::ok);
     }
 
@@ -60,7 +62,7 @@ public class PortfolioController extends Controller {
                 .orderType(OrderType.Market.INSTANCE)
                 .build();
         return portfolioService
-                .placeOrder(portfolioId)
+                .placeOrder(new PortfolioId(portfolioId))
                 .invoke(order)
                 .thenApply(done -> ok());
     }
