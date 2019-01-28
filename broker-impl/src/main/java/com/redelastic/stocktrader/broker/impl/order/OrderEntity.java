@@ -97,7 +97,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state));
             setCommonBehavior(builder);
 
-            builder.setCommandHandler(OrderCommand.Complete.class, this::complete);
+            builder.setCommandHandler(OrderCommand.CompleteOrder.class, this::complete);
 
             builder.setEventHandlerChangingBehavior(OrderEvent.OrderFulfilled.class, this::fulfilled);
             builder.setEventHandlerChangingBehavior(OrderEvent.OrderFailed.class, this::failed);
@@ -109,7 +109,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this(new OrderState.Pending(portfolioId, orderDetails));
         }
 
-        private Persist complete(OrderCommand.Complete cmd, CommandContext<Done> ctx) {
+        private Persist complete(OrderCommand.CompleteOrder cmd, CommandContext<Done> ctx) {
             return cmd.getOrderResult().visit(new OrderResult.Visitor<Persist>() {
                 @Override
                 public Persist visit(OrderResult.Fulfilled orderFulfilled) {

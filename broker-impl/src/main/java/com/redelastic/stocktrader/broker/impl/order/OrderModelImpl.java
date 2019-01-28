@@ -40,7 +40,7 @@ public class OrderModelImpl implements OrderModel {
                 })
                 .thenAccept(orderResult -> {
                     log.info(String.format("Order %s completing.", orderEntity.entityId()));
-                    orderEntity.ask(new OrderCommand.Complete(orderResult));
+                    orderEntity.ask(new OrderCommand.CompleteOrder(orderResult));
                 })
         );
         // Note that our service call responds with Done after the PlaceOrder command is accepted, it does not

@@ -25,7 +25,7 @@ abstract class OrderCommand implements Jsonable {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    static class Complete extends OrderCommand implements ReplyType<Done> {
+    static class CompleteOrder extends OrderCommand implements ReplyType<Done> {
         OrderResult orderResult;
     }
 
