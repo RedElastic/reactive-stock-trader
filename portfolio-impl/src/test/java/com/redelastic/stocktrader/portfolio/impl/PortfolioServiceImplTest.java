@@ -78,7 +78,7 @@ public class PortfolioServiceImplTest {
         }
 
         @Override
-        public Topic<OrderResult> orderResults() {
+        public Topic<OrderResult> orderResult() {
 
             return orderResultProducerStub.topic();
         }
