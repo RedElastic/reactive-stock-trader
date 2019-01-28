@@ -65,7 +65,7 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     @Override
-    public Topic<OrderResult> orderResults() {
+    public Topic<OrderResult> orderResult() {
         return TopicProducer.taggedStreamWithOffset(OrderEvent.TAG.allTags(), orderRepository::orderResults);
     }
 

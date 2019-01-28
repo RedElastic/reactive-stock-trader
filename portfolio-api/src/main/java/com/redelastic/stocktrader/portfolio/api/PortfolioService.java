@@ -50,11 +50,10 @@ public interface PortfolioService extends Service {
     Topic<OrderPlaced> orderPlaced();
 
 
-    String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
 
     @Override
     default Descriptor descriptor() {
-        // Map with auto ACL to provide access to this API through the Lagom gateway
+        String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
 
         // @formatter:off
         return named("portfolio").withCalls(

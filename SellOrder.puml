@@ -1,5 +1,6 @@
 @startuml
 !pragma teoz true
+skinparam SequenceMessageAlign direction
 title Sell order flow
 actor Browser
 control BFF

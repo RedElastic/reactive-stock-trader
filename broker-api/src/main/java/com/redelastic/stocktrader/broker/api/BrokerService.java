@@ -32,7 +32,7 @@ public interface BrokerService extends Service {
    * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
    * or otherwise).
    */
-  Topic<OrderResult> orderResults();
+  Topic<OrderResult> orderResult();
 
   String ORDER_RESULTS_TOPIC_ID = "Broker-OrderResults";
 
@@ -43,7 +43,7 @@ public interface BrokerService extends Service {
             restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
             restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
     ).withTopics(
-            topic(ORDER_RESULTS_TOPIC_ID, this::orderResults)
+            topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
               .withProperty(KafkaProperties.partitionKeyStrategy(), OrderResult::getPortfolioId)
     );
     // @formatter:on
