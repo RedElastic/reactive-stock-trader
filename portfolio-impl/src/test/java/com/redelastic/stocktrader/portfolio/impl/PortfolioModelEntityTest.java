@@ -9,6 +9,7 @@ import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.PlaceOrder;
+import lombok.val;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,8 +36,12 @@ public class PortfolioModelEntityTest {
         system = null;
     }
 
+
     private PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> createPortfolioEntity(String id) {
-        return new PersistentEntityTestDriver<>(system, new PortfolioEntity(), id);
+
+        val testExpirationScheduler = new ExpirationScheduler(system, null);
+
+        return new PersistentEntityTestDriver<>(system, new PortfolioEntity(testExpirationScheduler), id);
     }
 
     private PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> openPortfolioEntity(String id, String name) {

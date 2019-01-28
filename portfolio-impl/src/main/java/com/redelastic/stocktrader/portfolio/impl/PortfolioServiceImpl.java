@@ -36,7 +36,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         this.portfolioRepository = portfolioRepository;
 
         // Listen for purchase order completions and send them to the corresponding portfolio
-        brokerService.orderResults()
+        brokerService.orderResult()
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
         // Note: Our order entity logic handles duplicate orderPlaced, hence at least once semantics work.

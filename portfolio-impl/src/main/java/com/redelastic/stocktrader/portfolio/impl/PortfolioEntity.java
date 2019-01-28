@@ -2,18 +2,33 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.concurrent.duration.FiniteDuration;
 
+import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 // TODO: Note overdrawn status on purchase.
 class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> {
     private final Logger log = LoggerFactory.getLogger(PortfolioEntity.class);
+
+    private final ExpirationScheduler expirationScheduler;
+
+    @Inject
+    PortfolioEntity(ExpirationScheduler expirationScheduler) {
+        super();
+        this.expirationScheduler = expirationScheduler;
+    }
+
+    private static final FiniteDuration orderTimeout = FiniteDuration.apply(30, TimeUnit.SECONDS); // TODO: configure
 
     @Override
     public Behavior initialBehavior(Optional<Optional<PortfolioState>> snapshotState) {
@@ -79,6 +94,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         // Shadow parent state() method with behaviour specific state so we don't need downcasts throughout.
         State state() { return (State)PortfolioEntity.this.state().get(); }
 
+        PortfolioId thisPortfolio() { return new PortfolioId(entityId()); }
+
         final BehaviorBuilder builder;
 
         PortfolioBehaviorBuilder(PortfolioState state) {
@@ -143,6 +160,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             builder.setCommandHandler(PortfolioCommand.Liquidate.class, this::liquidate);
             builder.setCommandHandler(PortfolioCommand.SendFunds.class, this::sendFunds);
             builder.setCommandHandler(PortfolioCommand.ReceiveFunds.class, this::receiveFunds);
+            builder.setCommandHandler(PortfolioCommand.HandleOrderExpired.class, this::orderExpired);
 
             builder.setReadOnlyCommandHandler(PortfolioCommand.GetState.class, this::getState);
 
@@ -213,7 +231,13 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                         return ctx.thenPersistAll(Arrays.asList(
                                 new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
                                 new PortfolioEvent.SharesDebited(entityId(), orderDetails.getSymbol(), orderDetails.getShares())),
-                                () -> ctx.reply(Done.getInstance()));
+                                () -> {
+                                    expirationScheduler.schedule(
+                                            thisPortfolio(),
+                                            new OrderId(placeOrder.getOrderId()),
+                                            orderTimeout);
+                                    ctx.reply(Done.getInstance());
+                                });
                     } else {
                         ctx.commandFailed(new InsufficientShares(
                                 String.format("Insufficient shares of %s for sell, %d required, %d held.",
@@ -294,6 +318,13 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
             }
 
+        }
+
+        private PersistentEntity.Persist orderExpired(PortfolioCommand.HandleOrderExpired cmd, CommandContext<Done> ctx) {
+            return ctx.thenPersist(
+                    new PortfolioEvent.OrderExpired(entityId(), cmd.getOrderId().getId()),
+                    evt -> ctx.reply(Done.getInstance())
+            );
         }
 
     }

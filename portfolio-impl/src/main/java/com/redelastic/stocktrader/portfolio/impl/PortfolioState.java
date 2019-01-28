@@ -59,6 +59,10 @@ public interface PortfolioState extends Jsonable {
             return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
         }
 
+        Open update(PortfolioEvent.OrderExpired evt) {
+            return this.withActiveOrders(activeOrders.minus(evt.getOrderId()));
+        }
+
 
         @Override
         public <T> T visit(Visitor<T> visitor) {

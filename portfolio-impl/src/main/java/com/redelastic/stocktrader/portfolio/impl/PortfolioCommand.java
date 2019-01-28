@@ -6,6 +6,7 @@ import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -57,5 +58,10 @@ public interface PortfolioCommand extends Jsonable {
     @Value
     class HandleOrderFailure implements PortfolioCommand, ReplyType<Done> {
         OrderResult.Failed orderFailed;
+    }
+
+    @Value
+    class HandleOrderExpired implements PortfolioCommand, ReplyType<Done> {
+        OrderId orderId;
     }
 }

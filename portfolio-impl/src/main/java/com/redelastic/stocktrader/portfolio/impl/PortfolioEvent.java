@@ -109,4 +109,10 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
         @NonNull String orderId;
     }
 
+    @Value
+    class OrderExpired implements PortfolioEvent {
+        @NonNull String portfolioId;
+        @NonNull String orderId;
+    }
+
 }

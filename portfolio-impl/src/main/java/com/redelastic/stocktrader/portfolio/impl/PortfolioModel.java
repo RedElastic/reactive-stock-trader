@@ -10,6 +10,7 @@ import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderId;
 import com.redelastic.stocktrader.portfolio.api.Holding;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import com.redelastic.stocktrader.portfolio.api.ValuedHolding;
@@ -26,6 +27,8 @@ import static java.util.stream.Collectors.toList;
 /* Facade for a PortfolioModel. Wraps up all the logic surrounding an individual PortfolioEntity.
  * The PersistentEntity class itself can get large, so this wrapper can hold some of the logic around interactions with
  * the entity.
+ *
+ * May not be sufficiently helpful in practice.
  */
 class PortfolioModel {
 
@@ -65,7 +68,6 @@ class PortfolioModel {
                     CompletionStage<BigDecimal> nullPriceOnFailure = CSHelper.recover(getSharePrice, RuntimeException.class, ex -> null);
 
                     return nullPriceOnFailure
-
                             .thenApply(sharePrice -> {
                                 BigDecimal price = sharePrice == null ? null : sharePrice.multiply(BigDecimal.valueOf(valuedHolding.getShareCount()));
                                 return new ValuedHolding(
@@ -90,5 +92,9 @@ class PortfolioModel {
 
     CompletionStage<Done> orderFailed(OrderResult.Failed failed) {
         return portfolioEntity.ask(new PortfolioCommand.HandleOrderFailure(failed));
+    }
+
+    CompletionStage<Done> expireOrder(OrderId orderId) {
+        return portfolioEntity.ask(new PortfolioCommand.HandleOrderExpired(orderId));
     }
 }

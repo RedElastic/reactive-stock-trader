@@ -15,7 +15,6 @@ import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.api.*;
 import lombok.extern.log4j.Log4j;
 import lombok.val;
-import lombok.val;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -78,7 +77,7 @@ public class PortfolioServiceImplTest {
         }
 
         @Override
-        public Topic<OrderResult> orderResults() {
+        public Topic<OrderResult> orderResult() {
 
             return orderResultProducerStub.topic();
         }
