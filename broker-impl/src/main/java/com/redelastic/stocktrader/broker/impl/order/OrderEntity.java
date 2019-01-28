@@ -186,7 +186,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         UninitializedBehaviorBuilder() {
             BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
             builder.setCommandHandler(OrderCommand.PlaceOrder.class, this::placeOrder);
-            builder.setEventHandlerChangingBehavior(OrderEvent.ProcessingOrder.class, this::processing);
+            builder.setEventHandlerChangingBehavior(OrderEvent.OrderReceived.class, this::processing);
             this.behavior = builder.build();
         }
 
@@ -197,11 +197,11 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Order> ctx) {
             Order order = new Order(entityId(), cmd.getPortfolioId(), cmd.getOrderDetails());
             return ctx.thenPersist(
-                    new OrderEvent.ProcessingOrder(order),
+                    new OrderEvent.OrderReceived(order),
                     evt -> ctx.reply(order));
         }
 
-        private Behavior processing(OrderEvent.ProcessingOrder evt) {
+        private Behavior processing(OrderEvent.OrderReceived evt) {
             return new PendingBehaviorBuilder(evt.getOrder().getPortfolioId(), evt.getOrder().getDetails()).getBehavior();
         }
     }

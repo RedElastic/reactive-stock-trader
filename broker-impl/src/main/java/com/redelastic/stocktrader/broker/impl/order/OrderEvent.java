@@ -24,7 +24,7 @@ public interface OrderEvent extends Jsonable, AggregateEvent<OrderEvent> {
     }
 
     @Value
-    class ProcessingOrder implements OrderEvent {
+    class OrderReceived implements OrderEvent {
         Order order;
     }
 
