@@ -4,6 +4,7 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.CSHelper;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Quote;
@@ -30,12 +31,12 @@ class PortfolioModel {
 
     private final PersistentEntityRef<PortfolioCommand> portfolioEntity;
     private final BrokerService brokerService;
-    private final String portfolioId;
+    private final PortfolioId portfolioId;
 
     PortfolioModel(BrokerService brokerService,
                    PersistentEntityRegistry registry,
-                   String portfolioId) {
-        this.portfolioEntity = registry.refFor(PortfolioEntity.class, portfolioId);
+                   PortfolioId portfolioId) {
+        this.portfolioEntity = registry.refFor(PortfolioEntity.class, portfolioId.getId());
         this.brokerService = brokerService;
         this.portfolioId = portfolioId;
     }
