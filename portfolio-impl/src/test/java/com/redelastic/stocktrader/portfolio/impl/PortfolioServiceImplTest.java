@@ -8,13 +8,16 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.testkit.ProducerStub;
 import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
+import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.broker.api.*;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.wiretransfer.api.Transfer;
+import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
+import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
 import lombok.extern.log4j.Log4j;
-import lombok.val;
 import lombok.val;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -41,7 +44,8 @@ public class PortfolioServiceImplTest {
     public static void setUp() {
         server = startServer(defaultSetup().withCassandra()
                 .configureBuilder(b ->
-                        b.overrides(bind(BrokerService.class).to(BrokerStub.class))
+                    b.overrides(bind(BrokerService.class).to(BrokerStub.class))
+                     .overrides(bind(WireTransferService.class).to(WireTransferStub.class))
                 ));
     }
 
@@ -53,11 +57,14 @@ public class PortfolioServiceImplTest {
         }
     }
 
-    private static ProducerStub<OrderResult> orderResultProducerStub;
+
+
 
     // Could consider mocking this per test, however this will require creating a new server per test (to resolve DI),
     // which will spin up C* each time and slow the tests down.
     static class BrokerStub implements BrokerService {
+
+        static ProducerStub<OrderResult> orderResultProducerStub;
 
         static BigDecimal sharePrice = new BigDecimal("152.12");
 
@@ -84,6 +91,32 @@ public class PortfolioServiceImplTest {
         }
     }
 
+    static class WireTransferStub implements WireTransferService {
+
+        static ProducerStub<TransferRequest> transferRequestProducerStub;
+        static ProducerStub<Transfer> transferProducerStub;
+
+        @Inject
+        WireTransferStub(ProducerStubFactory producerStubFactory) {
+            transferRequestProducerStub = producerStubFactory.producer(TRANSFER_REQUEST_TOPIC_ID);
+            transferProducerStub = producerStubFactory.producer(PORTFOLIO_TRANSFER_TOPIC_ID);
+        }
+
+        @Override
+        public ServiceCall<Transfer, TransferId> transferFunds() {
+            return null;
+        }
+
+        @Override
+        public Topic<Transfer> completedTransfers() {
+            return transferProducerStub.topic();
+        }
+
+        @Override
+        public Topic<TransferRequest> transferRequest() {
+            return transferRequestProducerStub.topic();
+        }
+    }
 
     @Test
     public void placeBuyOrder() throws Exception {
@@ -129,7 +162,7 @@ public class PortfolioServiceImplTest {
                         .build()
                 )
                 .build();
-        orderResultProducerStub.send(orderResult);
+        BrokerStub.orderResultProducerStub.send(orderResult);
 
         // Allow some time for the trade result to be processed by the portfolio
         eventually(FiniteDuration.create(10, SECONDS), () -> {
@@ -183,7 +216,7 @@ public class PortfolioServiceImplTest {
                         .build()
                 )
                 .build();
-        orderResultProducerStub.send(orderResult);
+        BrokerStub.orderResultProducerStub.send(orderResult);
 
         // Allow some time for the trade result to be processed by the portfolio
         eventually(FiniteDuration.create(10, SECONDS), () -> {
@@ -220,7 +253,7 @@ public class PortfolioServiceImplTest {
 
         assertEquals(sharesToBuy-sharesToSell, holdingsDuringSale.get(0).getShareCount());
 
-        orderResultProducerStub.send(sellOrderResult);
+        BrokerStub.orderResultProducerStub.send(sellOrderResult);
 
         eventually(FiniteDuration.create(10, SECONDS), () -> {
             PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
@@ -266,8 +299,8 @@ public class PortfolioServiceImplTest {
                         .build()
                 ).build();
 
-        orderResultProducerStub.send(tradeResult);
-        orderResultProducerStub.send(tradeResult);
+        BrokerStub.orderResultProducerStub.send(tradeResult);
+        BrokerStub.orderResultProducerStub.send(tradeResult);
 
 
         PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);

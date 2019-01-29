@@ -50,7 +50,12 @@ public interface PortfolioCommand extends Jsonable {
     @Builder
     class SendFunds implements PortfolioCommand, ReplyType<Done> {
         BigDecimal amount;
-        String recipientAccountId;
+    }
+
+    @Value
+    @Builder
+    class AcceptRefund implements PortfolioCommand, ReplyType<Done> {
+        BigDecimal amount;
     }
 
     // FIXME: review this.

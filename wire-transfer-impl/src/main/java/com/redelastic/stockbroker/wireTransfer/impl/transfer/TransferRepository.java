@@ -1,23 +1,15 @@
 package com.redelastic.stockbroker.wireTransfer.impl.transfer;
 
+import akka.NotUsed;
+import akka.japi.Pair;
+import akka.stream.javadsl.Source;
+import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
+import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
-import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferCommand;
-import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferEntity;
+import com.redelastic.stocktrader.TransferId;
 
-import javax.inject.Inject;
+public interface TransferRepository {
+    PersistentEntityRef<TransferCommand> get(TransferId transferId);
 
-public class TransferRepository {
-
-    private final PersistentEntityRegistry entityRegistry;
-
-    @Inject
-    public TransferRepository(PersistentEntityRegistry entityRegistry) {
-        entityRegistry.register(TransferEntity.class);
-        this.entityRegistry = entityRegistry;
-    }
-
-    public PersistentEntityRef<TransferCommand> get(String transferId) {
-        return entityRegistry.refFor(TransferEntity.class, transferId);
-    }
+    Source<Pair<TransferEvent, Offset>, NotUsed> eventStream(AggregateEventTag<TransferEvent> tag, Offset offset);
 }

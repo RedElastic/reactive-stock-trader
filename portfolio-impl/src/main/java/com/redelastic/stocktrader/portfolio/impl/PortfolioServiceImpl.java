@@ -11,10 +11,11 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderId;
-import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
-import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
-import com.redelastic.stocktrader.portfolio.api.PortfolioService;
-import com.redelastic.stocktrader.portfolio.api.PortfolioView;
+import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.wiretransfer.api.Account;
+import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
+import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
+import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Inject
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository,
-                                BrokerService brokerService) {
+                                BrokerService brokerService,
+                                WireTransferService wireTransferService) {
         this.portfolioRepository = portfolioRepository;
 
         // Listen for purchase order completions and send them to the corresponding portfolio
@@ -40,6 +42,43 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
         // Note: Our order entity logic handles duplicate orderPlaced, hence at least once semantics work.
+
+        wireTransferService
+                .transferRequest()
+                .subscribe()
+                .atLeastOnce(
+                        Flow.<TransferRequest>create()
+                                .filter(request -> request.getAccount() instanceof Account.Portfolio)
+                                .mapAsync(1, this::processTransferRequests)
+                );
+    }
+
+    private CompletionStage<Done> processTransferRequests(TransferRequest request) {
+        return request.visit(new TransferRequest.Visitor<CompletionStage<Done>>() {
+            @Override
+            public CompletionStage<Done> visit(TransferRequest.WithdrawlRequest withdrawlRequest) {
+                return handleWithdrawl(withdrawlRequest);
+            }
+
+            @Override
+            public CompletionStage<Done> visit(TransferRequest.DepositRequest depositRequest) {
+                return handleDeposit(depositRequest);
+            }
+        });
+    }
+
+    private CompletionStage<Done> handleWithdrawl(TransferRequest.WithdrawlRequest request) {
+        PortfolioId portfolioId = ((Account.Portfolio)request.getAccount()).getPortfolioId();
+        return portfolioRepository
+                .getRef(portfolioId)
+                .ask(PortfolioCommand.SendFunds.builder().amount(request.getAmount()).build());
+    }
+
+    private CompletionStage<Done> handleDeposit(TransferRequest.DepositRequest request) {
+        PortfolioId portfolioId = ((Account.Portfolio)request.getAccount()).getPortfolioId();
+        return portfolioRepository
+                .getRef(portfolioId)
+                .ask(PortfolioCommand.ReceiveFunds.builder().amount(request.getAmount()).build());
     }
 
     @Override
@@ -59,6 +98,29 @@ public class PortfolioServiceImpl implements PortfolioService {
             portfolioRepository
                     .get(portfolioId)
                     .view();
+    }
+
+    @Override
+    public ServiceCall<FundsTransfer, Done> processTransfer(PortfolioId portfolioId) {
+        val portfolioRef = portfolioRepository
+                .getRef(portfolioId);
+        return fundsTransfer ->
+            fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
+                @Override
+                public CompletionStage<Done> visit(FundsTransfer.FundsDeposited fundsDeposited) {
+                    return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(fundsDeposited.getFunds()));
+                }
+
+                @Override
+                public CompletionStage<Done> visit(FundsTransfer.FundsWithdrawn fundsWithdrawn) {
+                    return portfolioRef.ask(new PortfolioCommand.SendFunds(fundsWithdrawn.getFunds()));
+                }
+
+                @Override
+                public CompletionStage<Done> visit(FundsTransfer.Refund refund) {
+                    return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds()));
+                }
+            });
     }
 
     @Override
@@ -90,6 +152,11 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public Topic<OrderPlaced> orderPlaced() {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
+    }
+
+    @Override
+    public Topic<FundsTransfer> fundsTransfer() {
+        return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::transferStream);
     }
 
 

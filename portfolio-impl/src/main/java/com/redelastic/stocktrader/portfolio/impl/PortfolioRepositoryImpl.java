@@ -8,6 +8,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.portfolio.api.FundsTransfer;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.OrderCompleted;
 import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
@@ -57,6 +58,11 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         return new PortfolioModel(brokerService, persistentEntities, portfolioId);
     }
 
+    @Override
+    public PersistentEntityRef<PortfolioCommand> getRef(PortfolioId portfolioId) {
+        return persistentEntities.refFor(PortfolioEntity.class, portfolioId.getId());
+    }
+
     public Source<Pair<OrderPlaced, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
         return persistentEntities.eventStream(tag, offset)
             .filter(eventOffset ->
@@ -73,6 +79,11 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
 
     @Override
     public Source<Pair<OrderCompleted, Offset>, ?> orderCompletedStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
+        return Source.empty(); // TODO
+    }
+
+    @Override
+    public Source<Pair<FundsTransfer, Offset>, ?> transferStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
         return Source.empty(); // TODO
     }
 

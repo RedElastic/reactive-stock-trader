@@ -14,7 +14,10 @@ public class TransferState implements Jsonable {
 
     enum Status {
         GettingFunds,
+        GettingFundsFailed,
         SendingFunds,
+        SendingFundsFailed,
+        ConfirmingDelivery,
         Completed
     }
 

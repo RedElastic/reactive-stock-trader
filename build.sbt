@@ -110,7 +110,8 @@ lazy val bff = (project in file("bff"))
   .disablePlugins(PlayLayoutPlugin)
   .dependsOn(
     portfolioApi,
-    brokerApi
+    brokerApi,
+    wireTransferApi
   )
   .settings(
     version := "1.0-SNAPSHOT",

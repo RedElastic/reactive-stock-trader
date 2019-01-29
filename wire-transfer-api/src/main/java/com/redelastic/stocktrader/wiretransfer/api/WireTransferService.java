@@ -4,11 +4,11 @@ import static com.lightbend.lagom.javadsl.api.Service.named;
 import static com.lightbend.lagom.javadsl.api.Service.call;
 import static com.lightbend.lagom.javadsl.api.Service.topic;
 
-import akka.Done;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
+import com.redelastic.stocktrader.TransferId;
 
 
 /**
@@ -16,21 +16,25 @@ import com.lightbend.lagom.javadsl.api.broker.Topic;
  */
 public interface WireTransferService extends Service {
 
-  ServiceCall<Transfer, Done> transferFunds();
+  ServiceCall<Transfer, TransferId> transferFunds();
 
   Topic<Transfer> completedTransfers();
-  String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
 
-  Topic<TransferRequest> transferRequests();
+  Topic<TransferRequest> transferRequest();
+
+  String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
+  String TRANSFER_REQUEST_TOPIC_ID = "WireTransfer-TransferRequest";
 
   @Override
   default Descriptor descriptor() {
     // @formatter:off
+
     return named("wire-transfer").withCalls(
             call(this::transferFunds)
         )
         .withTopics(
-                topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers)
+                topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
+                topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
         );
     // @formatter:on
   }

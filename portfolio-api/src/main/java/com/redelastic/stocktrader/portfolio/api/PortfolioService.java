@@ -48,13 +48,15 @@ public interface PortfolioService extends Service {
      */
     ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId);
 
+    ServiceCall<FundsTransfer, Done> processTransfer(PortfolioId portfolioId);
+
     /**
      * The orders placed by portfolios managed by this service.
      * @return Orders placed by portfolios.
      */
     Topic<OrderPlaced> orderPlaced();
 
-
+    Topic<FundsTransfer> fundsTransfer();
 
     @Override
     default Descriptor descriptor() {
