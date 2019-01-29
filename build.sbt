@@ -1,3 +1,5 @@
+import sbt.util
+
 organization in ThisBuild := "com.redelastic"
 
 scalaVersion in ThisBuild := "2.12.4"
@@ -149,4 +151,5 @@ def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   crossPaths := false // Work around JUnit issue with SBT
 )
 
-lagomCassandraCleanOnStart in ThisBuild := false
+lagomCassandraCleanOnStart in ThisBuild := true
+lagomKafkaCleanOnStart in ThisBuild := true

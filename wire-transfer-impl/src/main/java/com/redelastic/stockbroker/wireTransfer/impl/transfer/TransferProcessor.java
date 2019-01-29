@@ -59,11 +59,13 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
         public Flow<Pair<TransferEvent, Offset>, Done, ?> handle() {
             return Flow.<Pair<TransferEvent, Offset>>create()
                     .log("transferEvent")
-                    .withAttributes(Attributes.createLogLevels(
-                            Attributes.logLevelError(),
-                            Attributes.logLevelInfo(),
-                            Attributes.logLevelInfo()
-                    ))
+                    .withAttributes(
+                            Attributes.createLogLevels(
+                                    Attributes.logLevelInfo(),
+                                    Attributes.logLevelInfo(),
+                                    Attributes.logLevelInfo()
+                            )
+                    )
                     .mapAsync(1, e ->
                             e.first().visit(new TransferEventVisitor()));
         }
