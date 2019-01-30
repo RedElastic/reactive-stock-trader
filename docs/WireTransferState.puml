@@ -5,17 +5,17 @@
 note left of TransferInitiated
   Request funds from source account
 end note
-TransferInitiated --> UnableToSecureFunds : RequestFailed
-TransferInitiated --> FundsSent : RequestSucceeded
-note left of FundsSent
+TransferInitiated --> CouldNotSecureFunds : RequestFailed
+TransferInitiated --> FundsRetrieved : RequestSucceeded
+note left of FundsRetrieved
   Send funds to destination
 end note
-FundsSent --> DeliveryConfirmed : DeliverySuccessful
-FundsSent --> RefundSent : DeliveryFailed
-note left of RefundSent
+FundsRetrieved --> DeliveryConfirmed : DeliverySuccessful
+FundsRetrieved --> DeliveryFailed : DeliveryFailed
+note left of DeliveryFailed
   Send refund to source
 end note
-RefundSent --> RefundSent : RefundFailed
-RefundSent --> RefundDelivered : RefundSucceeded
+DeliveryFailed --> DeliveryFailed : RefundFailed
+DeliveryFailed --> RefundDelivered : RefundSucceeded
 
 @enduml

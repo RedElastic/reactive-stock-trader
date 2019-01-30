@@ -132,15 +132,15 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
         }
 
         @Override
-        public CompletionStage<Done> visit(TransferEvent.RefundSent refundSent) {
-            val transferEntity = transferRepository.get(refundSent.getTransferId());
+        public CompletionStage<Done> visit(TransferEvent.DeliveryFailed deliveryFailed) {
+            val transferEntity = transferRepository.get(deliveryFailed.getTransferId());
 
-            if (refundSent.getTransferDetails().getSource() instanceof Account.Portfolio) {
+            if (deliveryFailed.getTransferDetails().getSource() instanceof Account.Portfolio) {
 
-                val portfolioId = ((Account.Portfolio) refundSent.getTransferDetails().getSource()).getPortfolioId();
+                val portfolioId = ((Account.Portfolio) deliveryFailed.getTransferDetails().getSource()).getPortfolioId();
                 val refund = FundsTransfer.Refund.builder()
-                        .transferId(refundSent.getTransferId())
-                        .funds(refundSent.getTransferDetails().getAmount())
+                        .transferId(deliveryFailed.getTransferId())
+                        .funds(deliveryFailed.getTransferDetails().getAmount())
                         .build();
                 return portfolioService
                         .processTransfer(portfolioId)
@@ -149,7 +149,8 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
                                 transferEntity.ask(TransferCommand.RefundSuccess.INSTANCE)
                         );
             } else {
-                return transferEntity.ask(TransferCommand.RefundSuccess.INSTANCE);
+                return transferEntity
+                        .ask(TransferCommand.RefundSuccess.INSTANCE);
             }
         }
 

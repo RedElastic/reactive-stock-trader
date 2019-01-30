@@ -18,7 +18,7 @@ import lombok.Value;
         @JsonSubTypes.Type(TransferEvent.FundsRetrieved.class),
         @JsonSubTypes.Type(TransferEvent.CouldNotSecureFunds.class),
         @JsonSubTypes.Type(TransferEvent.DeliveryConfirmed.class),
-        @JsonSubTypes.Type(TransferEvent.RefundSent.class),
+        @JsonSubTypes.Type(TransferEvent.DeliveryFailed.class),
         @JsonSubTypes.Type(TransferEvent.RefundDelivered.class)
 })
 public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Jsonable {
@@ -75,7 +75,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class RefundSent extends TransferEvent {
+    public static class DeliveryFailed extends TransferEvent {
         @NonNull TransferId transferId;
         @NonNull TransferDetails transferDetails;
 
@@ -99,7 +99,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
         T visit(FundsRetrieved fundsRetrieved);
         T visit(CouldNotSecureFunds couldNotSecureFunds);
         T visit(DeliveryConfirmed deliveryConfirmed);
-        T visit(RefundSent refundSent);
+        T visit(DeliveryFailed deliveryFailed);
         T visit(RefundDelivered refundDelivered);
     }
 

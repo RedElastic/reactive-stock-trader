@@ -96,10 +96,10 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                 evt -> deliveryConfirmed(state));
         builder.setCommandHandler(TransferCommand.DeliveryFailed.class, (cmd, ctx) ->
                 ctx.thenPersist(
-                        new TransferEvent.RefundSent(getTransferId(), state().get().getTransferDetails()),
+                        new TransferEvent.DeliveryFailed(getTransferId(), state().get().getTransferDetails()),
                         ect -> ctx.reply(Done.getInstance())
                 ));
-        builder.setEventHandlerChangingBehavior(TransferEvent.RefundSent.class,
+        builder.setEventHandlerChangingBehavior(TransferEvent.DeliveryFailed.class,
                 evt -> refundSent(state));
 
         builder.setCommandHandler(TransferCommand.RequestFundsSucessful.class, this::ignore);
