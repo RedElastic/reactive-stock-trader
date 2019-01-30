@@ -17,6 +17,7 @@ import play.mvc.Result;
 import play.mvc.Results;
 
 import javax.inject.Inject;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @SuppressWarnings("WeakerAccess")
@@ -46,27 +47,37 @@ public class PortfolioController extends Controller {
     }
 
     public CompletionStage<Result> openPortfolio() {
-        OpenPortfolioDetails openRequest = openPortfolioForm.bindFromRequest().get().toRequest(); // TODO handle errors
-        return portfolioService
-                .openPortfolio()
-                .invoke(openRequest)
-                .thenApply(PortfolioId::getId)
-                .thenApply(Results::ok);
+        Form<OpenPortfolioForm> form = openPortfolioForm.bindFromRequest();
+        if (form.hasErrors()) {
+            return CompletableFuture.completedFuture(badRequest(form.errorsAsJson()));
+        } else {
+            OpenPortfolioDetails openRequest = form.get().toRequest();
+            return portfolioService
+                    .openPortfolio()
+                    .invoke(openRequest)
+                    .thenApply(PortfolioId::getId)
+                    .thenApply(Results::ok);
+        }
     }
 
     public CompletionStage<Result> placeOrder(String portfolioId) {
-        PlaceOrderForm orderForm = placeOrderForm.bindFromRequest().get(); // TODO handle errors
+        Form<PlaceOrderForm> form = placeOrderForm.bindFromRequest();
+        if (form.hasErrors()) {
+            return CompletableFuture.completedFuture(badRequest(form.errorsAsJson()));
+        } else {
+            PlaceOrderForm orderForm = form.get();
 
-        OrderDetails order = OrderDetails.builder()
-                .tradeType(orderForm.getOrder().toTradeType())
-                .symbol(orderForm.getSymbol())
-                .shares(orderForm.getShares())
-                .orderType(OrderType.Market.INSTANCE)
-                .build();
-        return portfolioService
-                .placeOrder(new PortfolioId(portfolioId))
-                .invoke(order)
-                .thenApply(done -> ok());
+            OrderDetails order = OrderDetails.builder()
+                    .tradeType(orderForm.getOrder().toTradeType())
+                    .symbol(orderForm.getSymbol())
+                    .shares(orderForm.getShares())
+                    .orderType(OrderType.Market.INSTANCE)
+                    .build();
+            return portfolioService
+                    .placeOrder(new PortfolioId(portfolioId))
+                    .invoke(order)
+                    .thenApply(done -> ok());
+        }
     }
 
 }
