@@ -43,7 +43,7 @@ public class WireTransferServiceImpl implements WireTransferService {
         return transfer ->
                 transferRepository
                     .get(transferId)
-                    .ask(TransferCommand.RequestFunds.builder()
+                    .ask(TransferCommand.TransferFunds.builder()
                             .source(transfer.getSourceAccount())
                             .destination(transfer.getDestinationAccount())
                             .amount(transfer.getFunds())
@@ -81,8 +81,8 @@ public class WireTransferServiceImpl implements WireTransferService {
 
     private TransferRequest requestFunds(TransferEvent.TransferInitiated transferInitiatedEvent) {
         return TransferRequest.WithdrawlRequest.builder()
-                .account(transferInitiatedEvent.getSource())
-                .amount(transferInitiatedEvent.getAmount())
+                .account(transferInitiatedEvent.getTransferDetails().getSource())
+                .amount(transferInitiatedEvent.getTransferDetails().getAmount())
                 .transferId(transferInitiatedEvent.getTransferId())
                 .build();
     }
@@ -90,8 +90,8 @@ public class WireTransferServiceImpl implements WireTransferService {
     private TransferRequest sendFunds(TransferEvent.FundsRetrieved fundsRetrieved) {
         return TransferRequest.DepositRequest.builder()
                 .transferId(fundsRetrieved.getTransferId())
-                .account(fundsRetrieved.getDestination())
-                .amount(fundsRetrieved.getAmount())
+                .account(fundsRetrieved.getTransferDetails().getDestination())
+                .amount(fundsRetrieved.getTransferDetails().getAmount())
                 .build();
     }
 

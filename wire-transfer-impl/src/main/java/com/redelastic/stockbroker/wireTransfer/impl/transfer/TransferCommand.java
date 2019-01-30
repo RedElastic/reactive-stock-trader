@@ -15,7 +15,7 @@ public abstract class TransferCommand {
     @Value
     @Builder
     @EqualsAndHashCode(callSuper = false)
-    public static class RequestFunds extends TransferCommand implements ReplyType<Done> {
+    public static class TransferFunds extends TransferCommand implements ReplyType<Done> {
         Account source;
         Account destination;
         BigDecimal amount;
@@ -44,17 +44,17 @@ public abstract class TransferCommand {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class SendFundsFailed extends TransferCommand implements ReplyType<Done> {
-        private SendFundsFailed() {}
-        public static SendFundsFailed INSTANCE = new SendFundsFailed();
+    public static class DeliveryFailed extends TransferCommand implements ReplyType<Done> {
+        private DeliveryFailed() {}
+        public static DeliveryFailed INSTANCE = new DeliveryFailed();
     }
 
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class SendFundsSuccessful extends TransferCommand implements ReplyType<Done> {
-        private SendFundsSuccessful() {}
-        public static SendFundsSuccessful INSTANCE = new SendFundsSuccessful();
+    public static class DeliverySuccessful extends TransferCommand implements ReplyType<Done> {
+        private DeliverySuccessful() {}
+        public static DeliverySuccessful INSTANCE = new DeliverySuccessful();
     }
 
     @Value

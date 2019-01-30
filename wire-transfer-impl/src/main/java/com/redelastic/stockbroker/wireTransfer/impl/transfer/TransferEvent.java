@@ -1,21 +1,27 @@
 package com.redelastic.stockbroker.wireTransfer.impl.transfer;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTagger;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.TransferId;
-import com.redelastic.stocktrader.wiretransfer.api.Account;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
-
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(TransferEvent.TransferInitiated.class),
+        @JsonSubTypes.Type(TransferEvent.FundsRetrieved.class),
+        @JsonSubTypes.Type(TransferEvent.CouldNotSecureFunds.class),
+        @JsonSubTypes.Type(TransferEvent.DeliveryConfirmed.class),
+        @JsonSubTypes.Type(TransferEvent.RefundSent.class),
+        @JsonSubTypes.Type(TransferEvent.RefundDelivered.class)
+})
 public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Jsonable {
-
     private TransferEvent() {}
 
     static final int NUM_SHARDS = 4;
@@ -26,13 +32,12 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
         return TAG;
     }
 
+
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class TransferInitiated extends TransferEvent {
         @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
+        @NonNull TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
@@ -42,9 +47,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
     @EqualsAndHashCode(callSuper = false)
     public static class FundsRetrieved extends TransferEvent {
         @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
+        @NonNull TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
@@ -54,9 +57,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
     @EqualsAndHashCode(callSuper = false)
     public static class CouldNotSecureFunds extends TransferEvent {
         @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
+        @NonNull TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
@@ -64,35 +65,9 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class FundsSent extends TransferEvent {
+    public static class DeliveryConfirmed extends TransferEvent {
         @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
-
-        @Override
-        public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    public static class DeliveryConfirm extends TransferEvent {
-        @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
-
-        @Override
-        public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    public static class DeliveryFailed extends TransferEvent {
-        @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
+        @NonNull TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
@@ -102,9 +77,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
     @EqualsAndHashCode(callSuper = false)
     public static class RefundSent extends TransferEvent {
         @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
+        @NonNull TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
@@ -114,9 +87,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
     @EqualsAndHashCode(callSuper = false)
     public static class RefundDelivered extends TransferEvent {
         @NonNull TransferId transferId;
-        @NonNull Account source;
-        @NonNull Account destination;
-        @NonNull BigDecimal amount;
+        @NonNull TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
@@ -127,9 +98,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
         T visit(TransferInitiated transferInitiated);
         T visit(FundsRetrieved fundsRetrieved);
         T visit(CouldNotSecureFunds couldNotSecureFunds);
-        T visit(FundsSent fundsSent);
-        T visit(DeliveryConfirm deliveryConfirm);
-        T visit(DeliveryFailed deliveryFailed);
+        T visit(DeliveryConfirmed deliveryConfirmed);
         T visit(RefundSent refundSent);
         T visit(RefundDelivered refundDelivered);
     }
