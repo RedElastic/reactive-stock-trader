@@ -1,4 +1,4 @@
-package com.redelastic.stocktrader.portfolio.api;
+package services.quote;
 
 import lombok.NonNull;
 import lombok.Value;
