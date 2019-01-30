@@ -74,14 +74,14 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
 
     class TransferEventVisitor implements TransferEvent.Visitor<CompletionStage<Done>> {
         @Override
-        public CompletionStage<Done> visit(TransferEvent.RequestFunds requestFunds) {
-            val transferEntity = transferRepository.get(requestFunds.getTransferId());
-            if (requestFunds.getSource() instanceof Account.Portfolio) {
+        public CompletionStage<Done> visit(TransferEvent.TransferInitiated transferInitiated) {
+            val transferEntity = transferRepository.get(transferInitiated.getTransferId());
+            if (transferInitiated.getSource() instanceof Account.Portfolio) {
                 val transfer = FundsTransfer.FundsWithdrawn.builder()
-                        .transferId(requestFunds.getTransferId())
-                        .funds(requestFunds.getAmount())
+                        .transferId(transferInitiated.getTransferId())
+                        .funds(transferInitiated.getAmount())
                         .build();
-                val portfolioId = ((Account.Portfolio) requestFunds.getSource()).getPortfolioId();
+                val portfolioId = ((Account.Portfolio) transferInitiated.getSource()).getPortfolioId();
                 return portfolioService
                         .processTransfer(portfolioId)
                         .invoke(transfer)
@@ -97,17 +97,18 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
         }
 
         @Override
-        public CompletionStage<Done> visit(TransferEvent.FundsReceived fundsReceived) {
+        public CompletionStage<Done> visit(TransferEvent.FundsRetrieved fundsRetrieved) {
             return transferRepository
-                    .get(fundsReceived.getTransferId())
+                    .get(fundsRetrieved.getTransferId())
                     .ask(TransferCommand.SendFunds.INSTANCE);
         }
 
         @Override
-        public CompletionStage<Done> visit(TransferEvent.FundsRequestFailed fundsRequestFailed) {
+        public CompletionStage<Done> visit(TransferEvent.CouldNotSecureFunds couldNotSecureFunds) {
+            // Saga failed, but nothing to compensate for
             return transferRepository
-                    .get(fundsRequestFailed.getTransferId())
-                    .ask(TransferCommand.RequestFundsFailed.INSTANCE);
+                    .get(couldNotSecureFunds.getTransferId())
+                    .ask(TransferCommand.SendRefund.INSTANCE);
         }
 
         @Override
@@ -137,12 +138,12 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
         }
 
         @Override
-        public CompletionStage<Done> visit(TransferEvent.SendFailed sendFailed) {
-            if (sendFailed.getSource() instanceof Account.Portfolio) {
-                val portfolioId = ((Account.Portfolio) sendFailed.getSource()).getPortfolioId();
+        public CompletionStage<Done> visit(TransferEvent.DeliveryFailed deliveryFailed) {
+            if (deliveryFailed.getSource() instanceof Account.Portfolio) {
+                val portfolioId = ((Account.Portfolio) deliveryFailed.getSource()).getPortfolioId();
                 val refund = FundsTransfer.Refund.builder()
-                        .transferId(sendFailed.getTransferId())
-                        .funds(sendFailed.getAmount())
+                        .transferId(deliveryFailed.getTransferId())
+                        .funds(deliveryFailed.getAmount())
                         .build();
                 return portfolioService
                         .processTransfer(portfolioId)
@@ -153,8 +154,20 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
         }
 
         @Override
-        public CompletionStage<Done> visit(TransferEvent.SendConfirmed sendConfirmed) {
-            // Saga is completed
+        public CompletionStage<Done> visit(TransferEvent.RefundSent refundSent) {
+            // Saga is completed after refunding source
+            return CompletableFuture.completedFuture(Done.getInstance());
+        }
+
+        @Override
+        public CompletionStage<Done> visit(TransferEvent.DeliveryConfirm deliveryConfirm) {
+            // Saga is completed successfully
+            return CompletableFuture.completedFuture(Done.getInstance());
+        }
+
+        @Override
+        public CompletionStage<Done> visit(TransferEvent.RefundDelivered refundSent) {
+            // Saga is complete after refunding source
             return CompletableFuture.completedFuture(Done.getInstance());
         }
     }

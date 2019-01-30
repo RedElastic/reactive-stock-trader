@@ -1,0 +1,12 @@
+@startuml
+!pragma teoz true
+
+[*] --> FundsRequested : RequestFunds
+FundsRequested --> CouldNotSecureFunds
+FundsRequested --> FundsRetrieved
+FundsRetrieved --> FundsSent : SendFunds
+FundsSent --> DeliveryConfirmed
+FundsSent --> DeliveryFailed
+DeliveryFailed --> RefundDelivered : RefundSource
+
+@enduml

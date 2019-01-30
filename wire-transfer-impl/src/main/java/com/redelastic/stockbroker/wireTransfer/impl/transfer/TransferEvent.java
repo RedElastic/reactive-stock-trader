@@ -13,6 +13,7 @@ import lombok.Value;
 
 import java.math.BigDecimal;
 
+
 public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Jsonable {
 
     private TransferEvent() {}
@@ -27,7 +28,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class RequestFunds extends TransferEvent {
+    public static class TransferInitiated extends TransferEvent {
         @NonNull TransferId transferId;
         @NonNull Account source;
         @NonNull Account destination;
@@ -39,7 +40,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class FundsReceived extends TransferEvent {
+    public static class FundsRetrieved extends TransferEvent {
         @NonNull TransferId transferId;
         @NonNull Account source;
         @NonNull Account destination;
@@ -51,7 +52,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class FundsRequestFailed extends TransferEvent {
+    public static class CouldNotSecureFunds extends TransferEvent {
         @NonNull TransferId transferId;
         @NonNull Account source;
         @NonNull Account destination;
@@ -75,7 +76,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class SendFailed extends TransferEvent {
+    public static class DeliveryConfirm extends TransferEvent {
         @NonNull TransferId transferId;
         @NonNull Account source;
         @NonNull Account destination;
@@ -87,7 +88,7 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class SendConfirmed extends TransferEvent {
+    public static class DeliveryFailed extends TransferEvent {
         @NonNull TransferId transferId;
         @NonNull Account source;
         @NonNull Account destination;
@@ -97,13 +98,40 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
 
+    @Value
+    @EqualsAndHashCode(callSuper = false)
+    public static class RefundSent extends TransferEvent {
+        @NonNull TransferId transferId;
+        @NonNull Account source;
+        @NonNull Account destination;
+        @NonNull BigDecimal amount;
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
+    }
+
+    @Value
+    @EqualsAndHashCode(callSuper = false)
+    public static class RefundDelivered extends TransferEvent {
+        @NonNull TransferId transferId;
+        @NonNull Account source;
+        @NonNull Account destination;
+        @NonNull BigDecimal amount;
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
+    }
+
+
     public interface Visitor<T> {
-        T visit(RequestFunds requestFunds);
-        T visit(FundsReceived fundsReceived);
-        T visit(FundsRequestFailed fundsRequestFailed);
+        T visit(TransferInitiated transferInitiated);
+        T visit(FundsRetrieved fundsRetrieved);
+        T visit(CouldNotSecureFunds couldNotSecureFunds);
         T visit(FundsSent fundsSent);
-        T visit(SendFailed sendFailed);
-        T visit(SendConfirmed sendConfirmed);
+        T visit(DeliveryConfirm deliveryConfirm);
+        T visit(DeliveryFailed deliveryFailed);
+        T visit(RefundSent refundSent);
+        T visit(RefundDelivered refundDelivered);
     }
 
     public abstract <T> T visit(Visitor<T> visitor);

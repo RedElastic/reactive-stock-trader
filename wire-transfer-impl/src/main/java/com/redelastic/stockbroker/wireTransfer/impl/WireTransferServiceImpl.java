@@ -22,7 +22,6 @@ import scala.PartialFunction;
 
 import javax.inject.Inject;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public class WireTransferServiceImpl implements WireTransferService {
 
@@ -74,25 +73,25 @@ public class WireTransferServiceImpl implements WireTransferService {
                 .eventStream(tag, offset)
                 .collect(collectEvents(
                         new PFBuilder<TransferEvent, TransferRequest>()
-                        .match(TransferEvent.RequestFunds.class, this::requestFunds)
-                        .match(TransferEvent.FundsReceived.class, this::sendFunds)
+                        .match(TransferEvent.TransferInitiated.class, this::requestFunds)
+                        .match(TransferEvent.FundsRetrieved.class, this::sendFunds)
                         .build()
                 ));
     }
 
-    private TransferRequest requestFunds(TransferEvent.RequestFunds requestFundsEvent) {
+    private TransferRequest requestFunds(TransferEvent.TransferInitiated transferInitiatedEvent) {
         return TransferRequest.WithdrawlRequest.builder()
-                .account(requestFundsEvent.getSource())
-                .amount(requestFundsEvent.getAmount())
-                .transferId(requestFundsEvent.getTransferId())
+                .account(transferInitiatedEvent.getSource())
+                .amount(transferInitiatedEvent.getAmount())
+                .transferId(transferInitiatedEvent.getTransferId())
                 .build();
     }
 
-    private TransferRequest sendFunds(TransferEvent.FundsReceived fundsReceived) {
+    private TransferRequest sendFunds(TransferEvent.FundsRetrieved fundsRetrieved) {
         return TransferRequest.DepositRequest.builder()
-                .transferId(fundsReceived.getTransferId())
-                .account(fundsReceived.getDestination())
-                .amount(fundsReceived.getAmount())
+                .transferId(fundsRetrieved.getTransferId())
+                .account(fundsRetrieved.getDestination())
+                .amount(fundsRetrieved.getAmount())
                 .build();
     }
 

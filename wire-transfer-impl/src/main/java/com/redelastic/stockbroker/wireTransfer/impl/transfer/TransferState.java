@@ -3,6 +3,7 @@ package com.redelastic.stockbroker.wireTransfer.impl.transfer;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.wiretransfer.api.Account;
 import com.redelastic.stocktrader.wiretransfer.api.Transfer;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
 
@@ -18,13 +19,15 @@ public class TransferState implements Jsonable {
         SendingFunds,
         SendingFundsFailed,
         ConfirmingDelivery,
-        Completed
+        DeliveryConfirmed,
+        RefundSent,
+        RefundDelivered
     }
 
-    Account source;
-    Account destination;
-    BigDecimal amount;
-    Status status;
+    @NonNull Account source;
+    @NonNull Account destination;
+    @NonNull BigDecimal amount;
+    @NonNull Status status;
 
     public static TransferState from(Transfer transfer) {
         return new TransferState(

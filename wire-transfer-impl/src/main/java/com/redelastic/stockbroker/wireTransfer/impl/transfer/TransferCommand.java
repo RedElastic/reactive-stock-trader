@@ -56,4 +56,18 @@ public abstract class TransferCommand {
         private SendFundsSuccessful() {}
         public static SendFundsSuccessful INSTANCE = new SendFundsSuccessful();
     }
+
+    @Value
+    @EqualsAndHashCode(callSuper = false)
+    public static class SendRefund extends TransferCommand implements ReplyType<Done> {
+        private SendRefund() {}
+        public static SendRefund INSTANCE = new SendRefund();
+    }
+
+    @Value
+    @EqualsAndHashCode(callSuper = false)
+    public static class RefundSuccess extends TransferCommand implements ReplyType<Done> {
+        private RefundSuccess() {}
+        public static RefundSuccess INSTANCE = new RefundSuccess();
+    }
 }
