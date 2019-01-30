@@ -1,4 +1,4 @@
-package controllers;
+package controllers.forms;
 
 import com.redelastic.stocktrader.order.TradeType;
 import lombok.Data;
