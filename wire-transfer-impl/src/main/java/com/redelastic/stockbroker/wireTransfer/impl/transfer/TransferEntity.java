@@ -102,12 +102,16 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         builder.setEventHandlerChangingBehavior(TransferEvent.RefundSent.class,
                 evt -> refundSent(state));
 
+        builder.setCommandHandler(TransferCommand.RequestFundsSucessful.class, this::ignore);
         return builder.build();
     }
 
 
     private Behavior deliveryConfirmed(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.DeliveryConfirmed)));
+
+        builder.setCommandHandler(TransferCommand.RequestFundsSucessful.class, this::ignore);
+        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);
         return builder.build();
     }
 
@@ -123,12 +127,15 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                         )
                 ));
         builder.setEventHandlerChangingBehavior(TransferEvent.RefundDelivered.class, evt -> refundDelivered(state));
+
+        builder.setCommandHandler(TransferCommand.RequestFundsSucessful.class, this::ignore);
         return builder.build();
     }
 
     private Behavior refundDelivered(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.RefundDelivered)));
 
+        builder.setCommandHandler(TransferCommand.RequestFundsSucessful.class, this::ignore);
         return builder.build();
     }
 

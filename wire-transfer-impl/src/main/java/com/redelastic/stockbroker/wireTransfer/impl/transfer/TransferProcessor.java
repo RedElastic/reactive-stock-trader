@@ -34,12 +34,15 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
 
     private final PortfolioService portfolioService;
     private final TransferRepository transferRepository;
+    private final int concurrentSteps = 10; // max number of events to process concurrently
+    private final TransferEventVisitor transferEventVisitor;
 
     @Inject
     TransferProcessor(PortfolioService portfolioService,
                       TransferRepository transferRepository) {
         this.portfolioService = portfolioService;
         this.transferRepository = transferRepository;
+        this.transferEventVisitor = new TransferEventVisitor();
     }
 
 
@@ -66,8 +69,8 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
                                     Attributes.logLevelInfo()
                             )
                     )
-                    .mapAsync(1, e ->
-                            e.first().visit(new TransferEventVisitor()));
+                    .mapAsyncUnordered(concurrentSteps,
+                            e -> e.first().visit(transferEventVisitor));
         }
 
     }
