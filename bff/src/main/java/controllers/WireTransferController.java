@@ -47,9 +47,7 @@ public class WireTransferController extends Controller {
 
     private Transfer populateTransfer(TransferForm form) {
         Account sourceAccount = getAccount(form.getSourceType(), form.getSourceId());
-        log.info(sourceAccount.toString());
         Account destinationAccount = getAccount(form.getDestinationType(), form.getDestinationId());
-        log.info(destinationAccount.toString());
         return Transfer.builder()
                 .sourceAccount(sourceAccount)
                 .destinationAccount(destinationAccount)

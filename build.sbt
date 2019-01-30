@@ -111,6 +111,7 @@ lazy val bff = (project in file("bff"))
   .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)
   .disablePlugins(PlayLayoutPlugin)
   .dependsOn(
+    utils,
     portfolioApi,
     brokerApi,
     wireTransferApi

@@ -5,6 +5,8 @@ import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
+import services.quote.QuoteService;
+import services.quote.QuoteServiceImpl;
 
 @SuppressWarnings("WeakerAccess")
 public class Module extends AbstractModule implements ServiceClientGuiceSupport {
@@ -17,5 +19,6 @@ public class Module extends AbstractModule implements ServiceClientGuiceSupport 
         bindClient(WireTransferService.class);
 
         bind(JavaJsonCustomObjectMapper.class).asEagerSingleton();
+        bind(QuoteService.class).to(QuoteServiceImpl.class);
     }
 }
