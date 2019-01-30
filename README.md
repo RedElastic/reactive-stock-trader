@@ -30,6 +30,6 @@ sleep 2
 curl http://localhost:9000/api/portfolio/$PID | jq .
 
 curl -X POST http://localhost:9000/api/portfolio/$PID/order -F symbol=RHT -F shares=10 -F order=buy
-sleep 5
+
 curl http://localhost:9000/api/portfolio/$PID | jq .
 ```

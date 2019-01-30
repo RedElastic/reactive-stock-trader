@@ -71,17 +71,7 @@ public interface PortfolioService extends Service {
                 restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
         ).withTopics(
             topic(ORDERS_TOPIC_ID, this::orderPlaced)
-        ).withPathParamSerializer(PortfolioId.class, new PathParamSerializer<PortfolioId>() {
-            @Override
-            public PSequence<String> serialize(PortfolioId parameter) {
-                return ConsPStack.singleton(parameter.getId());
-            }
-
-            @Override
-            public PortfolioId deserialize(PSequence<String> parameters) {
-                return new PortfolioId(parameters.get(0)); // FIXME: how do we handle errors?
-            }
-        });
+        ).withPathParamSerializer(PortfolioId.class, PortfolioId.pathParamSerializer);
         // @formatter:on
 
     }

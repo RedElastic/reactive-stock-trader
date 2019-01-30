@@ -46,7 +46,7 @@ public interface BrokerService extends Service {
     ).withTopics(
             topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
               .withProperty(KafkaProperties.partitionKeyStrategy(), orderResult -> orderResult.getPortfolioId().getId())
-    );
+    ).withPathParamSerializer(OrderId.class, OrderId.pathParamSerializer);
     // @formatter:on
   }
 }
