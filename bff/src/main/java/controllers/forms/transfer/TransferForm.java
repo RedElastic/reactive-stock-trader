@@ -1,4 +1,4 @@
-package controllers.forms;
+package controllers.forms.transfer;
 
 import lombok.Data;
 
@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 @Data
 public class TransferForm {
     public enum AccountType {
-        Portfolio,
-        Savings
+        portfolio,
+        savings
     }
 
     BigDecimal amount;

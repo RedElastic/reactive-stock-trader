@@ -9,10 +9,23 @@ The front end API is exposed on port 9000.
 # Command line use of API
 
 Create a new portfolio named "piggy bank savings":
-`PID=$(curl -X POST http:/localhost:9000/portfolio -F name="piggy bank savings"); echo $PID`
+`PID=$(curl -X POST http:/localhost:9000/api/portfolio -F name="piggy bank savings"); echo $PID`
 
 Place an order:
-`curl -X POST http://localhost:9000/portfolio/$PID/order -F symbol=RHT -F shares=10 -F tradeType=BUY`
+`curl -X POST http://localhost:9000/api/portfolio/$PID/order -F symbol=RHT -F shares=10 -F order=BUY`
 
 View the portfolio
 `curl http://localhost:9000/portfolio/$PID`
+
+Transfer funds into the portfolio
+`curl -X POST http://localhost:9000/api/transfer -F amount=212 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID`
+
+```
+PID=$(curl -X POST http:/localhost:9000/api/portfolio -F name="piggy bank savings"); echo $PID
+
+curl -X POST http://localhost:9000/api/transfer -F amount=212 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID
+curl http://localhost:9000/api/portfolio/$PID
+
+curl -X POST http://localhost:9000/api/portfolio/$PID/order -F symbol=RHT -F shares=10 -F order=buy
+curl http://localhost:9000/api/portfolio/$PID
+```

@@ -1,4 +1,4 @@
-GET     /portfolio/:portfolioId     controllers.PortfolioController.getPortfolio(portfolioId)
-POST    /portfolio                  controllers.PortfolioController.openPortfolio()
-POST    /portfolio/:portfolioId/order     controllers.PortfolioController.placeOrder(portfolioId)
-POST    /wireTransfer/:portfolioId     controllers.WireTransferController.transfer(portfolioId)
+GET     /api/portfolio/:portfolioId     controllers.PortfolioController.getPortfolio(portfolioId)
+POST    /api/portfolio                  controllers.PortfolioController.openPortfolio()
+POST    /api/portfolio/:portfolioId/order     controllers.PortfolioController.placeOrder(portfolioId)
+POST    /api/transfer     controllers.WireTransferController.transfer()

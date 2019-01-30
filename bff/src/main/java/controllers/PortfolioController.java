@@ -5,6 +5,8 @@ import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
+import controllers.forms.portfolio.OpenPortfolioForm;
+import controllers.forms.portfolio.PlaceOrderForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
@@ -56,7 +58,7 @@ public class PortfolioController extends Controller {
         PlaceOrderForm orderForm = placeOrderForm.bindFromRequest().get(); // TODO handle errors
 
         OrderDetails order = OrderDetails.builder()
-                .tradeType(orderForm.getTradeType())
+                .tradeType(orderForm.getOrder().toTradeType())
                 .symbol(orderForm.getSymbol())
                 .shares(orderForm.getShares())
                 .orderType(OrderType.Market.INSTANCE)

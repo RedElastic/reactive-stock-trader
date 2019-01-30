@@ -1,7 +1,3 @@
-<!--
-  ~ Copyright (C) 2016-2019 Lightbend Inc. <https://www.lightbend.com>
-  -->
-<!-- The default logback configuration that Lagom uses in dev mode if no other configuration is provided -->
 <configuration>
 
     <conversionRule conversionWord="coloredLevel" converterClass="com.lightbend.lagom.internal.logback.ColoredLevel" />
@@ -20,7 +16,7 @@
     <logger name="com.lightbend.lagom" level="INFO" />
     <logger name="com.lightbend.lagom.internal.broker" level="WARN" />
 
-    <!-- Cassandra and the datasta driver are used by the Lagom event sourcing modules -->
+    <!-- Cassandra and the datastax driver are used by the Lagom event sourcing modules -->
     <logger name="org.apache.cassandra" level="ERROR" />
     <logger name="com.datastax.driver" level="ERROR" />
     <!-- Turning off connection error logging to avoid noise when services are forcibly stopped -->

@@ -1,4 +1,4 @@
-package controllers.forms;
+package controllers.forms.portfolio;
 
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import lombok.Data;
