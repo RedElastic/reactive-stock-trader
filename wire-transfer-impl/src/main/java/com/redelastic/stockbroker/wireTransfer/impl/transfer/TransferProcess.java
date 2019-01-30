@@ -30,7 +30,7 @@ import java.util.function.Function;
  * If the second step fails the funds should be refunded.
  */
 @Log4j
-public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
+public class TransferProcess extends ReadSideProcessor<TransferEvent> {
 
     private final PortfolioService portfolioService;
     private final TransferRepository transferRepository;
@@ -38,8 +38,8 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
     private final TransferEventVisitor transferEventVisitor;
 
     @Inject
-    TransferProcessor(PortfolioService portfolioService,
-                      TransferRepository transferRepository) {
+    TransferProcess(PortfolioService portfolioService,
+                    TransferRepository transferRepository) {
         this.portfolioService = portfolioService;
         this.transferRepository = transferRepository;
         this.transferEventVisitor = new TransferEventVisitor();
@@ -48,11 +48,13 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
 
     @Override
     public ReadSideHandler<TransferEvent> buildHandler() {
+
         return new HandleEvent();
     }
 
     @Override
     public PSequence<AggregateEventTag<TransferEvent>> aggregateTags() {
+
         return TransferEvent.TAG.allTags();
     }
 
@@ -80,7 +82,7 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
         public CompletionStage<Done> visit(TransferEvent.TransferInitiated transferInitiated) {
             val transferEntity = transferRepository.get(transferInitiated.getTransferId());
             if (transferInitiated.getTransferDetails().getSource() instanceof Account.Portfolio) {
-                val transfer = FundsTransfer.FundsWithdrawn.builder()
+                val transfer = FundsTransfer.Withdrawl.builder()
                         .transferId(transferInitiated.getTransferId())
                         .funds(transferInitiated.getTransferDetails().getAmount())
                         .build();
@@ -110,7 +112,7 @@ public class TransferProcessor extends ReadSideProcessor<TransferEvent> {
             val transferEntity = transferRepository.get(evt.getTransferId());
             if (evt.getTransferDetails().getSource() instanceof Account.Portfolio) {
 
-                val transfer = FundsTransfer.FundsDeposited.builder()
+                val transfer = FundsTransfer.Deposit.builder()
                         .transferId(evt.getTransferId())
                         .funds(evt.getTransferDetails().getAmount())
                         .build();

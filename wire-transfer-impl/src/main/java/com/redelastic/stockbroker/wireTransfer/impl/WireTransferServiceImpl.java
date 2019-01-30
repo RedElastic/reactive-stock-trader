@@ -12,7 +12,7 @@ import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferCommand;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferEvent;
-import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferProcessor;
+import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferProcess;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferRepositoryImpl;
 import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.wiretransfer.api.Transfer;
@@ -32,7 +32,7 @@ public class WireTransferServiceImpl implements WireTransferService {
     WireTransferServiceImpl(TransferRepositoryImpl transferRepository,
                             ReadSide readSide) {
         this.transferRepository = transferRepository;
-        readSide.register(TransferProcessor.class);
+        readSide.register(TransferProcess.class);
     }
 
     @Override

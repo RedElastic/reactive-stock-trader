@@ -1,0 +1,2 @@
+# Transfer saga
+The transfer saga consists of two parts, a persistent entity (`TransferEntity`) and a read side processor (`TransferProcess`). The entity durably maintains the progress of the transfer so that it can be resumed in case of an interuption. The process responds to the completion of each step by executing the next step. The process performs the required actions to advance the saga and sends the results to the entity for persistence.

@@ -107,13 +107,13 @@ public class PortfolioServiceImpl implements PortfolioService {
         return fundsTransfer ->
             fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
                 @Override
-                public CompletionStage<Done> visit(FundsTransfer.FundsDeposited fundsDeposited) {
-                    return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(fundsDeposited.getFunds()));
+                public CompletionStage<Done> visit(FundsTransfer.Deposit deposit) {
+                    return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds()));
                 }
 
                 @Override
-                public CompletionStage<Done> visit(FundsTransfer.FundsWithdrawn fundsWithdrawn) {
-                    return portfolioRef.ask(new PortfolioCommand.SendFunds(fundsWithdrawn.getFunds()));
+                public CompletionStage<Done> visit(FundsTransfer.Withdrawl withdrawl) {
+                    return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds()));
                 }
 
                 @Override

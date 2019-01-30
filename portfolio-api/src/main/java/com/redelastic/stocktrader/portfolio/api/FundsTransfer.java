@@ -12,8 +12,9 @@ import java.math.BigDecimal;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = Void.class)
 @JsonSubTypes({
-        @JsonSubTypes.Type(FundsTransfer.FundsDeposited.class),
-        @JsonSubTypes.Type(FundsTransfer.FundsWithdrawn.class)
+        @JsonSubTypes.Type(FundsTransfer.Deposit.class),
+        @JsonSubTypes.Type(FundsTransfer.Withdrawl.class),
+        @JsonSubTypes.Type(FundsTransfer.Refund.class)
 })
 public abstract class FundsTransfer {
 
@@ -22,7 +23,7 @@ public abstract class FundsTransfer {
     @Value
     @EqualsAndHashCode(callSuper = false)
     @Builder
-    public static class FundsDeposited extends FundsTransfer {
+    public static class Deposit extends FundsTransfer {
         @NonNull TransferId transferId;
         @NonNull BigDecimal funds;
 
@@ -33,7 +34,7 @@ public abstract class FundsTransfer {
     @Value
     @EqualsAndHashCode(callSuper = false)
     @Builder
-    public static class FundsWithdrawn extends FundsTransfer {
+    public static class Withdrawl extends FundsTransfer {
         @NonNull TransferId transferId;
         @NonNull BigDecimal funds;
 
@@ -53,8 +54,8 @@ public abstract class FundsTransfer {
     }
 
     public interface Visitor<T> {
-        T visit(FundsDeposited fundsDeposited);
-        T visit(FundsWithdrawn fundsWithdrawn);
+        T visit(Deposit deposit);
+        T visit(Withdrawl withdrawl);
         T visit(Refund refund);
     }
 
