@@ -8,6 +8,7 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 
 import java.util.concurrent.CompletionStage;
@@ -45,7 +46,7 @@ class PortfolioModel {
 
 
 
-    CompletionStage<Done> placeOrder(String orderId, OrderDetails orderDetails) {
+    CompletionStage<Done> placeOrder(OrderId orderId, OrderDetails orderDetails) {
         return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(orderId,  orderDetails));
     }
 

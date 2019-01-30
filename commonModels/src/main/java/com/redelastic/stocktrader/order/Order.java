@@ -1,5 +1,6 @@
 package com.redelastic.stocktrader.order;
 
+import com.redelastic.stocktrader.PortfolioId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -9,7 +10,7 @@ import lombok.Value;
 @Builder
 @AllArgsConstructor
 public class Order {
-    @NonNull String orderId;
-    @NonNull String portfolioId;
+    @NonNull OrderId orderId;
+    @NonNull PortfolioId portfolioId;
     @NonNull OrderDetails details;
 }

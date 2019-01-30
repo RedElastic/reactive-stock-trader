@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.order.OrderDetails;
 import org.slf4j.Logger;
@@ -54,7 +55,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         private PersistentEntity.Persist open(PortfolioCommand.Open cmd, CommandContext<Done> ctx) {
             PortfolioEvent.Opened openEvent = PortfolioEvent.Opened.builder()
                     .name(cmd.getName())
-                    .portfolioId(entityId())
+                    .portfolioId(getPortfolioId())
                     .build();
 
             log.info(openEvent.toString());
@@ -77,6 +78,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
      */
     abstract class PortfolioBehaviorBuilder<State extends PortfolioState> {
         // Shadow parent state() method with behaviour specific state so we don't need downcasts throughout.
+        @SuppressWarnings("unchecked")
         State state() { return (State)PortfolioEntity.this.state().get(); }
 
         final BehaviorBuilder builder;
@@ -87,7 +89,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         }
 
         Persist rejectOpen(PortfolioCommand.Open cmd, CommandContext<Done> ctx) {
-            ctx.commandFailed(new PortfolioAlreadyOpened(entityId()));
+            ctx.commandFailed(new PortfolioAlreadyOpened(getPortfolioId()));
             return ctx.done();
         }
 
@@ -185,16 +187,16 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 switch (trade.getTradeType()) {
                     case BUY:
                         return ctx.thenPersistAll(Arrays.asList(
-                                new PortfolioEvent.FundsDebited(entityId(), trade.getPrice()),
-                                new PortfolioEvent.SharesCredited(entityId(), trade.getSymbol(), trade.getShares()),
-                                new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
+                                new PortfolioEvent.FundsDebited(getPortfolioId(), trade.getPrice()),
+                                new PortfolioEvent.SharesCredited(getPortfolioId(), trade.getSymbol(), trade.getShares()),
+                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), trade.getOrderId())),
                                 () -> ctx.reply(Done.getInstance()));
 
                     case SELL:
                         return ctx.thenPersistAll(Arrays.asList(
                                 // Note: for a sale the shares have already been removed when we initiated the sale
-                                new PortfolioEvent.FundsCredited(entityId(), trade.getPrice()),
-                                new PortfolioEvent.OrderFulfilled(entityId(), trade.getOrderId())),
+                                new PortfolioEvent.FundsCredited(getPortfolioId(), trade.getPrice()),
+                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), trade.getOrderId())),
                                 () -> ctx.reply(Done.getInstance()));
 
                     default:
@@ -211,8 +213,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                     int available = state().getHoldings().getShareCount(orderDetails.getSymbol());
                     if (available >= orderDetails.getShares()) {
                         return ctx.thenPersistAll(Arrays.asList(
-                                new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
-                                new PortfolioEvent.SharesDebited(entityId(), orderDetails.getSymbol(), orderDetails.getShares())),
+                                new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), getPortfolioId(), placeOrder.getOrderDetails()),
+                                new PortfolioEvent.SharesDebited(getPortfolioId(), orderDetails.getSymbol(), orderDetails.getShares())),
                                 () -> ctx.reply(Done.getInstance()));
                     } else {
                         ctx.commandFailed(new InsufficientShares(
@@ -224,7 +226,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                     }
                 case BUY:
                     return ctx.thenPersist(
-                            new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), entityId(), placeOrder.getOrderDetails()),
+                            new PortfolioEvent.OrderPlaced(placeOrder.getOrderId(), getPortfolioId(), placeOrder.getOrderDetails()),
                             evt -> ctx.reply(Done.getInstance()));
                 default:
                     throw new IllegalStateException();
@@ -238,14 +240,14 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         private PersistentEntity.Persist liquidate(PortfolioCommand.Liquidate cmd, CommandContext<Done> ctx) {
             // TODO: Sell all stocks, transfer out all funds, then move to closed.
             // TODO: Handle overdrawn account (negative funds after all equities liquidated
-            return ctx.thenPersist(new PortfolioEvent.LiquidationStarted(entityId()),
+            return ctx.thenPersist(new PortfolioEvent.LiquidationStarted(getPortfolioId()),
                     evt -> ctx.reply(Done.getInstance()));
         }
 
         private PersistentEntity.Persist sendFunds(PortfolioCommand.SendFunds cmd, CommandContext<Done> ctx) {
             if (state().getFunds().compareTo(cmd.getAmount()) >= 0) {
                 return ctx.thenPersist(
-                        new PortfolioEvent.FundsDebited(entityId(), cmd.getAmount()),
+                        new PortfolioEvent.FundsDebited(getPortfolioId(), cmd.getAmount()),
                         evt -> ctx.reply(Done.getInstance())
                 );
             } else {
@@ -257,7 +259,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
         private PersistentEntity.Persist receiveFunds(PortfolioCommand.ReceiveFunds cmd, CommandContext<Done> ctx) {
             return ctx.thenPersist(
-                    new PortfolioEvent.FundsCredited(entityId(), cmd.getAmount()),
+                    new PortfolioEvent.FundsCredited(getPortfolioId(), cmd.getAmount()),
                     evt -> ctx.reply(Done.getInstance())
             );
         }
@@ -281,12 +283,12 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 switch(orderPlaced.getOrderDetails().getTradeType()) {
                     case SELL:
                         return ctx.thenPersistAll(Arrays.asList(
-                                new PortfolioEvent.SharesCredited(entityId(), orderPlaced.getOrderDetails().getSymbol(), orderPlaced.getOrderDetails().getShares()),
-                                new PortfolioEvent.OrderFailed(entityId(), cmd.getOrderFailed().getOrderId())
+                                new PortfolioEvent.SharesCredited(getPortfolioId(), orderPlaced.getOrderDetails().getSymbol(), orderPlaced.getOrderDetails().getShares()),
+                                new PortfolioEvent.OrderFailed(getPortfolioId(), cmd.getOrderFailed().getOrderId())
                             ), () -> ctx.reply(Done.getInstance()));
                     case BUY:
                         return ctx.thenPersist(
-                                new PortfolioEvent.OrderFailed(entityId(), cmd.getOrderFailed().getOrderId()),
+                                new PortfolioEvent.OrderFailed(getPortfolioId(), cmd.getOrderFailed().getOrderId()),
                                 evt -> ctx.reply(Done.getInstance()));
                     default:
                         throw new IllegalStateException();
@@ -317,5 +319,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         }
 
     }
+
+    PortfolioId getPortfolioId() { return new PortfolioId(entityId()); }
 
 }

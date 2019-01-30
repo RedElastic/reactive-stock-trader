@@ -6,7 +6,9 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.order.OrderId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,59 +33,59 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
         return TAG;
     }
 
-    String getPortfolioId();
+    PortfolioId getPortfolioId();
 
     @Value
     @Builder
     @AllArgsConstructor
     class Opened implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
         @NonNull String name;
 
     }
 
     @Value
     class LiquidationStarted implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
     }
 
     @Value
     class Closed implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
     }
 
     @Value
     @Builder
     class SharesCredited implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
         @NonNull String symbol;
         int shares;
     }
 
     @Value
     class SharesDebited implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
         @NonNull String symbol;
         int shares;
     }
 
     @Value
     class FundsDebited implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
         @NonNull BigDecimal amount;
     }
 
     @Value
     class FundsCredited implements PortfolioEvent {
-        @NonNull String portfolioId;
+        @NonNull PortfolioId portfolioId;
         @NonNull BigDecimal amount;
     }
 
 
     @Value
     class OrderPlaced implements PortfolioEvent {
-        @NonNull String orderId;
-        @NonNull String portfolioId;
+        @NonNull OrderId orderId;
+        @NonNull PortfolioId portfolioId;
         @NonNull OrderDetails orderDetails;
 
         com.redelastic.stocktrader.portfolio.api.OrderPlaced asDomainEvent() {
@@ -99,14 +101,14 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
 
     @Value
     class OrderFulfilled implements PortfolioEvent {
-        @NonNull String portfolioId;
-        @NonNull String orderId;
+        @NonNull PortfolioId portfolioId;
+        @NonNull OrderId orderId;
     }
 
     @Value
     class OrderFailed implements PortfolioEvent {
-        @NonNull String portfolioId;
-        @NonNull String orderId;
+        @NonNull PortfolioId portfolioId;
+        @NonNull OrderId orderId;
     }
 
 }

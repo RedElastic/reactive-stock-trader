@@ -126,16 +126,16 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public ServiceCall<OrderDetails, OrderId> placeOrder(PortfolioId portfolioId) {
         return orderDetails -> {
-            String orderId = UUID.randomUUID().toString();
+            val orderId = OrderId.newId();
             return portfolioRepository
                     .get(portfolioId)
                     .placeOrder(orderId, orderDetails)
-                    .thenApply(done -> new OrderId(orderId));
+                    .thenApply(done -> orderId);
         };
     }
 
     private CompletionStage<Done> handleOrderResult(OrderResult orderResult) {
-        PortfolioModel portfolio = portfolioRepository.get(new PortfolioId(orderResult.getPortfolioId())); // FIXME: Push PortfolioId into OrderResult
+        PortfolioModel portfolio = portfolioRepository.get(orderResult.getPortfolioId());
         return orderResult.visit(new OrderResult.Visitor<CompletionStage<Done>>() {
             @Override
             public CompletionStage<Done> visit(OrderResult.Fulfilled orderFulfilled) {

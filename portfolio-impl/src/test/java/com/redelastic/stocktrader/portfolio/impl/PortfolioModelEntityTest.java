@@ -3,12 +3,15 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.Trade;
+import com.redelastic.stocktrader.order.OrderId;
 import com.redelastic.stocktrader.order.OrderType;
 import com.redelastic.stocktrader.order.OrderDetails;
 import com.redelastic.stocktrader.order.TradeType;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.PlaceOrder;
+import lombok.val;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,18 +42,18 @@ public class PortfolioModelEntityTest {
         return new PersistentEntityTestDriver<>(system, new PortfolioEntity(), id);
     }
 
-    private PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> openPortfolioEntity(String id, String name) {
-        PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> entity = createPortfolioEntity(id);
+    private PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> openPortfolioEntity(PortfolioId portfolioId, String name) {
+        PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> entity = createPortfolioEntity(portfolioId.getId());
         entity.run(new PortfolioCommand.Open(name));
         return entity;
     }
 
     @Test
     public void openAndPlaceOrder() {
-        String portfolioId = "portfolioId";
+        val portfolioId = new PortfolioId("portfolioId");
         String pName = "portfolioName";
         String symbol = "IBM";
-        String orderId = "orderId";
+        val orderId =  new OrderId( "orderId" );
         int shareCount = 3;
 
         OrderDetails orderDetails = OrderDetails.builder()
@@ -60,7 +63,7 @@ public class PortfolioModelEntityTest {
                 .orderType(OrderType.Market.INSTANCE)
                 .build();
 
-        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = createPortfolioEntity(portfolioId);
+        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = createPortfolioEntity(portfolioId.getId());
 
         PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome =
                 driver.run(
@@ -73,7 +76,7 @@ public class PortfolioModelEntityTest {
 
     @Test
     public void moneyTransfers() {
-        String portfolioId = "portfolioId";
+        val portfolioId = new PortfolioId("portfolioId");
         String pName = "portfolioName";
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, pName);
 
@@ -102,11 +105,11 @@ public class PortfolioModelEntityTest {
 
     @Test
     public void denyOverSellingShares() {
-        String portfolioId = "portfolioId";
+        val portfolioId = new PortfolioId("portfolioId");
         String portfolioName = "portfolio name";
         String symbol = "IBM";
         int shareCount = 10;
-        String orderId = "orderId";
+        val orderId = new OrderId( "orderId" );
         BigDecimal price = new BigDecimal("1242.25");
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
         PersistentEntityTestDriver.Outcome<PortfolioEvent,Optional<PortfolioState>> outcome = driver.run(
@@ -134,7 +137,7 @@ public class PortfolioModelEntityTest {
 
     @Test
     public void receiveFunds() {
-        String portfolioId = "portfolioId";
+        val portfolioId = new PortfolioId("portfolioId");
         String portfolioName = "portfolio name";
         BigDecimal amount = new BigDecimal("101.40");
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);

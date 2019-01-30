@@ -7,6 +7,7 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties;
 import com.lightbend.lagom.javadsl.api.transport.Method;
+import com.redelastic.stocktrader.order.OrderId;
 
 import java.util.Optional;
 
@@ -26,7 +27,7 @@ public interface BrokerService extends Service {
    * @param orderId ID for the order.
    * @return Status of the order, if it exists, empty if no such order ID is known.
    */
-  ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId);
+  ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(OrderId orderId);
 
   /**
    * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
@@ -44,7 +45,7 @@ public interface BrokerService extends Service {
             restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
     ).withTopics(
             topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
-              .withProperty(KafkaProperties.partitionKeyStrategy(), OrderResult::getPortfolioId)
+              .withProperty(KafkaProperties.partitionKeyStrategy(), orderResult -> orderResult.getPortfolioId().getId())
     );
     // @formatter:on
   }

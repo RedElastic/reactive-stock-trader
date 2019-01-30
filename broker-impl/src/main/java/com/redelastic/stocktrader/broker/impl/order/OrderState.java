@@ -1,5 +1,6 @@
 package com.redelastic.stocktrader.broker.impl.order;
 
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.order.OrderDetails;
 import lombok.Value;
@@ -12,11 +13,11 @@ public interface OrderState {
 
     OrderStatus getStatus();
 
-    String getPortfolioId();
+    PortfolioId getPortfolioId();
 
     @Value
     class Pending implements OrderState {
-        String portfolioId;
+        PortfolioId portfolioId;
         OrderDetails orderDetails;
 
         public OrderStatus getStatus() {
@@ -31,7 +32,7 @@ public interface OrderState {
 
     @Value
     class Fulfilled implements OrderState {
-        String portfolioId;
+        PortfolioId portfolioId;
         OrderDetails orderDetails;
         BigDecimal price;
 
@@ -47,7 +48,7 @@ public interface OrderState {
 
     @Value
     class Failed implements OrderState {
-        String portfolioId;
+        PortfolioId portfolioId;
         OrderDetails orderDetails;
 
         public OrderStatus getStatus() {
