@@ -1,5 +1,6 @@
-package com.redelastic.stocktrader.order;
+package com.redelastic.stocktrader.portfolio.api.order;
 
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

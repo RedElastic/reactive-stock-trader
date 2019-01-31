@@ -20,12 +20,12 @@ View the portfolio
 `curl http://localhost:9000/portfolio/$PID`
 
 Transfer funds into the portfolio
-`curl -X POST http://localhost:9000/api/transfer -F amount=212 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID`
+`curl -X POST http://localhost:9000/api/transfer -F amount=20000 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID`
 
 ```
 PID=$(curl -X POST http:/localhost:9000/api/portfolio -F name="piggy bank savings"); echo $PID
 
-curl -X POST http://localhost:9000/api/transfer -F amount=212 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID
+curl -X POST http://localhost:9000/api/transfer -F amount=20000 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID
 sleep 2
 curl http://localhost:9000/api/portfolio/$PID | jq .
 

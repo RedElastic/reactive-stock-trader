@@ -2,7 +2,7 @@ package com.redelastic.stocktrader.broker.impl.order;
 
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
-import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import lombok.Value;
 
 import java.math.BigDecimal;

@@ -7,8 +7,8 @@ import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 
 import java.util.concurrent.CompletionStage;

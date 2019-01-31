@@ -1,14 +1,12 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;

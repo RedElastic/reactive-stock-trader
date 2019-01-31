@@ -1,8 +1,8 @@
 package controllers;
 
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderType;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import controllers.forms.portfolio.OpenPortfolioForm;

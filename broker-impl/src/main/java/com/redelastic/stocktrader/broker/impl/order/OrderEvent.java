@@ -5,7 +5,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventShards;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.order.Order;
+import com.redelastic.stocktrader.portfolio.api.order.Order;
 import lombok.Value;
 
 public interface OrderEvent extends Jsonable, AggregateEvent<OrderEvent> {

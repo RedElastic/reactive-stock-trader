@@ -5,9 +5,9 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
-import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.portfolio.api.order.Order;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

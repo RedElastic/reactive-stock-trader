@@ -3,7 +3,7 @@ package com.redelastic.stocktrader.broker.impl.order;
 import akka.Done;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
-import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;

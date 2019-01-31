@@ -1,18 +1,19 @@
-package com.redelastic.stocktrader.order;
+package com.redelastic.stocktrader;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.lightbend.lagom.javadsl.api.deser.PathParamSerializer;
 import com.lightbend.lagom.javadsl.api.deser.PathParamSerializers;
-import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.TransferId;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.pcollections.ConsPStack;
-import org.pcollections.PSequence;
 
 import java.util.UUID;
 
 @Value
 public class OrderId {
+
     @NonNull String id;
 
     public static OrderId newId() { return new OrderId(UUID.randomUUID().toString()); }

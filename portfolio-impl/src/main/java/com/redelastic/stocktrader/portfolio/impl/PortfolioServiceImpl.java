@@ -9,8 +9,8 @@ import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.*;
 import com.redelastic.stocktrader.wiretransfer.api.Account;
 import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
 @Singleton

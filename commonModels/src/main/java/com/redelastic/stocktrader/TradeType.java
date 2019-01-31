@@ -1,4 +1,4 @@
-package com.redelastic.stocktrader.order;
+package com.redelastic.stocktrader;
 
 public enum TradeType {
     BUY,

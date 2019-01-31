@@ -1,4 +1,4 @@
-package com.redelastic.stocktrader.order;
+package com.redelastic.stocktrader.portfolio.api.order;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

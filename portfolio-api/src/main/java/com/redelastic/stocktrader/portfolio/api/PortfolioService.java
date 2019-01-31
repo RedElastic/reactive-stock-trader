@@ -6,13 +6,10 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
-import com.lightbend.lagom.javadsl.api.deser.PathParamSerializer;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderId;
-import org.pcollections.ConsPStack;
-import org.pcollections.PSequence;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 

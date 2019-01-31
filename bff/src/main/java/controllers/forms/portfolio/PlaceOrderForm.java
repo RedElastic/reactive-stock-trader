@@ -1,6 +1,6 @@
 package controllers.forms.portfolio;
 
-import com.redelastic.stocktrader.order.TradeType;
+import com.redelastic.stocktrader.TradeType;
 import lombok.Data;
 
 @SuppressWarnings("WeakerAccess")

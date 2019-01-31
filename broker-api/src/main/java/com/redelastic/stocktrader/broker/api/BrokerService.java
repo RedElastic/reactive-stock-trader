@@ -7,7 +7,7 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.broker.kafka.KafkaProperties;
 import com.lightbend.lagom.javadsl.api.transport.Method;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.OrderId;
 
 import java.util.Optional;
 

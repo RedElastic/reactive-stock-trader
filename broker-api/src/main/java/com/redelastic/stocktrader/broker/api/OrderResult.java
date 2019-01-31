@@ -3,7 +3,7 @@ package com.redelastic.stocktrader.broker.api;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.OrderId;
 import lombok.*;
 
 /**

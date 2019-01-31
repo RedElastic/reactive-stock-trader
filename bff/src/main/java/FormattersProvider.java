@@ -1,4 +1,4 @@
-import com.redelastic.stocktrader.order.TradeType;
+import com.redelastic.stocktrader.TradeType;
 import play.data.format.Formatters;
 import play.data.format.Formatters.SimpleFormatter;
 import play.i18n.MessagesApi;

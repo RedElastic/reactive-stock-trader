@@ -1,7 +1,7 @@
 package com.redelastic.stocktrader.broker.api;
 
-import com.redelastic.stocktrader.order.OrderId;
-import com.redelastic.stocktrader.order.TradeType;
+import com.redelastic.stocktrader.OrderId;
+import com.redelastic.stocktrader.TradeType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

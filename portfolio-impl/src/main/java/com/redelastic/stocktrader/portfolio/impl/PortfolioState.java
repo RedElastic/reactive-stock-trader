@@ -1,7 +1,7 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
 import com.lightbend.lagom.serialization.Jsonable;
-import com.redelastic.stocktrader.order.OrderId;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import lombok.Builder;
 import lombok.NonNull;
