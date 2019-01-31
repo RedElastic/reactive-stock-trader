@@ -12,6 +12,7 @@ import com.redelastic.stocktrader.portfolio.api.FundsTransfer;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.OrderCompleted;
 import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
+import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +47,10 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     // TODO: Implement retry logic. Theoretically the chance of a collision is astronomically low *given* everything else works.
     @Override
     public CompletionStage<PortfolioId> open(OpenPortfolioDetails request) {
-        UUID uuid = UUID.randomUUID();
-        String portfolioId = uuid.toString();
-        PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, portfolioId);
+        val portfolioId = PortfolioId.newId();
+        PersistentEntityRef<PortfolioCommand> ref = persistentEntities.refFor(PortfolioEntity.class, portfolioId.getId());
         return ref.ask(new PortfolioCommand.Open(request.getName()))
-                .thenApply(done -> new PortfolioId(portfolioId));
+                .thenApply(done -> portfolioId);
     }
 
     @Override

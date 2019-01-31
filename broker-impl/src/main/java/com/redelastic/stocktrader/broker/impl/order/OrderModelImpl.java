@@ -2,11 +2,13 @@ package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.impl.trade.TradeService;
-import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.Order;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,7 @@ public class OrderModelImpl implements OrderModel {
         this.tradeService = tradeService;
     }
 
-    public CompletionStage<Done> placeOrder(String portfolioId, OrderDetails orderDetails) {
+    public CompletionStage<Done> placeOrder(PortfolioId portfolioId, OrderDetails orderDetails) {
         CompletionStage<Order> placeOrder = orderEntity.ask(new OrderCommand.PlaceOrder(portfolioId, orderDetails));
 
         // This is the process that will progress our order through to completion.
@@ -36,7 +38,7 @@ public class OrderModelImpl implements OrderModel {
                 tradeService.placeOrder(order)
                 .exceptionally(ex -> {
                     log.info(String.format("Order %s failed, %s.", orderEntity.entityId(), ex.toString()));
-                    return new OrderResult.Failed(order.getPortfolioId(), orderEntity.entityId());
+                    return new OrderResult.Failed(order.getPortfolioId(), new OrderId(orderEntity.entityId()));
                 })
                 .thenAccept(orderResult -> {
                     log.info(String.format("Order %s completing.", orderEntity.entityId()));

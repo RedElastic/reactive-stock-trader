@@ -2,9 +2,12 @@ package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.broker.api.OrderStatus;
+import com.redelastic.stocktrader.portfolio.api.order.Order;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,14 +53,15 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
     private abstract class OrderBehaviourBuilder<State extends OrderState> {
 
         Order getOrder() {
-            return new Order(entityId(), state().getPortfolioId(), state().getOrderDetails());
+            return new Order(getOrderId(), state().getPortfolioId(), state().getOrderDetails());
         }
 
+        @SuppressWarnings("unchecked")
         State state() {
             return (State) OrderEntity.this.state().get();
         }
 
-        void getStatus(OrderCommand.GetStatus cmd, ReadOnlyCommandContext ctx) {
+        void getStatus(OrderCommand.GetStatus cmd, ReadOnlyCommandContext<Optional<OrderStatus>> ctx) {
             ctx.reply(Optional.of(state().getStatus()));
         }
 
@@ -104,7 +108,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        PendingBehaviorBuilder(String portfolioId, OrderDetails orderDetails) {
+        PendingBehaviorBuilder(PortfolioId portfolioId, OrderDetails orderDetails) {
 
             this(new OrderState.Pending(portfolioId, orderDetails));
         }
@@ -150,7 +154,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        FulfilledOrderBehaviorBuilder(String portfolioId, OrderDetails orderDetails, BigDecimal price) {
+        FulfilledOrderBehaviorBuilder(PortfolioId portfolioId, OrderDetails orderDetails, BigDecimal price) {
             this(new OrderState.Fulfilled(portfolioId, orderDetails, price));
         }
 
@@ -170,7 +174,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             this.behavior = builder.build();
         }
 
-        FailedOrderBehavior(String portfolioId, OrderDetails orderDetails) {
+        FailedOrderBehavior(PortfolioId portfolioId, OrderDetails orderDetails) {
             this(new OrderState.Failed(portfolioId, orderDetails));
         }
 
@@ -195,7 +199,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         private Persist placeOrder(OrderCommand.PlaceOrder cmd, CommandContext<Order> ctx) {
-            Order order = new Order(entityId(), cmd.getPortfolioId(), cmd.getOrderDetails());
+            Order order = new Order(getOrderId(), cmd.getPortfolioId(), cmd.getOrderDetails());
             return ctx.thenPersist(
                     new OrderEvent.OrderReceived(order),
                     evt -> ctx.reply(order));
@@ -205,6 +209,8 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             return new PendingBehaviorBuilder(evt.getOrder().getPortfolioId(), evt.getOrder().getDetails()).getBehavior();
         }
     }
+
+    private OrderId getOrderId() { return new OrderId(entityId()); }
 
 
 }

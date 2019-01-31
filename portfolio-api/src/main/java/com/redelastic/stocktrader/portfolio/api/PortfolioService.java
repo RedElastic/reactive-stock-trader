@@ -6,13 +6,10 @@ import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
-import com.lightbend.lagom.javadsl.api.deser.PathParamSerializer;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderId;
-import org.pcollections.ConsPStack;
-import org.pcollections.PSequence;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -71,17 +68,7 @@ public interface PortfolioService extends Service {
                 restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
         ).withTopics(
             topic(ORDERS_TOPIC_ID, this::orderPlaced)
-        ).withPathParamSerializer(PortfolioId.class, new PathParamSerializer<PortfolioId>() {
-            @Override
-            public PSequence<String> serialize(PortfolioId parameter) {
-                return ConsPStack.singleton(parameter.getId());
-            }
-
-            @Override
-            public PortfolioId deserialize(PSequence<String> parameters) {
-                return new PortfolioId(parameters.get(0)); // FIXME: how do we handle errors?
-            }
-        });
+        ).withPathParamSerializer(PortfolioId.class, PortfolioId.pathParamSerializer);
         // @formatter:on
 
     }

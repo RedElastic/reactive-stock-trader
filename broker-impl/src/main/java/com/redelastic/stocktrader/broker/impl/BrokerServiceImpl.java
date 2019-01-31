@@ -16,6 +16,7 @@ import com.redelastic.stocktrader.broker.impl.order.OrderEntity;
 import com.redelastic.stocktrader.broker.impl.order.OrderEvent;
 import com.redelastic.stocktrader.broker.impl.order.OrderRepository;
 import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId) {
+    public ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(OrderId orderId) {
 
         return notUsed ->
                 orderRepository

@@ -1,6 +1,7 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
 import com.lightbend.lagom.serialization.Jsonable;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,7 +28,7 @@ public interface PortfolioState extends Jsonable {
         @NonNull String name;
         @NonNull LoyaltyLevel loyaltyLevel;
         @NonNull Holdings holdings;
-        @NonNull PMap<String, PortfolioEvent.OrderPlaced> activeOrders;
+        @NonNull PMap<OrderId, PortfolioEvent.OrderPlaced> activeOrders;
 
         public static Open initialState(String name) {
             return Open.builder()

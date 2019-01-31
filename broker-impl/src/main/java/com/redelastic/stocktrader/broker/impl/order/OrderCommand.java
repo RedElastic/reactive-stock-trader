@@ -3,10 +3,11 @@ package com.redelastic.stocktrader.broker.impl.order;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.ReplyType;
 import com.lightbend.lagom.serialization.Jsonable;
+import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
-import com.redelastic.stocktrader.order.Order;
-import com.redelastic.stocktrader.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.Order;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
@@ -19,7 +20,7 @@ abstract class OrderCommand implements Jsonable {
     @Value
     @EqualsAndHashCode(callSuper = false)
     static final class PlaceOrder extends OrderCommand implements ReplyType<Order> {
-        String portfolioId;
+        PortfolioId portfolioId;
         OrderDetails orderDetails;
     }
 

@@ -8,11 +8,12 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.testkit.ProducerStub;
 import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
+import com.redelastic.stocktrader.TradeType;
 import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.broker.api.*;
-import com.redelastic.stocktrader.order.OrderDetails;
-import com.redelastic.stocktrader.order.OrderType;
-import com.redelastic.stocktrader.order.TradeType;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.OrderId;
+import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.*;
 import com.redelastic.stocktrader.wiretransfer.api.Transfer;
 import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
@@ -80,7 +81,7 @@ public class PortfolioServiceImplTest {
         }
 
         @Override
-        public ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(String orderId) {
+        public ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(OrderId orderId) {
             return null;
         }
 
@@ -144,17 +145,17 @@ public class PortfolioServiceImplTest {
 
         OrderPlaced orderPlaced = probe.request(1).expectNext();
         assertEquals(orderDetails, orderPlaced.getOrderDetails());
-        assertEquals(portfolioId.getId(), orderPlaced.getPortfolioId());
-        assertEquals(orderId.getId(), orderPlaced.getOrderId());
+        assertEquals(portfolioId, orderPlaced.getPortfolioId());
+        assertEquals(orderId, orderPlaced.getOrderId());
 
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
-                .orderId(orderId.getId())
-                .portfolioId(portfolioId.getId())
+                .orderId(orderId)
+                .portfolioId(portfolioId)
                 .trade(Trade.builder()
-                        .orderId(orderId.getId())
+                        .orderId(orderId)
                         .symbol(symbol)
                         .shares(shares)
                         .tradeType(tradeType)
@@ -198,17 +199,17 @@ public class PortfolioServiceImplTest {
         eventually(FiniteDuration.create(5, SECONDS), () -> {
             OrderPlaced orderPlaced = probe.request(1).expectNext();
             assertEquals(buyOrderDetails, orderPlaced.getOrderDetails());
-            assertEquals(portfolioId.getId(), orderPlaced.getPortfolioId());
-            assertEquals(buyOrderId.getId(), orderPlaced.getOrderId());
+            assertEquals(portfolioId, orderPlaced.getPortfolioId());
+            assertEquals(buyOrderId, orderPlaced.getOrderId());
         });
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
-                .orderId(buyOrderId.getId())
-                .portfolioId(portfolioId.getId())
+                .orderId(buyOrderId)
+                .portfolioId(portfolioId)
                 .trade(Trade.builder()
-                        .orderId(buyOrderId.getId())
+                        .orderId(buyOrderId)
                         .symbol(symbol)
                         .shares(sharesToBuy)
                         .tradeType(tradeType)
@@ -241,8 +242,8 @@ public class PortfolioServiceImplTest {
                 .get(5, SECONDS);
 
         OrderResult sellOrderResult = OrderResult.Failed.builder()
-                .orderId(sellOrderId.getId())
-                .portfolioId(portfolioId.getId())
+                .orderId(sellOrderId)
+                .portfolioId(portfolioId)
                 .build();
 
         PSequence<Holding> holdingsDuringSale = service.getPortfolio(portfolioId)
@@ -288,10 +289,10 @@ public class PortfolioServiceImplTest {
 
         BigDecimal price = new BigDecimal("123.45");
         OrderResult tradeResult = OrderResult.Fulfilled.builder()
-                .orderId(orderId.getId())
-                .portfolioId(portfolioId.getId())
+                .orderId(orderId)
+                .portfolioId(portfolioId)
                 .trade(Trade.builder()
-                        .orderId(orderId.getId())
+                        .orderId(orderId)
                         .tradeType(TradeType.BUY)
                         .symbol(symbol)
                         .price(price)

@@ -5,10 +5,11 @@ import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.redelastic.stocktrader.broker.api.OrderResult;
+import com.redelastic.stocktrader.OrderId;
 
 public interface OrderRepository {
 
-    OrderModel get(String orderId);
+    OrderModel get(OrderId orderId);
 
     Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset);
 }

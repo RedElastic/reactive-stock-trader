@@ -37,8 +37,7 @@ public class WireTransferServiceImpl implements WireTransferService {
 
     @Override
     public ServiceCall<Transfer, TransferId> transferFunds() {
-        String uuid = UUID.randomUUID().toString();
-        TransferId transferId = new TransferId(uuid);
+        TransferId transferId = TransferId.newId();
 
         return transfer ->
                 transferRepository
@@ -108,9 +107,10 @@ public class WireTransferServiceImpl implements WireTransferService {
         return pmapFirst(pf);
     }
 
+    @SuppressWarnings("unchecked")
     private <A, B, C>  PartialFunction<Pair<A,C>, Pair<B,C>> pmapFirst(PartialFunction<A,B> pf) {
         FI.TypedPredicate<Pair> isDefinedOnFirst = p -> pf.isDefinedAt((((Pair<A,C>)p).first()));
-        FI.Apply<Pair, Pair<B,C>> applyOnFirst = p -> Pair.<B,C>create((pf.apply((A)p.first())), (C)p.second());
+        FI.Apply<Pair, Pair<B,C>> applyOnFirst = p -> Pair.create((pf.apply((A)p.first())), (C)p.second());
         return new PFBuilder<Pair<A,C>, Pair<B,C>>()
                 .match(Pair.class, isDefinedOnFirst, applyOnFirst)
                 .build();
