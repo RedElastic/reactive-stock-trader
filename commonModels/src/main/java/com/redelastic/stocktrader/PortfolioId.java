@@ -1,6 +1,7 @@
 package com.redelastic.stocktrader;
 
 import com.lightbend.lagom.javadsl.api.deser.PathParamSerializer;
+import com.lightbend.lagom.javadsl.api.deser.PathParamSerializers;
 import com.redelastic.stocktrader.order.OrderId;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,16 +16,6 @@ public class PortfolioId {
 
     public static PortfolioId newId() { return new PortfolioId(UUID.randomUUID().toString()); }
 
-    public static PathParamSerializer<PortfolioId> pathParamSerializer = new PathParamSerializer<PortfolioId>() {
-        @Override
-        public PSequence<String> serialize(PortfolioId parameter) {
-            return ConsPStack.singleton(parameter.getId());
-        }
-
-        @Override
-        public PortfolioId deserialize(PSequence<String> parameters) {
-            return new PortfolioId(parameters.get(0)); // FIXME: how do we handle errors?
-        }
-    };
-
+    public static PathParamSerializer<PortfolioId> pathParamSerializer =
+            PathParamSerializers.required("PortfolioId", PortfolioId::new, PortfolioId::getId);
 }
