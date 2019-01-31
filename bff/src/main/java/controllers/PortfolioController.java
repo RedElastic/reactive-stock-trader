@@ -54,7 +54,7 @@ public class PortfolioController extends Controller {
                         quoteService.priceHoldings(view.getHoldings())
                             .thenApply(pricedHoldings ->
                                     PortfolioView.builder()
-                                        .portfolioId(view.getPortfolioId())
+                                        .portfolioId(view.getPortfolioId().getId())
                                         .name(view.getName())
                                         .funds(view.getFunds())
                                         .holdings(pricedHoldings)
