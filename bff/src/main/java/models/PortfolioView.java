@@ -1,6 +1,5 @@
 package models;
 
-import com.redelastic.stocktrader.PortfolioId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,7 +12,7 @@ import java.math.BigDecimal;
 @Builder
 public class PortfolioView {
 
-    @NonNull PortfolioId portfolioId;
+    @NonNull String portfolioId;
 
     @NonNull String name;
 
