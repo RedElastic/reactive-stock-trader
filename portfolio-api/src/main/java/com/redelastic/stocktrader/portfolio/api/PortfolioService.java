@@ -53,7 +53,6 @@ public interface PortfolioService extends Service {
      */
     Topic<OrderPlaced> orderPlaced();
 
-    Topic<FundsTransfer> fundsTransfer();
 
     @Override
     default Descriptor descriptor() {

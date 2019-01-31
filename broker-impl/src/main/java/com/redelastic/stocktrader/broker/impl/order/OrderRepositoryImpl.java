@@ -1,6 +1,7 @@
 package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.japi.Pair;
+import akka.japi.pf.PFBuilder;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
@@ -36,7 +37,9 @@ public class OrderRepositoryImpl implements OrderRepository {
 
     public Source<Pair<OrderResult, Offset>, ?> orderResults(AggregateEventTag<OrderEvent> tag, Offset offset) {
         // FIXME: Even for Java this is awkward.
-        return persistentEntities.eventStream(tag, offset).filter(eventOffset ->
+        return persistentEntities
+                .eventStream(tag, offset)
+                .filter(eventOffset ->
                 eventOffset.first() instanceof OrderEvent.OrderFulfilled ||
                         eventOffset.first() instanceof OrderEvent.OrderFailed
         ).map(eventAndOffset -> {

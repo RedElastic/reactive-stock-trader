@@ -153,10 +153,5 @@ public class PortfolioServiceImpl implements PortfolioService {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
     }
 
-    @Override
-    public Topic<FundsTransfer> fundsTransfer() {
-        return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::transferStream);
-    }
-
 
 }

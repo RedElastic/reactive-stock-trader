@@ -200,7 +200,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                                 () -> ctx.reply(Done.getInstance()));
 
                     default:
-                        throw new IllegalStateException(); // FIXME
+                        throw new IllegalStateException();
                 }
             }
         }

@@ -21,7 +21,6 @@ import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
 import scala.PartialFunction;
 
 import javax.inject.Inject;
-import java.util.UUID;
 
 public class WireTransferServiceImpl implements WireTransferService {
 
@@ -70,7 +69,7 @@ public class WireTransferServiceImpl implements WireTransferService {
     private Source<Pair<TransferRequest, Offset>, ?> transferRequestSource(AggregateEventTag<TransferEvent> tag, Offset offset) {
         return transferRepository
                 .eventStream(tag, offset)
-                .collect(collectEvents(
+                .collect(collectByEvent(
                         new PFBuilder<TransferEvent, TransferRequest>()
                         .match(TransferEvent.TransferInitiated.class, this::requestFunds)
                         .match(TransferEvent.FundsRetrieved.class, this::sendFunds)
@@ -100,15 +99,15 @@ public class WireTransferServiceImpl implements WireTransferService {
      * @param pf
      * @param <A>
      * @param <B>
-     * @return collectEvents(pf).isDefined(a,off) iff pf.isDefined(a)
-     *   && collectEvents(pf).apply(a,off) = Pair(pf.apply(a), off)
+     * @return collectByEvent(pf).isDefined(a,off) iff pf.isDefined(a)
+     *   && collectByEvent(pf).apply(a,off) = Pair(pf.apply(a), off)
      */
-    private <A,B> PartialFunction<Pair<A, Offset>, Pair<B, Offset>> collectEvents(PartialFunction<A,B> pf) {
-        return pmapFirst(pf);
+    private <A,B> PartialFunction<Pair<A, Offset>, Pair<B, Offset>> collectByEvent(PartialFunction<A,B> pf) {
+        return collectFirst(pf);
     }
 
     @SuppressWarnings("unchecked")
-    private <A, B, C>  PartialFunction<Pair<A,C>, Pair<B,C>> pmapFirst(PartialFunction<A,B> pf) {
+    private <A, B, C>  PartialFunction<Pair<A,C>, Pair<B,C>> collectFirst(PartialFunction<A,B> pf) {
         FI.TypedPredicate<Pair> isDefinedOnFirst = p -> pf.isDefinedAt((((Pair<A,C>)p).first()));
         FI.Apply<Pair, Pair<B,C>> applyOnFirst = p -> Pair.create((pf.apply((A)p.first())), (C)p.second());
         return new PFBuilder<Pair<A,C>, Pair<B,C>>()
