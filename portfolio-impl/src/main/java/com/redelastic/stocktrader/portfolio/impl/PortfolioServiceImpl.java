@@ -92,6 +92,14 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
+    public ServiceCall<NotUsed, Done> closePortfolio(PortfolioId portfolioId) {
+        return notUsed ->
+                portfolioRepository
+                .getRef(portfolioId)
+                .ask(PortfolioCommand.ClosePortfolio.INSTANCE);
+    }
+
+    @Override
     public ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId) {
         return notUsed ->
             portfolioRepository

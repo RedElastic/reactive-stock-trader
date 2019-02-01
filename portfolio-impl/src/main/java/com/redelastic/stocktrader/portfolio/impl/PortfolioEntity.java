@@ -9,6 +9,7 @@ import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
@@ -146,6 +147,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             builder.setCommandHandler(PortfolioCommand.Liquidate.class, this::liquidate);
             builder.setCommandHandler(PortfolioCommand.SendFunds.class, this::sendFunds);
             builder.setCommandHandler(PortfolioCommand.ReceiveFunds.class, this::receiveFunds);
+            builder.setCommandHandler(PortfolioCommand.ClosePortfolio.class, this::closePortfolio);
 
             builder.setReadOnlyCommandHandler(PortfolioCommand.GetState.class, this::getState);
 
@@ -168,6 +170,24 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                             .build()
             );
 
+        }
+
+        private Persist closePortfolio(PortfolioCommand.ClosePortfolio cmd, CommandContext<Done> ctx) {
+            if (isEmpty()) {
+                return ctx.thenPersist(
+                        new PortfolioEvent.Closed(getPortfolioId()),
+                        evt -> ctx.reply(Done.getInstance())
+                );
+            } else {
+                ctx.commandFailed(new IllegalStateException("Portfolio is not empty"));
+                return ctx.done();
+            }
+        }
+
+        private boolean isEmpty() {
+            return state().getFunds().compareTo(BigDecimal.ZERO) == 0
+                    && state().getHoldings().asSequence().isEmpty()
+                    && state().getActiveOrders().isEmpty();
         }
 
 

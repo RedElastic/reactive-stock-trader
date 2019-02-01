@@ -38,6 +38,8 @@ public interface PortfolioService extends Service {
      */
     ServiceCall<NotUsed, Done> liquidatePortfolio(PortfolioId portfolioId);
 
+    ServiceCall<NotUsed, Done> closePortfolio(PortfolioId portfolioId);
+
     /**
      * Get a view of the portfolio, including the current valuation of the equities held in it.
      * @param portfolioId ID of the portfolio to view.
@@ -54,15 +56,16 @@ public interface PortfolioService extends Service {
     Topic<OrderPlaced> orderPlaced();
 
 
+    String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
+
     @Override
     default Descriptor descriptor() {
-        String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
 
         // @formatter:off
         return named("portfolio").withCalls(
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
                 restCall(Method.POST, "/api/portfolio", this::openPortfolio),
-                restCall(Method.POST,"/api/portfolio/:portfolioId/liquidate", this::liquidatePortfolio),
+                restCall(Method.POST,"/api/portfolio/:portfolioId/close", this::closePortfolio),
                 restCall(Method.GET,"/api/portfolio/:portfolioId", this::getPortfolio),
                 restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
         ).withTopics(

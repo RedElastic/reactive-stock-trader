@@ -45,24 +45,30 @@ public interface PortfolioCommand extends Jsonable {
     @Value
     @Builder
     class ReceiveFunds implements PortfolioCommand, ReplyType<Done> {
-        BigDecimal amount;
+        @NonNull BigDecimal amount;
     }
 
     @Value
     @Builder
     class SendFunds implements PortfolioCommand, ReplyType<Done> {
-        BigDecimal amount;
+        @NonNull BigDecimal amount;
     }
 
     @Value
     @Builder
     class AcceptRefund implements PortfolioCommand, ReplyType<Done> {
-        BigDecimal amount;
+        @NonNull BigDecimal amount;
     }
 
     // FIXME: review this.
     @Value
     class HandleOrderFailure implements PortfolioCommand, ReplyType<Done> {
         OrderResult.Failed orderFailed;
+    }
+
+    @Value
+    class ClosePortfolio implements PortfolioCommand, ReplyType<Done> {
+        private ClosePortfolio() {}
+        public static ClosePortfolio INSTANCE = new ClosePortfolio();
     }
 }
