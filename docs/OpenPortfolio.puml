@@ -1,0 +1,17 @@
+@startuml
+!pragma teoz true
+skinparam SequenceMessageAlign direction
+title Open Portfolio
+participant BFF
+entity Portfolio
+[-> BFF : open portfolio
+activate BFF
+BFF -> Portfolio: openPortfolio
+activate Portfolio
+Portfolio --> Portfolio : allocate ID\nand store\ndetails
+Portfolio -> BFF : <PortfolioId>
+deactivate Portfolio
+[<- BFF  : <PortfolioId>
+deactivate BFF
+@enduml
+

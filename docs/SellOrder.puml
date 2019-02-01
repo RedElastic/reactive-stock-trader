@@ -18,12 +18,12 @@ box "Broker Service"
 end box
 Browser -> BFF: sell shares
 activate BFF
-BFF -> Portfolio: place order
+BFF -> Portfolio: placeOrder
 activate Portfolio
 Portfolio --> Portfolio : confirm and\nremove shares
 Portfolio -> OrderPlaced: OrderPlaced
 activate OrderPlaced #blue
-Portfolio -> BFF: Done
+Portfolio -> BFF: <OrderId>
 & OrderPlaced -[#blue]->> Broker: OrderPlaced
 activate Broker
 deactivate Portfolio
