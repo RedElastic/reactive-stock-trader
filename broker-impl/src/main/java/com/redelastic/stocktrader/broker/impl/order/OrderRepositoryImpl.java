@@ -51,7 +51,6 @@ public class OrderRepositoryImpl implements OrderRepository {
                 log.info(String.format("Order %s fulfilled.", order.getOrderId()));
 
                 OrderResult.Fulfilled completedOrder = OrderResult.Fulfilled.builder()
-                        .orderId(order.getOrderId())
                         .portfolioId(order.getPortfolioId())
                         .trade(trade)
                         .build();

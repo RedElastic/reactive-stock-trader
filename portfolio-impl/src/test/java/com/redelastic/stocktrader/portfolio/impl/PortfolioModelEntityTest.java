@@ -114,11 +114,11 @@ public class PortfolioModelEntityTest {
         PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
         PersistentEntityTestDriver.Outcome<PortfolioEvent,Optional<PortfolioState>> outcome = driver.run(
                 new PortfolioCommand.CompleteTrade(
+                        orderId,
                         Trade.builder()
-                                .orderId(orderId)
                                 .symbol(symbol)
                                 .shares(shareCount)
-                                .price(price)
+                                .sharePrice(price)
                                 .tradeType(TradeType.BUY)
                                 .build()
                 ),

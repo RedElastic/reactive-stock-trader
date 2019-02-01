@@ -138,7 +138,7 @@ public class PortfolioServiceImpl implements PortfolioService {
         return orderResult.visit(new OrderResult.Visitor<CompletionStage<Done>>() {
             @Override
             public CompletionStage<Done> visit(OrderResult.Fulfilled orderFulfilled) {
-                return portfolio.processTrade(orderFulfilled.getTrade());
+                return portfolio.processTrade(orderFulfilled.getOrderId(), orderFulfilled.getTrade());
             }
 
             @Override

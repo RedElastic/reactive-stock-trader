@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
@@ -172,12 +173,13 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
         private PersistentEntity.Persist completeTrade(PortfolioCommand.CompleteTrade cmd, CommandContext<Done> ctx) {
             Trade trade = cmd.getTrade();
+            OrderId orderId = cmd.getOrderId();
             log.info(String.format(
                     "PortfolioModel %s processing trade %s",
                     entityId(),
                     trade.toString()
             ));
-            if (state().getActiveOrders().get(cmd.getTrade().getOrderId()) == null) {
+            if (state().getActiveOrders().get(orderId) == null) {
                 // This is a trade for an order that we don't believe to be active, presumably we've already processed
                 // the result of this order and this is a duplicate result.
                 // TODO: More complete tracking so we know that we're not dropping trades
@@ -187,16 +189,16 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 switch (trade.getTradeType()) {
                     case BUY:
                         return ctx.thenPersistAll(Arrays.asList(
-                                new PortfolioEvent.FundsDebited(getPortfolioId(), trade.getPrice()),
+                                new PortfolioEvent.FundsDebited(getPortfolioId(), trade.getSharePrice()),
                                 new PortfolioEvent.SharesCredited(getPortfolioId(), trade.getSymbol(), trade.getShares()),
-                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), trade.getOrderId())),
+                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), orderId)),
                                 () -> ctx.reply(Done.getInstance()));
 
                     case SELL:
                         return ctx.thenPersistAll(Arrays.asList(
                                 // Note: for a sale the shares have already been removed when we initiated the sale
-                                new PortfolioEvent.FundsCredited(getPortfolioId(), trade.getPrice()),
-                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), trade.getOrderId())),
+                                new PortfolioEvent.FundsCredited(getPortfolioId(), trade.getSharePrice()),
+                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), orderId)),
                                 () -> ctx.reply(Done.getInstance()));
 
                     default:

@@ -50,8 +50,8 @@ class PortfolioModel {
         return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(orderId,  orderDetails));
     }
 
-    CompletionStage<Done> processTrade(Trade trade) {
-        return portfolioEntity.ask(new PortfolioCommand.CompleteTrade(trade));
+    CompletionStage<Done> processTrade(OrderId orderId, Trade trade) {
+        return portfolioEntity.ask(new PortfolioCommand.CompleteTrade(orderId, trade));
     }
 
     CompletionStage<Done> orderFailed(OrderResult.Failed failed) {

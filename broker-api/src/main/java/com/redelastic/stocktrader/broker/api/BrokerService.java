@@ -16,7 +16,7 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 public interface BrokerService extends Service {
 
   /**
-   * Get the most recent share price for a stock.
+   * Get the most recent share sharePrice for a stock.
    * @param symbol Stock ticker symbol.
    * @return
    */
