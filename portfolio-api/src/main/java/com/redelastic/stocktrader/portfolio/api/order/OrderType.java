@@ -30,7 +30,7 @@ public abstract class OrderType {
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class Limit extends OrderType {
-        @NonNull BigDecimal price;
+        @NonNull BigDecimal limitPrice;
 
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(this);
