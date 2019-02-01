@@ -90,14 +90,14 @@ public class TransferProcess extends ReadSideProcessor<TransferEvent> {
                 return portfolioService
                         .processTransfer(portfolioId)
                         .invoke(transfer)
-                        .thenApply(done -> transferEntity.ask(TransferCommand.RequestFundsSucessful.INSTANCE))
+                        .thenApply(done -> transferEntity.ask(TransferCommand.RequestFundsSuccessful.INSTANCE))
                         .exceptionally(ex -> transferEntity.ask(TransferCommand.RequestFundsFailed.INSTANCE))
                         .thenCompose(Function.identity());
             } else {
                 // Any other sort of accounts are out of scope, this means they will freely accept and transfer money.
                 // You don't actually want sources of free money in a production system.
                 return transferEntity
-                        .ask(TransferCommand.RequestFundsSucessful.INSTANCE);
+                        .ask(TransferCommand.RequestFundsSuccessful.INSTANCE);
             }
         }
 
@@ -148,11 +148,11 @@ public class TransferProcess extends ReadSideProcessor<TransferEvent> {
                         .processTransfer(portfolioId)
                         .invoke(refund)
                         .thenCompose(done ->
-                                transferEntity.ask(TransferCommand.RefundSuccess.INSTANCE)
+                                transferEntity.ask(TransferCommand.RefundSuccessful.INSTANCE)
                         );
             } else {
                 return transferEntity
-                        .ask(TransferCommand.RefundSuccess.INSTANCE);
+                        .ask(TransferCommand.RefundSuccessful.INSTANCE);
             }
         }
 

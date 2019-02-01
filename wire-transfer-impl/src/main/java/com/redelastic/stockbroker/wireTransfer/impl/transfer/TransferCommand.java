@@ -23,9 +23,9 @@ public abstract class TransferCommand {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class RequestFundsSucessful extends TransferCommand implements ReplyType<Done> {
-        private RequestFundsSucessful() {}
-        public static RequestFundsSucessful INSTANCE = new RequestFundsSucessful();
+    public static class RequestFundsSuccessful extends TransferCommand implements ReplyType<Done> {
+        private RequestFundsSuccessful() {}
+        public static RequestFundsSuccessful INSTANCE = new RequestFundsSuccessful();
     }
 
     @Value
@@ -33,13 +33,6 @@ public abstract class TransferCommand {
     public static class RequestFundsFailed extends TransferCommand implements ReplyType<Done> {
         private RequestFundsFailed() {}
         public static RequestFundsFailed INSTANCE = new RequestFundsFailed();
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    public static class SendFunds extends TransferCommand implements ReplyType<Done> {
-        private SendFunds() {}
-        public static SendFunds INSTANCE = new SendFunds();
     }
 
     @Value
@@ -59,15 +52,8 @@ public abstract class TransferCommand {
 
     @Value
     @EqualsAndHashCode(callSuper = false)
-    public static class SendRefund extends TransferCommand implements ReplyType<Done> {
-        private SendRefund() {}
-        public static SendRefund INSTANCE = new SendRefund();
-    }
-
-    @Value
-    @EqualsAndHashCode(callSuper = false)
-    public static class RefundSuccess extends TransferCommand implements ReplyType<Done> {
-        private RefundSuccess() {}
-        public static RefundSuccess INSTANCE = new RefundSuccess();
+    public static class RefundSuccessful extends TransferCommand implements ReplyType<Done> {
+        private RefundSuccessful() {}
+        public static RefundSuccessful INSTANCE = new RefundSuccessful();
     }
 }

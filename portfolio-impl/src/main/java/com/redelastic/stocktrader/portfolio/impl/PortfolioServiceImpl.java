@@ -125,7 +125,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
                 @Override
                 public CompletionStage<Done> visit(FundsTransfer.Refund refund) {
-                    return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds()));
+                    return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds(), refund.getTransferId()));
                 }
             });
     }

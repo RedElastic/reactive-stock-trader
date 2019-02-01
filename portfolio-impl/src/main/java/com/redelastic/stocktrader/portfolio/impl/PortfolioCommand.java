@@ -3,6 +3,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity.ReplyType;
 import com.lightbend.lagom.serialization.Jsonable;
+import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
@@ -58,11 +59,11 @@ public interface PortfolioCommand extends Jsonable {
     @Builder
     class AcceptRefund implements PortfolioCommand, ReplyType<Done> {
         @NonNull BigDecimal amount;
+        @NonNull TransferId transferId;
     }
 
-    // FIXME: review this.
     @Value
-    class HandleOrderFailure implements PortfolioCommand, ReplyType<Done> {
+    class AcknowledgeOrderFailure implements PortfolioCommand, ReplyType<Done> {
         OrderResult.Failed orderFailed;
     }
 

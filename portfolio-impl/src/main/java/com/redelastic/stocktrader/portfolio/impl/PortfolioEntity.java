@@ -143,10 +143,11 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             builder.setCommandHandler(PortfolioCommand.Open.class, this::rejectOpen);
             builder.setCommandHandler(PortfolioCommand.PlaceOrder.class, this::placeOrder);
             builder.setCommandHandler(PortfolioCommand.CompleteTrade.class, this::completeTrade);
-            builder.setCommandHandler(PortfolioCommand.HandleOrderFailure.class, this::handleFailedOrder);
+            builder.setCommandHandler(PortfolioCommand.AcknowledgeOrderFailure.class, this::handleFailedOrder);
             builder.setCommandHandler(PortfolioCommand.Liquidate.class, this::liquidate);
             builder.setCommandHandler(PortfolioCommand.SendFunds.class, this::sendFunds);
             builder.setCommandHandler(PortfolioCommand.ReceiveFunds.class, this::receiveFunds);
+            builder.setCommandHandler(PortfolioCommand.AcceptRefund.class, this::acceptRefund);
             builder.setCommandHandler(PortfolioCommand.ClosePortfolio.class, this::closePortfolio);
 
             builder.setReadOnlyCommandHandler(PortfolioCommand.GetState.class, this::getState);
@@ -170,6 +171,13 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                             .build()
             );
 
+        }
+
+        private Persist acceptRefund(PortfolioCommand.AcceptRefund cmd, CommandContext<Done> ctx) {
+            return ctx.thenPersist(
+                    new PortfolioEvent.RefundAccepted(getPortfolioId(), cmd.getTransferId(), cmd.getAmount()),
+                    evt -> ctx.reply(Done.getInstance())
+            );
         }
 
         private Persist closePortfolio(PortfolioCommand.ClosePortfolio cmd, CommandContext<Done> ctx) {
@@ -292,7 +300,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
          * @param ctx
          * @return
          */
-        private PersistentEntity.Persist handleFailedOrder(PortfolioCommand.HandleOrderFailure cmd, CommandContext<Done> ctx) {
+        private PersistentEntity.Persist handleFailedOrder(PortfolioCommand.AcknowledgeOrderFailure cmd, CommandContext<Done> ctx) {
             log.info(String.format("Order %s failed for PortfolioModel %s.", cmd.getOrderFailed().getOrderId(), entityId()));
             PortfolioEvent.OrderPlaced orderPlaced = state().getActiveOrders().get(cmd.getOrderFailed().getOrderId());
             if (orderPlaced == null) {

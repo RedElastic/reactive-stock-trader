@@ -55,6 +55,6 @@ class PortfolioModel {
     }
 
     CompletionStage<Done> orderFailed(OrderResult.Failed failed) {
-        return portfolioEntity.ask(new PortfolioCommand.HandleOrderFailure(failed));
+        return portfolioEntity.ask(new PortfolioCommand.AcknowledgeOrderFailure(failed));
     }
 }
