@@ -38,6 +38,7 @@ public interface PortfolioCommand extends Jsonable {
     @Value
     @Builder
     class CompleteTrade implements PortfolioCommand, ReplyType<Done> {
+        @NonNull OrderId orderId;
         @NonNull Trade trade;
     }
 

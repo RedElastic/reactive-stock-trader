@@ -48,14 +48,12 @@ public class TradeServiceImpl implements TradeService {
         return priceOrder(order).thenApply(price -> {
             OrderDetails details = order.getDetails();
             Trade trade = Trade.builder()
-                    .orderId(order.getOrderId())
                     .tradeType(details.getTradeType())
                     .symbol(details.getSymbol())
                     .shares(details.getShares())
-                    .price(price)
+                    .sharePrice(price)
                     .build();
             return OrderResult.Fulfilled.builder()
-                    .orderId(order.getOrderId())
                     .portfolioId(order.getPortfolioId())
                     .trade(trade)
                     .build();

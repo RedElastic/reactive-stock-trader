@@ -152,14 +152,13 @@ public class PortfolioServiceImplTest {
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
-                .orderId(orderId)
                 .portfolioId(portfolioId)
+                .orderId(orderId)
                 .trade(Trade.builder()
-                        .orderId(orderId)
                         .symbol(symbol)
                         .shares(shares)
                         .tradeType(tradeType)
-                        .price(sharePrice)
+                        .sharePrice(sharePrice)
                         .build()
                 )
                 .build();
@@ -206,14 +205,13 @@ public class PortfolioServiceImplTest {
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
-                .orderId(buyOrderId)
                 .portfolioId(portfolioId)
+                .orderId(buyOrderId)
                 .trade(Trade.builder()
-                        .orderId(buyOrderId)
                         .symbol(symbol)
                         .shares(sharesToBuy)
                         .tradeType(tradeType)
-                        .price(sharePrice)
+                        .sharePrice(sharePrice)
                         .build()
                 )
                 .build();
@@ -289,13 +287,12 @@ public class PortfolioServiceImplTest {
 
         BigDecimal price = new BigDecimal("123.45");
         OrderResult tradeResult = OrderResult.Fulfilled.builder()
-                .orderId(orderId)
                 .portfolioId(portfolioId)
+                .orderId(orderId)
                 .trade(Trade.builder()
-                        .orderId(orderId)
                         .tradeType(TradeType.BUY)
                         .symbol(symbol)
-                        .price(price)
+                        .sharePrice(price)
                         .shares(sharesToBuy)
                         .build()
                 ).build();

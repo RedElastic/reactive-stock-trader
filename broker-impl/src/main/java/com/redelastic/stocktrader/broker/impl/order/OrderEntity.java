@@ -130,7 +130,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         }
 
         private Behavior fulfilled(OrderEvent.OrderFulfilled evt) {
-            return new FulfilledOrderBehaviorBuilder(state().getPortfolioId(), state().getOrderDetails(), evt.getTrade().getPrice()).getBehavior();
+            return new FulfilledOrderBehaviorBuilder(state().getPortfolioId(), state().getOrderDetails(), evt.getTrade().getSharePrice()).getBehavior();
         }
 
         private Behavior failed(OrderEvent.OrderFailed evt) {

@@ -20,7 +20,7 @@ Browser -> BFF: sell shares
 activate BFF
 BFF -> Portfolio: place order
 activate Portfolio
-Portfolio -> Portfolio : confirm and\nremove shares
+Portfolio --> Portfolio : confirm and\nremove shares
 Portfolio -> OrderPlaced: OrderPlaced
 activate OrderPlaced #blue
 Portfolio -> BFF: Done
@@ -30,7 +30,7 @@ deactivate Portfolio
 deactivate OrderPlaced
 BFF -> Browser: OK
 deactivate BFF
-Broker -> Broker: Find buyer
+Broker --> Broker: Find buyer
 Broker -> OrderResult: Fulfilled
 activate OrderResult #blue
 deactivate Broker
@@ -40,7 +40,7 @@ activate BFF
 activate Portfolio
 deactivate OrderResult
 BFF -> Browser: order update
-& Portfolio -> Portfolio: Credit funds
+& Portfolio --> Portfolio: Credit funds
 deactivate Portfolio
 deactivate BFF
 @enduml
