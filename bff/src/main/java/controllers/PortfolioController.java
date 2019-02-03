@@ -77,7 +77,7 @@ public class PortfolioController extends Controller {
                     .openPortfolio()
                     .invoke(openRequest)
                     .thenApply(PortfolioId::getId)
-                    .thenApply(Results::ok);
+                    .thenApply(Results::created);
         }
     }
 
@@ -97,7 +97,7 @@ public class PortfolioController extends Controller {
             return portfolioService
                     .placeOrder(new PortfolioId(portfolioId))
                     .invoke(order)
-                    .thenApply(done -> ok());
+                    .thenApply(done -> created());
         }
     }
 
