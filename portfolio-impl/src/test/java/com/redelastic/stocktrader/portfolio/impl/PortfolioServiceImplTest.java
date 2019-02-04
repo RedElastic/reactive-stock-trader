@@ -30,6 +30,7 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -87,7 +88,6 @@ public class PortfolioServiceImplTest {
 
         @Override
         public Topic<OrderResult> orderResult() {
-
             return orderResultProducerStub.topic();
         }
     }
@@ -142,13 +142,12 @@ public class PortfolioServiceImplTest {
         val orderId = service.placeOrder(portfolioId).invoke(orderDetails).toCompletableFuture().get(5, SECONDS);
 
         // Make sure we see the order published
-
-        OrderPlaced orderPlaced = probe.request(1).expectNext();
-        assertEquals(orderDetails, orderPlaced.getOrderDetails());
-        assertEquals(portfolioId, orderPlaced.getPortfolioId());
-        assertEquals(orderId, orderPlaced.getOrderId());
-
-
+        eventually(FiniteDuration.create(10, SECONDS), () -> {
+            OrderPlaced orderPlaced = probe.request(1).expectNext();
+            assertEquals(orderDetails, orderPlaced.getOrderDetails());
+            assertEquals(portfolioId, orderPlaced.getPortfolioId());
+            assertEquals(orderId, orderPlaced.getOrderId());
+        });
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
@@ -195,12 +194,14 @@ public class PortfolioServiceImplTest {
                 .build();
 
         val buyOrderId = service.placeOrder(portfolioId).invoke(buyOrderDetails).toCompletableFuture().get(5, SECONDS);
-        eventually(FiniteDuration.create(5, SECONDS), () -> {
+
+        eventually(FiniteDuration.create(10, SECONDS), () -> {
             OrderPlaced orderPlaced = probe.request(1).expectNext();
             assertEquals(buyOrderDetails, orderPlaced.getOrderDetails());
             assertEquals(portfolioId, orderPlaced.getPortfolioId());
             assertEquals(buyOrderId, orderPlaced.getOrderId());
         });
+
 
 
         BigDecimal sharePrice = BrokerStub.sharePrice;
