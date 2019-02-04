@@ -82,14 +82,11 @@ paths:
                 properties:
                   portfolioId:
                     type: string
-                    example: <portfolio ID>
                   name:
                     type: string
-                    example: Retirement savings
                   funds:
                     type: number
                     minimum: 0
-                    example: 123.95
                   holdings:
                     type: array
                     items:
@@ -98,14 +95,22 @@ paths:
                         symbol:
                           type: string
                           description: The stock ticker symbol
-                          example: IBM
                         shareCount:
                           type: integer
-                          example: 12
                         marketValue:
                           type: number
                           description: Current market value of the shares held (share price * share count)
-                          example: 1524.34
+                example:
+                  portfolioId: <portfolio id>
+                  name: retirement savings
+                  funds: 123.95
+                  holdings:
+                    - symbol: IBM
+                      shareCount: 12
+                      marketValue: 1524.34
+                    - symbol: RHT
+                      shareCount: 10
+                      marketValue: 1212.78
         '404':
           description: No such portfolio ID
           content:
@@ -135,39 +140,13 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              type: object
-              required:
-                - symbol
-                - shares
-                - order
-                - orderType
-              properties:
-                symbol:
-                  type: string
-                  description: The stock ticker symbol to trade
-                shares:
-                  type: integer
-                  minimum: 1
-                  description: Shares to trade
-                order:
-                  type: string
-                  enum:
-                    - buy
-                    - sell
-                orderType:
-                  type: string
-                  enum:
-                    - market
-                    - limit
-                    - stop
-                    - stopLimit
-                limitPrice:
-                  type: number
-                  description: Limit price, if applicable
-                stopPrice:
-                  type: number
-                  description: Stop price, if applicable
-
+              $ref: '#/components/schemas/OrderDetails'
+            example:
+              symbol: IBM
+              shares: 150
+              order: buy
+              orderType: limit
+              limitPrice: 135.00
 
 
       responses:
@@ -277,6 +256,8 @@ components:
         - oneOf:
             - $ref: '#/components/schemas/MarketOrder'
             - $ref: '#/components/schemas/LimitOrder'
+            - $ref: '#/components/schemas/StopOrder'
+            - $ref: '#/components/schemas/StopLimitOrder'
           discriminator:
             propertyName: orderType
             mapping:
@@ -290,11 +271,13 @@ components:
       required:
         - symbol
         - shares
+        - order
         - orderType
       properties:
         symbol:
           type: string
           description: The stock ticker symbol to trade
+          example: IBM
         shares:
           type: integer
           minimum: 1
@@ -302,11 +285,13 @@ components:
           example: 50
         order:
           type: string
+          description: buy or sell
           enum:
             - buy
             - sell
         orderType:
           type: string
+          description: Market, limit, stop or stop-limit
           enum:
             - market
             - limit
