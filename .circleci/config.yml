@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/samplescala
+    working_directory: ~/stocktrader
     docker:
       - image: openjdk:8
     environment:
@@ -23,8 +23,12 @@ jobs:
       - restore_cache:
           key: sbt-cache
       - run:
-          name: Compile samplescala dist package
-          command: cat /dev/null | sbt clean update test -u ./test-results/junit
+          name: Run tests
+          command: cat /dev/null | sbt test
+      - run:
+          command: |
+            mkdir ./test-results
+            cp -r ./*/target/test-reports/ ./test-results/
       - store_test_results:
           path: ./test-results
       - save_cache:
