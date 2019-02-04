@@ -1,0 +1,325 @@
+openapi: 3.0.2
+info:
+  title: Stock Trader BFF
+  version: 1.0.0
+tags:
+  - name: portfolio
+    description: Portfolio activities
+  - name: transfer
+    description: Wire transfer activities
+  - name: broker
+    description: Broker activities
+servers:
+  - url: http://localhost:9000
+paths:
+  /api/portfolio:
+    post:
+      summary: Create a portfolio
+      tags:
+        - portfolio
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Human readable name of the portfolio for searching (not unique)
+      responses:
+        '201':
+          description: Portfolio created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - portfolioId
+                properties:
+                  portfolioId:
+                    type: string
+                    example: <portfolio ID>
+
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    example: "Missing property 'name' is required."
+
+
+
+  /api/portfolio/{portfolioId}:
+    get:
+      summary: Get portfolio contents
+      tags:
+        - portfolio
+      parameters:
+        - in: path
+          name: portfolioId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current state of the portfolio
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - portfolioId
+                  - name
+                  - funds
+                  - holdings
+                properties:
+                  portfolioId:
+                    type: string
+                  name:
+                    type: string
+                  funds:
+                    type: number
+                    minimum: 0
+                  holdings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        symbol:
+                          type: string
+                          description: The stock ticker symbol
+                        shareCount:
+                          type: integer
+                        marketValue:
+                          type: number
+                          description: Current market value of the shares held (share price * share count)
+                example:
+                  portfolioId: <portfolio id>
+                  name: retirement savings
+                  funds: 123.95
+                  holdings:
+                    - symbol: IBM
+                      shareCount: 12
+                      marketValue: 1524.34
+                    - symbol: RHT
+                      shareCount: 10
+                      marketValue: 1212.78
+        '404':
+          description: No such portfolio ID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    example: Invalid portfolio ID.
+
+  /api/portfolio/{portfolioId}/order:
+    post:
+      summary: Place an order
+      tags:
+        - portfolio
+      parameters:
+        - in: path
+          name: portfolioId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderDetails'
+            example:
+              symbol: IBM
+              shares: 150
+              order: buy
+              orderType: limit
+              limitPrice: 135.00
+
+
+      responses:
+        '202':
+          description: Order accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - order_id
+                properties:
+                  order_id:
+                    type: string
+                    example: <order_id>
+        '404':
+          description: Portfolio not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    example: Portfolio ID not found
+
+  /api/transfer:
+    post:
+      summary: Transfer funds
+      tags:
+        - transfer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - amount
+                - sourceType
+                - sourceId
+                - destinationType
+                - destinationId
+              properties:
+                amount:
+                  type: number
+                sourceType:
+                  $ref: '#/components/schemas/AccountType'
+                sourceId:
+                  type: string
+                destinationType:
+                  $ref: '#/components/schemas/AccountType'
+                destinationId:
+                  type: string
+      responses:
+        '202':
+          description: Transfer initiated.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - transfer_id
+                properties:
+                  transfer_id:
+                    type: string
+                    example: <transfer id>
+
+  /api/order/{orderId}:
+    get:
+      summary: Get current order status
+      tags:
+        - broker
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current order status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetails'
+              example:
+                symbol: IBM
+                shares: 100
+                order: buy
+                orderType: limit
+                limitPrice: 153.50
+
+components:
+  schemas:
+    AccountType:
+      type: string
+      enum:
+        - portfolio
+        - savings
+
+    OrderDetails:
+      allOf:
+        - $ref: '#/components/schemas/OrderBasics'
+        - oneOf:
+            - $ref: '#/components/schemas/MarketOrder'
+            - $ref: '#/components/schemas/LimitOrder'
+            - $ref: '#/components/schemas/StopOrder'
+            - $ref: '#/components/schemas/StopLimitOrder'
+          discriminator:
+            propertyName: orderType
+            mapping:
+              market: '#/components/schemas/MarketOrder'
+              limit: '#/components/schemas/LimitOrder'
+              stop: '#/components/schemas/StopOrder'
+              stopLimit: '#/components/schemas/StopLimitOrder'
+
+    OrderBasics:
+      type: object
+      required:
+        - symbol
+        - shares
+        - order
+        - orderType
+      properties:
+        symbol:
+          type: string
+          description: The stock ticker symbol to trade
+          example: IBM
+        shares:
+          type: integer
+          minimum: 1
+          description: Shares to trade
+          example: 50
+        order:
+          type: string
+          description: buy or sell
+          enum:
+            - buy
+            - sell
+        orderType:
+          type: string
+          description: Market, limit, stop or stop-limit
+          enum:
+            - market
+            - limit
+            - stop
+            - stopLimit
+
+    MarketOrder:
+      type: object
+
+    LimitOrder:
+      type: object
+      required:
+        - limitPrice
+      properties:
+        limitPrice:
+          type: number
+          minimum: 0
+
+    StopOrder:
+      type: object
+      required:
+        - stopPrice
+      properties:
+        stopPrice:
+          type: number
+          minimum: 0
+
+    StopLimitOrder:
+      allOf:
+        - $ref: '#/components/schemas/StopOrder'
+        - $ref: '#/components/schemas/LimitOrder'
