@@ -1,12 +1,12 @@
 <template>
   <div class="container">
     <!-- navigation -->
-    <main-nav></main-nav>      
+    <MainNav />      
     <!-- route outlet -->
     <!-- component matched by the route will render here -->
-    <router-view></router-view>
+    <RouterView />
     <!-- footer -->
-    <main-footer></main-footer>  
+    <MainFooter />  
   </div>
 </template>
 
@@ -15,7 +15,7 @@
   import MainFooter from '@/components/layout/MainFooter.vue'
 
   export default {
-    name: 'app',
+    name: 'App',
     components: {
       MainNav,
       MainFooter    
