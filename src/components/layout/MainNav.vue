@@ -15,12 +15,28 @@
         <b-dropdown-item to="/transfers/completed">Completed Wires</b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
+    <b-container>{{shortName}}</b-container>
   </b-navbar>
+  
 </template>
 
 <script>
+  import {activePortfolio} from '@/common/portfolio';
+  
   export default {
+    data() {
+      return {
+        portfolio: activePortfolio.state
+      }
+    },
+    computed: {
+      shortName() {
+        return this.portfolio.name + ' (' + this.portfolio.id.substring(0,8) + ')';
+      }      
+    }
   }
+  /*eslint no-console: ["error", { allow: ["log"] }] */
+  console.log(activePortfolio.id);
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
