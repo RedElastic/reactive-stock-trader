@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {bffBaseURL} from '@/common/config';
+import qs from 'qs';
 
 export let activePortfolio = {
   state: {
@@ -42,4 +43,14 @@ export function open(request) {
     activePortfolio.name = request.name;
     return portfolioId;
   });
+}
+
+export function load(portfolioId) {
+  const request = axios.get(
+    bffBaseURL + '/api/portfolio/' + portfolioId + '/summary');
+  request.then(response => {
+    activePortfolio.id = response.data.portfolioId;
+    activePortfolio.name = response.data.name;
+  });
+  return request;
 }
