@@ -48,9 +48,9 @@
                 {{ portfolio.cashOnHand | toCurrency }}
               </h6>
               <p class="card-text">
-                <RouterLink to="/transfers">
+                <router-link to="/transfers">
                   Transfer
-                </RouterLink>
+                </router-link>
               </p>            
             </div>
           </div>     
@@ -58,7 +58,7 @@
       </div>
       <!-- /overview -->
 
-      <EquityRow
+      <equity-row
         v-for="(equity, index) in portfolio.equities"
         :key="equity.symbol"
         :equity="equity"

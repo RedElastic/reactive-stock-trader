@@ -1,40 +1,40 @@
 <template>
-  <BNavbar class="navbar sticky-top navbar-expand-lg navbar-light bg-light mb-3">
-    <BNavbarBrand to="/">
+  <b-navbar class="navbar sticky-top navbar-expand-lg navbar-light bg-light mb-3">
+    <b-navbar-brand to="/">
       Reactive Stock Trader
-    </BNavbarBrand>
-    <BNavbarNav>
-      <BNavItem to="/portfolio">
+    </b-navbar-brand>
+    <b-navbar-nav>
+      <b-nav-item to="/portfolio">
         Portfolio
-      </BNavItem>
-      <BNavItem to="/quote">
+      </b-nav-item>
+      <b-nav-item to="/quote">
         Quote
-      </BNavItem>
-      <BNavItemDropdown text="Trading">
-        <BDropdownItem to="/trades/new">
+      </b-nav-item>
+      <b-nav-item-dropdown text="Trading">
+        <b-dropdown-item to="/trades/new">
           Place New Order
-        </BDropdownItem>
-        <BDropdownItem to="/trades/pending">
+        </b-dropdown-item>
+        <b-dropdown-item to="/trades/pending">
           Pending Orders
-        </BDropdownItem>
-        <BDropdownItem to="/trades/completed">
+        </b-dropdown-item>
+        <b-dropdown-item to="/trades/completed">
           Completed Orders
-        </BDropdownItem>
-      </BNavItemDropdown>
-      <BNavItemDropdown text="Transfers">
-        <BDropdownItem to="/transfers/new">
+        </b-dropdown-item>
+      </b-nav-item-dropdown>
+      <b-nav-item-dropdown text="Transfers">
+        <b-dropdown-item to="/transfers/new">
           Place Wire Transfer
-        </BDropdownItem>
-        <BDropdownItem to="/transfers/pending">
+        </b-dropdown-item>
+        <b-dropdown-item to="/transfers/pending">
           Pending Wires
-        </BDropdownItem>
-        <BDropdownItem to="/transfers/completed">
+        </b-dropdown-item>
+        <b-dropdown-item to="/transfers/completed">
           Completed Wires
-        </BDropdownItem>
-      </BNavItemDropdown>
-    </BNavbarNav>
-    <BContainer>{{ shortName }}</BContainer>
-  </BNavbar>
+        </b-dropdown-item>
+      </b-nav-item-dropdown>
+    </b-navbar-nav>
+    <b-container>{{ shortName }}</b-container>
+  </b-navbar>
 </template>
 
 <script>

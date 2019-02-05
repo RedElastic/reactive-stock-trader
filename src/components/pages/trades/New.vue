@@ -1,7 +1,7 @@
 <template>    
   <div class="row">
     <div class="col">
-      <BForm
+      <b-form
         @submit="handleSubmit"
         @reset="handleReset"
       >
@@ -11,75 +11,75 @@
             <h2>Place New Order</h2>          
             <div class="row">
               <div class="col">
-                <BFormGroup label="Buy / sell">
-                  <BFormRadioGroup
+                <b-form-group label="Buy / sell">
+                  <b-form-radio-group
                     id="order"
                     v-model="form.order"
                     name="order"
                   >
-                    <BFormRadio value="buy">
+                    <b-form-radio value="buy">
                       Buy
-                    </BFormRadio>
-                    <BFormRadio value="sell">
+                    </b-form-radio>
+                    <b-form-radio value="sell">
                       Sell
-                    </BFormRadio>
-                  </BFormRadioGroup>
-                </BFormGroup>
+                    </b-form-radio>
+                  </b-form-radio-group>
+                </b-form-group>
               </div>
             </div>                        
             <div class="row">
               <div class="col">
-                <BFormGroup
+                <b-form-group
                   id="stymbolGroup"
                   label="Ticker Symbol"
                   label-for="symbol"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="symbol"
                     v-model="form.symbol"
                     type="text"
                     required
                     @input="debounceSymbolInput()"
                   />
-                </BFormGroup>   
+                </b-form-group>   
               </div>
               <div class="col">
-                <BFormGroup
+                <b-form-group
                   id="sharesGroup"
                   label="Number of shares"
                   label-for="shares"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="shares"
                     v-model.number="form.shares"
                     type="number"
                     required
                   />
-                </BFormGroup>            
+                </b-form-group>            
               </div>                          
             </div>
             <div class="row">
               <div class="col">
-                <BFormGroup label="Order Type">
-                  <BFormRadioGroup
+                <b-form-group label="Order Type">
+                  <b-form-radio-group
                     id="orderType"
                     v-model="form.orderType"
                     name="orderType"
                   >
-                    <BFormRadio value="market">
+                    <b-form-radio value="market">
                       Market
-                    </BFormRadio>
-                    <BFormRadio value="limit">
+                    </b-form-radio>
+                    <b-form-radio value="limit">
                       Limit
-                    </BFormRadio>
-                    <BFormRadio value="stop">
+                    </b-form-radio>
+                    <b-form-radio value="stop">
                       Stop
-                    </BFormRadio>
-                    <BFormRadio value="stopLimit">
+                    </b-form-radio>
+                    <b-form-radio value="stopLimit">
                       Stop limit
-                    </BFormRadio>
-                  </BFormRadioGroup>
-                </BFormGroup>
+                    </b-form-radio>
+                  </b-form-radio-group>
+                </b-form-group>
               </div>             
             </div>
             <div
@@ -90,35 +90,35 @@
                 v-if="stopOrder"
                 class="col-6"
               >
-                <BFormGroup
+                <b-form-group
                   id="stopPriceGroup"
                   label="Stop price"
                   label-for="stopPrice"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="stopPrice"
                     v-model.number="form.stopPrice"
                     type="number"
                     required
                   />
-                </BFormGroup>            
+                </b-form-group>            
               </div>
               <div
                 v-if="limitOrder"
                 class="col-6"
               >
-                <BFormGroup
+                <b-form-group
                   id="limitPriceGroup"
                   label="Limit price"
                   label-for="limitPrice"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="limitPrice"
                     v-model.number="form.limitPrice"
                     type="number"
                     required
                   />
-                </BFormGroup>            
+                </b-form-group>            
               </div>                                                                
             </div>            
           </div>          
@@ -194,25 +194,25 @@
             </div>          
             <div class="row mt-3">
               <div class="col">
-                <BButton
+                <b-button
                   type="submit"
                   variant="primary"
                   class="mr-3"
                 >
                   Place Order
-                </BButton>
-                <BButton
+                </b-button>
+                <b-button
                   type="reset"
                   variant="danger"
                 >
                   Reset
-                </BButton>
+                </b-button>
               </div>
             </div>                    
           </div>
         </div> 
       <!-- /overview -->  
-      </BForm>       
+      </b-form>       
     </div>
   </div>
 </template>

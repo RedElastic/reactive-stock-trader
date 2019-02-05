@@ -73,7 +73,7 @@
       </div>
     </div>
     <div class="col-7">
-      <QuoteChart :symbol="equity.symbol" />
+      <quote-chart :symbol="equity.symbol" />
     </div>
   </div>    
   <!-- /stocks -->
