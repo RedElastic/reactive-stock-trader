@@ -1,12 +1,12 @@
 <template>
   <div class="container">
     <!-- navigation -->
-    <MainNav />      
+    <main-nav />      
     <!-- route outlet -->
     <!-- component matched by the route will render here -->
-    <RouterView />
+    <router-view />
     <!-- footer -->
-    <MainFooter />  
+    <main-footer />  
   </div>
 </template>
 

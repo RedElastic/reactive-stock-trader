@@ -5,7 +5,7 @@
       <div class="row mt-3">
         <div class="col-6">
           <h2>Create a new portfolio</h2>
-          <BForm
+          <b-form
             @submit.prevent="openPortfolio"
             @reset="resetOpenPortfolio"
           >            
@@ -31,42 +31,42 @@
             >
               Create
             </button>
-          </BForm>
+          </b-form>
         </div>
         <div class="col-6">
           <h2>Choose a portfolio</h2>        
-          <BForm @submit.prevent="loadPortfolio">
-            <BFormGroup
+          <b-form @submit.prevent="loadPortfolio">
+            <b-form-group
               id="symbolGroup"
               label="Search for portfolio by name"
               label-for="symbol"
             >
-              <BFormInput
+              <b-form-input
                 id="name"
                 v-model="search.name"
                 type="text"
               />
-            </BFormGroup>
-            <BFormGroup
+            </b-form-group>
+            <b-form-group
               id="symbolGroup"
               label="Search for portfolio by ID"
               label-for="symbol"
             >
-              <BFormInput
+              <b-form-input
                 id="portfolioId"
                 v-model="search.portfolioId"
                 type="text"
                 required
               />
-            </BFormGroup>
-            <BButton
+            </b-form-group>
+            <b-button
               type="submit"
               variant="primary"
               class="mr-3"
             >
               Lookup Portfolio
-            </BButton>
-          </BForm>
+            </b-button>
+          </b-form>
         </div>
       </div>
       <!-- /equities -->

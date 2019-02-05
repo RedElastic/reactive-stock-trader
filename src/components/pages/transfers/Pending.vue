@@ -54,13 +54,13 @@
                 XKJNFKH123
               </div>
             </div> 
-            <BButton
+            <b-button
               size="sm"
               variant="danger"
               class="mt-3"
             >
               Cancel
-            </BButton>                      
+            </b-button>                      
           </div>
         </div>
       </div>

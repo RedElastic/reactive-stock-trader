@@ -1,60 +1,60 @@
 <template>
   <div class="row">    
     <div class="col">
-      <BNav
+      <b-nav
         class="small my-3"
         tabs
       >
-        <BNavItem
+        <b-nav-item
           id="1d"
           :active="getLastTimeframe === '1d'"
           @click="updateChart('1d')"
         >
           1 day
-        </BNavItem>
-        <BNavItem
+        </b-nav-item>
+        <b-nav-item
           id="1m"
           :active="getLastTimeframe === '1m'"
           @click="updateChart('1m')"
         >
           1 month
-        </BNavItem>
-        <BNavItem
+        </b-nav-item>
+        <b-nav-item
           id="3m"
           :active="getLastTimeframe === '3m'"
           @click="updateChart('3m')"
         >
           3 months
-        </BNavItem>
-        <BNavItem
+        </b-nav-item>
+        <b-nav-item
           id="6m"
           :active="getLastTimeframe === '6m'"
           @click="updateChart('6m')"
         >
           6 months
-        </BNavItem>
-        <BNavItem
+        </b-nav-item>
+        <b-nav-item
           id="1y"
           :active="getLastTimeframe === '1y'"
           @click="updateChart('1y')"
         >
           1 year
-        </BNavItem>
-        <BNavItem
+        </b-nav-item>
+        <b-nav-item
           id="2y"
           :active="getLastTimeframe === '2y'"
           @click="updateChart('2y')"
         >
           2 years
-        </BNavItem>
-        <BNavItem
+        </b-nav-item>
+        <b-nav-item
           id="5y"
           :active="getLastTimeframe === '5y'"
           @click="updateChart('5y')"
         >
           5 years
-        </BNavItem>
-      </BNav>
+        </b-nav-item>
+      </b-nav>
       <div
         :id="chartId"
         style="width: 100%; height: 300px;"

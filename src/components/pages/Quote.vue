@@ -5,35 +5,35 @@
       <div class="row mt-3">
         <div class="col-4">
           <h2>Get Quote</h2>
-          <BForm @submit.prevent="getQuote">                                  
+          <b-form @submit.prevent="getQuote">                                  
             <div class="row">
               <div class="col">
-                <BFormGroup
+                <b-form-group
                   id="symbolGroup"
                   label="Symbol"
                   label-for="symbol"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="symbol"
                     v-model="symbol"
                     type="text"
                     required
                   />
-                </BFormGroup>   
+                </b-form-group>   
               </div>
             </div>            
             <div class="row">
               <div class="col">
-                <BButton
+                <b-button
                   type="submit"
                   variant="primary"
                   class="mr-3"
                 >
                   Get Quote
-                </BButton>
+                </b-button>
               </div>
             </div>
-          </BForm>
+          </b-form>
         </div>   
         <div
           v-if="quote !== null"
@@ -65,7 +65,7 @@
           </p>
         </div>        
       </div>           
-      <QuoteChart
+      <quote-chart
         v-if="quote !== null"
         :symbol="quote.symbol"
       />

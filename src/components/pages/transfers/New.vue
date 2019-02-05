@@ -5,42 +5,42 @@
       <div class="row mt-3">
         <div class="col-7">
           <h2>Place New Wire Transfer</h2>
-          <BForm
+          <b-form
             @submit.prevent="onSubmit"
             @reset="onReset"
           >
             <div class="row">
               <div class="col">
-                <BFormGroup label="Deposit / Withdrawl">
-                  <BFormRadioGroup
+                <b-form-group label="Deposit / Withdrawl">
+                  <b-form-radio-group
                     id="depositWithdrawlGroup"
                     v-model="form.depositWithdrawl"
                     :options="options.depositWithdrawl"
                     name="depositWithdrawlRadio"
                   />
-                </BFormGroup>
+                </b-form-group>
               </div>
             </div>                        
             <div class="row">
               <div class="col">
-                <BFormGroup
+                <b-form-group
                   id="amountGroup"
                   label="Amount (USD)"
                   label-for="amount"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="amount"
                     v-model="form.amount"
                     type="text"
                     required
                   />
-                </BFormGroup>   
+                </b-form-group>   
               </div>
               <div class="col" />
             </div> 
             <div class="row">
               <div class="col-6">
-                <BFormSelect
+                <b-form-select
                   id="accountGroup"
                   v-model="form.accountType"
                   label="Bank Account"
@@ -51,39 +51,39 @@
             </div>         
             <div class="row">
               <div class="col">
-                <BFormGroup
+                <b-form-group
                   id="accoundIdGroup"
                   label="Account ID"
                   label-for="accountId"
                 >
-                  <BFormInput
+                  <b-form-input
                     id="accountId"
                     v-model="form.accountId"
                     type="text"
                     required
                   />
-                </BFormGroup>   
+                </b-form-group>   
               </div>
               <div class="col" />
             </div> 
             <div class="row">
               <div class="col mt-3">
-                <BButton
+                <b-button
                   type="submit"
                   variant="primary"
                   class="mr-3"
                 >
                   Transfer
-                </BButton>
-                <BButton
+                </b-button>
+                <b-button
                   type="reset"
                   variant="danger"
                 >
                   Reset
-                </BButton>
+                </b-button>
               </div>
             </div>
-          </BForm>
+          </b-form>
         </div>          
         <div class="col-5">          
           <div class="row">
