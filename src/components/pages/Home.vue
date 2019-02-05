@@ -6,21 +6,21 @@
       <div class="row mt-3">
         <div class="col-6">
           <h2>Create a new portfolio</h2>
-          <form>            
+          <b-form @submit.prevent="openPortfolio" @reset="resetOpenPortfolio">            
             <label for="nickname">Portfolio nickname</label>
-            <input type="text" class="form-control" id="nickname" aria-describedby="nicknameHelp">
+            <input type="text" class="form-control" id="nickname" v-model="open.name" aria-describedby="nicknameHelp">
             <small id="nicknameHelp" class="form-text text-muted">Give your portfolio a meaningful name, e.g, "75/25 Portfolio Split". In the future you can find your portfolio by this name or by the portfolio ID.</small>
             <button type="submit" class="btn btn-primary mt-3">Create</button>
-          </form>
+          </b-form>
         </div>
         <div class="col-6">
           <h2>Choose a portfolio</h2>        
             <b-form>
               <b-form-group id="symbolGroup" label="Search for portfolio by name" label-for="symbol">
-                <b-form-input id="symbol" type="text" v-model="symbol" required></b-form-input>
+                <b-form-input id="name" type="text" v-model="search.name" required></b-form-input>
               </b-form-group>
               <b-form-group id="symbolGroup" label="Search for portfolio by ID" label-for="symbol">
-                <b-form-input id="symbol" type="text" v-model="symbol" required></b-form-input>
+                <b-form-input id="portfolioId" type="text" v-model="search.portfolioId" required></b-form-input>
               </b-form-group>
               <b-button type="submit" variant="primary" class="mr-3">Lookup Portfolio</b-button>
             </b-form>
@@ -33,7 +33,33 @@
 </template>
 
 <script>
+  import * as portfolio from '@/common/portfolio';
   export default {  
+    data() {
+      return {
+        open: this.emptyOpenForm(),
+        search: this.emptySearchForm()
+      }
+    },
+    methods: {
+      openPortfolio() {
+        portfolio.open(this.open);
+      },
+      resetOpenPortfolio() {
+        this.open = this.emptyOpenForm();
+      },
+      emptyOpenForm() {
+        return {
+          name: null
+        };
+      },
+      emptySearchForm() {
+        return {
+          name: null,
+          portfolioId: null
+        };
+      }
+    }
   } 
 </script>
 
