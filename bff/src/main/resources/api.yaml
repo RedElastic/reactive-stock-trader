@@ -160,11 +160,11 @@ paths:
               schema:
                 type: object
                 required:
-                  - order_id
+                  - orderId
                 properties:
-                  order_id:
+                  orderId:
                     type: string
-                    example: <order_id>
+                    example: <order id>
         '404':
           description: Portfolio not found.
           content:
@@ -215,9 +215,9 @@ paths:
               schema:
                 type: object
                 required:
-                  - transfer_id
+                  - transferId
                 properties:
-                  transfer_id:
+                  transferId:
                     type: string
                     example: <transfer id>
 

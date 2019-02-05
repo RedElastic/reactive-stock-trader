@@ -76,7 +76,11 @@ public class PortfolioController extends Controller {
             return portfolioService
                     .openPortfolio()
                     .invoke(openRequest)
-                    .thenApply(PortfolioId::getId)
+                    .thenApply(portfolioId -> {
+                        val jsonResult = Json.newObject();
+                        jsonResult.put("portfolioId", portfolioId.getId());
+                        return jsonResult;
+                    })
                     .thenApply(Results::created);
         }
     }
