@@ -15,9 +15,9 @@
         </div>
         <div class="col-6">
           <h2>Choose a portfolio</h2>        
-            <b-form>
+            <b-form @submit.prevent="loadPortfolio">
               <b-form-group id="symbolGroup" label="Search for portfolio by name" label-for="symbol">
-                <b-form-input id="name" type="text" v-model="search.name" required></b-form-input>
+                <b-form-input id="name" type="text" v-model="search.name"></b-form-input>
               </b-form-group>
               <b-form-group id="symbolGroup" label="Search for portfolio by ID" label-for="symbol">
                 <b-form-input id="portfolioId" type="text" v-model="search.portfolioId" required></b-form-input>
@@ -58,6 +58,10 @@
           name: null,
           portfolioId: null
         };
+      },
+      loadPortfolio() {
+        console.log(this.search.portfolioId);
+        portfolio.load(this.search.portfolioId);
       }
     }
   } 
