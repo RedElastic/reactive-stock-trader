@@ -1,23 +1,40 @@
 <template>
-  <b-navbar class="navbar sticky-top navbar-expand-lg navbar-light bg-light mb-3">
-    <b-navbar-brand to="/">Reactive Stock Trader</b-navbar-brand>
-    <b-navbar-nav>
-      <b-nav-item to="/portfolio">Portfolio</b-nav-item>
-      <b-nav-item to="/quote">Quote</b-nav-item>
-      <b-nav-item-dropdown text="Trading">
-        <b-dropdown-item to="/trades/new">Place New Order</b-dropdown-item>
-        <b-dropdown-item to="/trades/pending">Pending Orders</b-dropdown-item>
-        <b-dropdown-item to="/trades/completed">Completed Orders</b-dropdown-item>
-      </b-nav-item-dropdown>
-      <b-nav-item-dropdown text="Transfers">
-        <b-dropdown-item to="/transfers/new">Place Wire Transfer</b-dropdown-item>
-        <b-dropdown-item to="/transfers/pending">Pending Wires</b-dropdown-item>
-        <b-dropdown-item to="/transfers/completed">Completed Wires</b-dropdown-item>
-      </b-nav-item-dropdown>
-    </b-navbar-nav>
-    <b-container>{{shortName}}</b-container>
-  </b-navbar>
-  
+  <BNavbar class="navbar sticky-top navbar-expand-lg navbar-light bg-light mb-3">
+    <BNavbarBrand to="/">
+      Reactive Stock Trader
+    </BNavbarBrand>
+    <BNavbarNav>
+      <BNavItem to="/portfolio">
+        Portfolio
+      </BNavItem>
+      <BNavItem to="/quote">
+        Quote
+      </BNavItem>
+      <BNavItemDropdown text="Trading">
+        <BDropdownItem to="/trades/new">
+          Place New Order
+        </BDropdownItem>
+        <BDropdownItem to="/trades/pending">
+          Pending Orders
+        </BDropdownItem>
+        <BDropdownItem to="/trades/completed">
+          Completed Orders
+        </BDropdownItem>
+      </BNavItemDropdown>
+      <BNavItemDropdown text="Transfers">
+        <BDropdownItem to="/transfers/new">
+          Place Wire Transfer
+        </BDropdownItem>
+        <BDropdownItem to="/transfers/pending">
+          Pending Wires
+        </BDropdownItem>
+        <BDropdownItem to="/transfers/completed">
+          Completed Wires
+        </BDropdownItem>
+      </BNavItemDropdown>
+    </BNavbarNav>
+    <BContainer>{{ shortName }}</BContainer>
+  </BNavbar>
 </template>
 
 <script>
@@ -35,8 +52,6 @@
       }      
     }
   }
-  /*eslint no-console: ["error", { allow: ["log"] }] */
-  console.log(activePortfolio.id);
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

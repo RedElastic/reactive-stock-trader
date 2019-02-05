@@ -1,69 +1,144 @@
 <template>    
   <div class="row">
-    <div class="col">  
-
+    <div class="col">
       <!-- overview -->
       <div class="row mt-3">
         <div class="col-4">
           <h2>Get Quote</h2>
-          <b-form @submit.prevent="getQuote">                                  
+          <BForm @submit.prevent="getQuote">                                  
             <div class="row">
               <div class="col">
-                <b-form-group id="symbolGroup" label="Symbol" label-for="symbol">
-                  <b-form-input id="symbol" type="text" v-model="symbol" required></b-form-input>
-                </b-form-group>   
+                <BFormGroup
+                  id="symbolGroup"
+                  label="Symbol"
+                  label-for="symbol"
+                >
+                  <BFormInput
+                    id="symbol"
+                    v-model="symbol"
+                    type="text"
+                    required
+                  />
+                </BFormGroup>   
               </div>
             </div>            
             <div class="row">
               <div class="col">
-                <b-button type="submit" variant="primary" class="mr-3">Get Quote</b-button>
+                <BButton
+                  type="submit"
+                  variant="primary"
+                  class="mr-3"
+                >
+                  Get Quote
+                </BButton>
               </div>
             </div>
-          </b-form>
+          </BForm>
         </div>   
-        <div v-if="this.quote !== null" class="col-8">
-          <h3 class="mb-3"><span class="text-muted">Market Summary > </span>{{ quote.companyName }}</h3>      
-          <p>{{ quote.symbol }} <span class="text-muted">({{ quote.primaryExchange }})</span></p>
-          <p style="font-size:1.5em;" v-bind:class="returnClass">{{ quote.latestPrice | toCurrency }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%</span></p>
-          <p class="small">Source: {{ quote.latestSource }}</p>
+        <div
+          v-if="quote !== null"
+          class="col-8"
+        >
+          <h3 class="mb-3">
+            <span class="text-muted">
+              Market Summary >
+            </span>{{ quote.companyName }}
+          </h3>      
+          <p>
+            {{ quote.symbol }} <span class="text-muted">
+              ({{ quote.primaryExchange }})
+            </span>
+          </p>
+          <p
+            style="font-size:1.5em;"
+            :class="returnClass"
+          >
+            {{ quote.latestPrice | toCurrency }} <span
+              style="font-size:0.8em;"
+              :class="returnClass"
+            >
+              {{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%
+            </span>
+          </p>
+          <p class="small">
+            Source: {{ quote.latestSource }}
+          </p>
         </div>        
       </div>           
-      <quote-chart v-bind:symbol="this.quote.symbol" v-if="this.quote !== null"></quote-chart>
-      <div v-if="this.quote !== null" class="row mt-5">
+      <QuoteChart
+        v-if="quote !== null"
+        :symbol="quote.symbol"
+      />
+      <div
+        v-if="quote !== null"
+        class="row mt-5"
+      >
         <div class="col-6">          
           <div class="row">
-            <div class="col">Open</div>
-            <div class="col">{{ quote.open }}</div>
+            <div class="col">
+              Open
+            </div>
+            <div class="col">
+              {{ quote.open }}
+            </div>
           </div>        
           <div class="row">
-            <div class="col">High</div>
-            <div class="col">{{ quote.high }}</div>
+            <div class="col">
+              High
+            </div>
+            <div class="col">
+              {{ quote.high }}
+            </div>
           </div>
           <div class="row">
-            <div class="col">Low</div>
-            <div class="col">{{ quote.low }}</div>
+            <div class="col">
+              Low
+            </div>
+            <div class="col">
+              {{ quote.low }}
+            </div>
           </div>
           <div class="row">
-            <div class="col">Mkt cap</div>
-            <div class="col">{{ quote.marketCap }}</div>
+            <div class="col">
+              Mkt cap
+            </div>
+            <div class="col">
+              {{ quote.marketCap }}
+            </div>
           </div>
           <div class="row">
-            <div class="col">P/E ratio</div>
-            <div class="col">{{ quote.peRatio }}</div>
+            <div class="col">
+              P/E ratio
+            </div>
+            <div class="col">
+              {{ quote.peRatio }}
+            </div>
           </div>
         </div>
         <div class="col-6">                  
           <div class="row">
-            <div class="col">Close</div>
-            <div class="col">{{ quote.close }}</div>
+            <div class="col">
+              Close
+            </div>
+            <div class="col">
+              {{ quote.close }}
+            </div>
           </div>
           <div class="row">
-            <div class="col">52-wk high</div>
-            <div class="col">{{ quote.week52High }}</div>
+            <div class="col">
+              52-wk high
+            </div>
+            <div class="col">
+              {{ quote.week52High }}
+            </div>
           </div>
           <div class="row">
-            <div class="col">52-wk low</div>
-            <div class="col">{{ quote.week52Low }}</div>
+            <div class="col">
+              52-wk low
+            </div>
+            <div class="col">
+              {{ quote.week52Low }}
+            </div>
           </div>
         </div>
       </div> 
@@ -104,6 +179,10 @@
         }
       }
     },
+    beforeDestroy() {
+      this.quote = null
+      this.symbol = null
+    },
     methods: {
       getQuote() {
         if (this.symbol !== null) {
@@ -114,10 +193,6 @@
           .catch(e => Vue.rollbar.error(e))
         }
       }
-    },
-    beforeDestroy() {
-      this.quote = null
-      this.symbol = null
     }
   } 
 </script>

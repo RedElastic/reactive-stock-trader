@@ -2,73 +2,89 @@
   <div>  
     <div class="row">
       <div class="col">  
-        <h2 class="mb-3">Pending Orders</h2> 
+        <h2 class="mb-3">
+          Pending Orders
+        </h2> 
       </div>
     </div>
     <div class="row">
-      <div class="col-6" 
-          v-for="(order, index) in this.orders.pending"
-          v-bind:order="order"
-          v-bind:index="index"
-          v-bind:key="order.symbol"
-        >
+      <div
+        v-for="(order, index) in orders.pending" 
+        :key="order.symbol"
+        class="col-6"
+        :order="order"
+        :index="index"
+      >
         <div class="card mb-4">
           <div class="card-body">
-            <h5 class="card-title">{{ order.symbol }}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">{{ order.status }}</h6>
-            <p class="card-text">
-              <div class="row">
-                <div class="col">
-                  Confirmation
-                </div>
-                <div class="col">
-                  {{ order.id }}
-                </div>
-              </div> 
-              <div class="row">
-                <div class="col">
-                  Equity name
-                </div>
-                <div class="col">
-                  {{ order.company }}
-                </div>
+            <h5 class="card-title">
+              {{ order.symbol }}
+            </h5>
+            <h6 class="card-subtitle mb-2 text-muted">
+              {{ order.status }}
+            </h6>
+            <p class="card-text" />
+            <div class="row">
+              <div class="col">
+                Confirmation
               </div>
-              <div class="row">
-                <div class="col">
-                  Trade date/time
-                </div>
-                <div class="col">
-                  {{ order.timestamp | formatDate }}
-                </div>
+              <div class="col">
+                {{ order.id }}
               </div>
-              <div class="row">
-                <div class="col">
-                  Shares
-                </div>
-                <div class="col">
-                  {{ order.shares }}
-                </div>
+            </div> 
+            <div class="row">
+              <div class="col">
+                Equity name
               </div>
-              <div class="row" v-if="order.limit">
-                <div class="col">
-                  Limit Price
-                </div>
-                <div class="col">
-                  {{ order.limit | toCurrency }}
-                </div>
-              </div> 
-              <div class="row" v-if="order.stop">
-                <div class="col">
-                  Stop Price
-                </div>
-                <div class="col">
-                  {{ order.stop | toCurrency }}
-                </div>
-              </div>             
-              <b-button size="sm" variant="danger" class="mt-3">
-                Cancel
-              </b-button>             
-            </p>            
+              <div class="col">
+                {{ order.company }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                Trade date/time
+              </div>
+              <div class="col">
+                {{ order.timestamp | formatDate }}
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                Shares
+              </div>
+              <div class="col">
+                {{ order.shares }}
+              </div>
+            </div>
+            <div
+              v-if="order.limit"
+              class="row"
+            >
+              <div class="col">
+                Limit Price
+              </div>
+              <div class="col">
+                {{ order.limit | toCurrency }}
+              </div>
+            </div> 
+            <div
+              v-if="order.stop"
+              class="row"
+            >
+              <div class="col">
+                Stop Price
+              </div>
+              <div class="col">
+                {{ order.stop | toCurrency }}
+              </div>
+            </div>             
+            <BButton
+              size="sm"
+              variant="danger"
+              class="mt-3"
+            >
+              Cancel
+            </BButton>                     
           </div>
         </div>
       </div>
