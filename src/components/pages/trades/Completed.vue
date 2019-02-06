@@ -1,26 +1,52 @@
 <template>  
   <div class="row mt-5">
     <div class="col">
-      <h2 class="mb-3">All Transactions</h2> 
+      <h2 class="mb-3">
+        All Transactions
+      </h2> 
       <table class="table">
         <thead>
           <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Time</th>
-            <th scope="col">Confirmation</th>
-            <th scope="col">Type</th>
-            <th scope="col">Asset</th>
-            <th scope="col">Shares Bought</th>
-            <th scope="col">Shares Sold</th>
-            <th scope="col">Price</th>
-            <th scope="col">Debit</th>
-            <th scope="col">Credit</th>
-            <th scope="col">Cash on Hand</th>
+            <th scope="col">
+              Date
+            </th>
+            <th scope="col">
+              Time
+            </th>
+            <th scope="col">
+              Confirmation
+            </th>
+            <th scope="col">
+              Type
+            </th>
+            <th scope="col">
+              Asset
+            </th>
+            <th scope="col">
+              Shares Bought
+            </th>
+            <th scope="col">
+              Shares Sold
+            </th>
+            <th scope="col">
+              Price
+            </th>
+            <th scope="col">
+              Debit
+            </th>
+            <th scope="col">
+              Credit
+            </th>
+            <th scope="col">
+              Cash on Hand
+            </th>
           </tr>
         </thead>
         <tbody style="font-size:0.8em;">
           <tr>
-            <td scope="row">12/12/12</td>
+            <td scope="row">
+              12/12/12
+            </td>
             <td>11:46:01am EST</td>
             <td>XKJNFKH123</td>
             <td>Trade</td>

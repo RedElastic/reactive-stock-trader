@@ -1,16 +1,64 @@
 <template>
   <div class="row">    
     <div class="col">
-      <b-nav class="small my-3" tabs>
-        <b-nav-item id="1d" @click="updateChart('1d')" v-bind:active="getLastTimeframe === '1d'">1 day</b-nav-item>
-        <b-nav-item id="1m" @click="updateChart('1m')" v-bind:active="getLastTimeframe === '1m'">1 month</b-nav-item>
-        <b-nav-item id="3m" @click="updateChart('3m')" v-bind:active="getLastTimeframe === '3m'">3 months</b-nav-item>
-        <b-nav-item id="6m" @click="updateChart('6m')" v-bind:active="getLastTimeframe === '6m'">6 months</b-nav-item>
-        <b-nav-item id="1y" @click="updateChart('1y')" v-bind:active="getLastTimeframe === '1y'">1 year</b-nav-item>
-        <b-nav-item id="2y" @click="updateChart('2y')" v-bind:active="getLastTimeframe === '2y'">2 years</b-nav-item>
-        <b-nav-item id="5y" @click="updateChart('5y')" v-bind:active="getLastTimeframe === '5y'">5 years</b-nav-item>
+      <b-nav
+        class="small my-3"
+        tabs
+      >
+        <b-nav-item
+          id="1d"
+          :active="getLastTimeframe === '1d'"
+          @click="updateChart('1d')"
+        >
+          1 day
+        </b-nav-item>
+        <b-nav-item
+          id="1m"
+          :active="getLastTimeframe === '1m'"
+          @click="updateChart('1m')"
+        >
+          1 month
+        </b-nav-item>
+        <b-nav-item
+          id="3m"
+          :active="getLastTimeframe === '3m'"
+          @click="updateChart('3m')"
+        >
+          3 months
+        </b-nav-item>
+        <b-nav-item
+          id="6m"
+          :active="getLastTimeframe === '6m'"
+          @click="updateChart('6m')"
+        >
+          6 months
+        </b-nav-item>
+        <b-nav-item
+          id="1y"
+          :active="getLastTimeframe === '1y'"
+          @click="updateChart('1y')"
+        >
+          1 year
+        </b-nav-item>
+        <b-nav-item
+          id="2y"
+          :active="getLastTimeframe === '2y'"
+          @click="updateChart('2y')"
+        >
+          2 years
+        </b-nav-item>
+        <b-nav-item
+          id="5y"
+          :active="getLastTimeframe === '5y'"
+          @click="updateChart('5y')"
+        >
+          5 years
+        </b-nav-item>
       </b-nav>
-      <div :id="this.chartId" style="width: 100%; height: 300px;"></div>
+      <div
+        :id="chartId"
+        style="width: 100%; height: 300px;"
+      />
     </div>
   </div>    
   <!-- /stocks -->
@@ -27,7 +75,12 @@
 
   export default {
     name: 'QuoteChart',
-    props: ['symbol'],
+    props: {
+      symbol: {
+        type: String,
+        required: true
+      }
+    },
     data: function () {
       return {
         chartId: "chart_" + this.symbol,
@@ -37,6 +90,19 @@
     computed: {
       getLastTimeframe: function () {
         return this.lastTimeframe;
+      }
+    },
+    watch: {
+      symbol: function () {        
+        this.updateChart(this.lastTimeframe);      
+      }
+    },
+    mounted() {
+      this.updateChart("1m");
+    },
+    beforeDestroy() {
+      if (this.chart) {
+        this.chart.dispose();
       }
     },
     methods: {      
@@ -86,19 +152,6 @@
             this.lastTimeframe = timeframe;
           })
           .catch(e => Vue.rollbar.error(e))
-      }
-    },
-    watch: {
-      symbol: function () {        
-        this.updateChart(this.lastTimeframe);      
-      }
-    },
-    mounted() {
-      this.updateChart("1m");
-    },
-    beforeDestroy() {
-      if (this.chart) {
-        this.chart.dispose();
       }
     }
   } 
