@@ -41,15 +41,18 @@ Vue.use(Rollbar, {
 });
 
 Vue.filter('toCurrency', function (value) {
-    if (typeof value !== "number") {
-        return value;
-    }
-    var formatter = new Intl.NumberFormat('en-US', {
+    const formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: 0
+        minimumFractionDigits: 2
     });
-    return formatter.format(value);
+    if (typeof value === "number") {      
+      return formatter.format(value);  
+    } else if (typeof value === "string") {
+      return formatter.format(parseFloat(value));
+    } else {
+      return value;
+    }
 });
 
 Vue.filter('iexPercent', function (value) {
