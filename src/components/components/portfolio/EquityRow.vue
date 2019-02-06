@@ -3,51 +3,77 @@
     <div class="col-5">              
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title mb-3">{{ quote.companyName }}</h5>
-          <h6 class="card-subtitle mb-2">{{ quote.symbol }} <span class="text-muted">({{ quote.primaryExchange }})</span></h6>
-          <p class="card-text">
-            <p v-bind:class="returnClass">{{ quote.latestPrice | toCurrency }} <span style="font-size:0.8em;" v-bind:class="returnClass">{{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%</span></p>            
-            <div class="row">
-              <div class="col-4">
-                Current Value
-              </div> 
-              <div class="col-8">
-                {{ this.equity.value | toCurrency }}
-              </div>
+          <h5 class="card-title mb-3">
+            {{ quote.companyName }}
+          </h5>
+          <h6 class="card-subtitle mb-2">
+            {{ quote.symbol }} <span class="text-muted">
+              ({{ quote.primaryExchange }})
+            </span>
+          </h6>
+          <p class="card-text" /><p :class="returnClass">
+            {{ quote.latestPrice | toCurrency }} <span
+              style="font-size:0.8em;"
+              :class="returnClass"
+            >
+              {{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%
+            </span>
+          </p>            
+          <div class="row">
+            <div class="col-4">
+              Current Value
+            </div> 
+            <div class="col-8">
+              {{ equity.value | toCurrency }}
             </div>
-            <div class="row">
-              <div class="col-4">
-                Shares
-              </div> 
-              <div class="col-8">
-                {{ this.equity.shares }}
-              </div>
+          </div>
+          <div class="row">
+            <div class="col-4">
+              Shares
+            </div> 
+            <div class="col-8">
+              {{ equity.shares }}
             </div>
-            <div class="row mt-3">
-              <div class="col-4">
-                Return (max)
-              </div> 
-              <div class="col-8">
-                {{ this.equity.returnValue | toCurrency }} ({{ this.equity.returnPercent }})
-              </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col-4">
+              Return (max)
+            </div> 
+            <div class="col-8">
+              {{ equity.returnValue | toCurrency }} ({{ equity.returnPercent }})
             </div>
-            <div class="row">
-              <div class="col-4">
-                Return (24h)
-              </div> 
-              <div class="col-8">
-                {{ this.equity.return24h | toCurrency }} ({{ this.equity.returnPercent24h }})
-              </div>
+          </div>
+          <div class="row">
+            <div class="col-4">
+              Return (24h)
+            </div> 
+            <div class="col-8">
+              {{ equity.return24h | toCurrency }} ({{ equity.returnPercent24h }})
             </div>
-          </p>
-          <a href="#" class="card-link">Buy</a>
-          <a href="#" class="card-link">Sell</a>
-          <a href="#" class="card-link">Transactions</a>
+          </div>
+          <a
+            href="#"
+            class="card-link"
+          >
+            Buy
+          </a>
+          <a
+            href="#"
+            class="card-link"
+          >
+            Sell
+          </a>
+          <a
+            href="#"
+            class="card-link"
+          >
+            Transactions
+          </a>
         </div>
       </div>
     </div>
     <div class="col-7">
-      <quote-chart v-bind:symbol="this.equity.symbol"></quote-chart>
+      <quote-chart :symbol="equity.symbol" />
     </div>
   </div>    
   <!-- /stocks -->
@@ -60,9 +86,14 @@
 
   export default {
     name: 'EquityRow',
-    props: ['equity'],
     components: {      
       QuoteChart
+    },
+    props: {
+      equity: {
+        type: String,
+        required: true
+      }
     },
     data: function () {
       return {
@@ -71,7 +102,7 @@
     },
     computed: {
       returnClass: function() {
-        if (this.quote.changePercent >= 0.0) {
+        if (quote.changePercent >= 0.0) {
           return 'positiveReturn';
         } else {
           return 'negativeReturn';
@@ -79,9 +110,9 @@
       },
     },
     mounted() {
-      IEX.get('/stock/' + this.equity.symbol + '/quote', {timeout: 2000})
+      IEX.get('/stock/' + equity.symbol + '/quote', {timeout: 2000})
         .then(response => {
-          this.quote = response.data
+          quote = response.data
         })
         .catch(e => Vue.rollbar.error(e))
     }
