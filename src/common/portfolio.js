@@ -3,6 +3,7 @@ import {bffBaseURL} from '@/common/config';
 import qs from 'qs';
 
 const baseUrl = bffBaseURL + '/api/portfolio';
+const portfolioUrl = () => baseUrl + '/' + activePortfolio.id;
 
 export let activePortfolio = {
   state: {
@@ -66,4 +67,23 @@ export function getDetails(portfolioId) {
   if (portfolioId == null) { portfolioId = activePortfolio.id; }
   const request = axios.get(baseUrl + '/' + portfolioId);
   return request.then(response => response.data);
+}
+
+export function placeOrder(order) {
+  const portfolioId = activePortfolio.id;
+  const formData = new FormData();
+  formData.append('symbol', order.symbol);
+  formData.append('shares', order.shares);
+  formData.append('order', order.tradeType);
+  
+  axios({
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      url: portfolioUrl() + '/order',
+      data: formData
+  })
+
+  
 }
