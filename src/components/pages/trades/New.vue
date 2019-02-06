@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col">
       <b-form
-        @submit="handleSubmit"
+        @submit="submitOrder"
         @reset="handleReset"
       >
         <!-- overview -->
@@ -221,19 +221,22 @@
   import {IEX} from '@/common/http.js'
   import Vue from 'vue'
   import _ from 'lodash'
+  import {placeOrder} from '@/common/portfolio';
+  
+  const emptyForm = {
+    order: '',  
+    symbol: '',
+    shares: null,
+    orderType: '',
+    limitPrice: null,
+    stopPrice: null
+  };
 
   export default { 
     data() {
       return {
         submitted: false,
-        form: {
-          order: '',  
-          symbol: '',
-          shares: null,
-          orderType: '',
-          limitPrice: null,
-          stopPrice: null
-        },
+        form: Object.assign({}, emptyForm),
         quote: {
           symbol: '',
           latestPrice: null
@@ -309,14 +312,7 @@
         this.submitted = true
       },
       handleReset() {
-        this.form = {
-          order: '',  
-          symbol: '',
-          shares: null,
-          orderType: '',
-          limitPrice: null,
-          stopPrice: null
-        }
+        Object.assign(form, emptyForm);
         this.quote = {
           symbol: '',
           latestPrice: null
@@ -329,7 +325,15 @@
           })
           .catch(e => Vue.rollbar.error(e))
         }, 
-      1000) 
+        1000),
+      submitOrder() {
+        placeOrder({          
+            symbol: this.form.symbol, 
+            shares: this.form.shares, 
+            tradeType: this.form.order,
+            orderType: this.form.orderType
+        });
+      } 
     }
   } 
 </script>

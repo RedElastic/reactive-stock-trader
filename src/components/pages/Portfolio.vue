@@ -11,6 +11,11 @@
           </h2>
           <div class="row">
             <div class="col">
+              Account #: {{ portfolioId }}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
               <div class="row">
                 <div class="col-6">
                   Value (USD)
@@ -72,6 +77,58 @@
 <script>
   import EquityRow from '@/components/components/portfolio/EquityRow.vue';
   import * as portfolioService from '@/common/portfolio';
+  
+  const dummyPortfolioData = {
+    "name": "Conservative 59/41 Split",
+    "value": 135122,
+    "returnValue": 22132,
+    "returnPercent": 0.1203,
+    "return24h": -234,
+    "returnPercent24h": -0.0122,
+    "cashOnHand": 1245,
+    "equities": [
+        {
+            "symbol": "AAPL",
+            "shares": 135,
+            "value": 135123,
+            "returnValue": -20123,
+            "returnPercent": -0.1234,
+            "return24h": -20123,
+            "returnPercent24h": -0.1234
+        },
+        {
+            "symbol": "MSFT",
+            "shares": 135,
+            "value": 135123,
+            "returnValue": -20123,
+            "returnPercent": -0.1234,
+            "return24h": -20123,
+            "returnPercent24h": -0.1234
+        },
+        {
+            "symbol": "GOOGL",
+            "shares": 135,
+            "value": 135123,
+            "returnValue": -20123,
+            "returnPercent": -0.1234,
+            "return24h": -20123,
+            "returnPercent24h": -0.1234
+        }
+    ],
+    "version":1.0
+  }
+  
+  const emptyPortfolio = {
+    "name": "",    
+    "value": null,
+    "returnValue": null,
+    "returnPercent": null,
+    "return24h": null,
+    "returnPercent24h": null,
+    "cashOnHand": null,
+    "equities": [],
+    "version":1.0
+  }
 
   export default {
     name: 'Portfolio',
@@ -80,50 +137,12 @@
     },
     data: function () {
       return {
-        portfolio: {
-          "name": "Conservative 59/41 Split",
-          "value": 135122,
-          "returnValue": 22132,
-          "returnPercent": 0.1203,
-          "return24h": -234,
-          "returnPercent24h": -0.0122,
-          "cashOnHand": 1245,
-          "equities": [
-              {
-                  "symbol": "AAPL",
-                  "shares": 135,
-                  "value": 135123,
-                  "returnValue": -20123,
-                  "returnPercent": -0.1234,
-                  "return24h": -20123,
-                  "returnPercent24h": -0.1234
-              },
-              {
-                  "symbol": "MSFT",
-                  "shares": 135,
-                  "value": 135123,
-                  "returnValue": -20123,
-                  "returnPercent": -0.1234,
-                  "return24h": -20123,
-                  "returnPercent24h": -0.1234
-              },
-              {
-                  "symbol": "GOOGL",
-                  "shares": 135,
-                  "value": 135123,
-                  "returnValue": -20123,
-                  "returnPercent": -0.1234,
-                  "return24h": -20123,
-                  "returnPercent24h": -0.1234
-              }
-          ],
-          "version":1.0
-        }
+        portfolio: Object.assign({}, emptyPortfolio)
       }
     },
     mounted() {
       portfolioService.getDetails()
-        .then(details => {
+        .then(details => {          
           this.portfolio.name = details.name;
           this.portfolio.cashOnHand = details.funds;
           let equities = details.holdings.map(holding => ({
@@ -147,8 +166,12 @@
     },
     methods: {
       update() {
-        
-        
+                
+      }
+    },
+    computed: {
+      portfolioId() {
+        return portfolioService.activePortfolio.id;
       }
     }
   } 
