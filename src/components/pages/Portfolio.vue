@@ -140,6 +140,11 @@
         portfolio: Object.assign({}, emptyPortfolio)
       }
     },
+    computed: {
+      portfolioId() {
+        return portfolioService.activePortfolio.id;
+      }
+    },
     mounted() {
       portfolioService.getDetails()
         .then(details => {          
@@ -167,11 +172,6 @@
     methods: {
       update() {
                 
-      }
-    },
-    computed: {
-      portfolioId() {
-        return portfolioService.activePortfolio.id;
       }
     }
   } 

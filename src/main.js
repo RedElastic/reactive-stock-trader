@@ -65,6 +65,12 @@ Vue.filter('formatDate', function(value) {
   }
 });
 
+Vue.filter('shortUUID', function(value) {
+  if (typeof value === "string") {
+    return value.substring(0,8);
+  }
+});
+
 const routes = [
   { path: '/portfolio', component: Portfolio },
   { path: '/quote', component: Quote },
