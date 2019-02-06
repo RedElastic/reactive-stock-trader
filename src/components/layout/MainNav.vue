@@ -33,7 +33,7 @@
         </b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
-    <b-container>{{ shortName }}</b-container>
+    <b-container>Active Portfolio: {{ shortName }}</b-container>
   </b-navbar>
 </template>
 
