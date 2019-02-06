@@ -6,6 +6,7 @@ import com.redelastic.stocktrader.wiretransfer.api.Transfer;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
 import controllers.forms.transfer.TransferForm;
 import lombok.extern.log4j.Log4j;
+import lombok.val;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
@@ -40,7 +41,11 @@ public class WireTransferController extends Controller {
             return wireTransferService
                     .transferFunds()
                     .invoke(transfer)
-                    .thenApply(Json::toJson)
+                    .thenApply(response -> {
+                        val result = Json.newObject();
+                        result.put("transferId", response.getId());
+                        return result;
+                    })
                     .thenApply(Results::created);
         }
     }

@@ -22,11 +22,11 @@ BFF -> Portfolio: placeOrder
 activate Portfolio
 Portfolio --> Portfolio : confirm and\nremove shares
 Portfolio -> OrderPlaced: OrderPlaced
-activate OrderPlaced #blue
-Portfolio -> BFF: <OrderId>
-& OrderPlaced -[#blue]->> Broker: OrderPlaced
-activate Broker
+& Portfolio -> BFF: <OrderId>
 deactivate Portfolio
+activate OrderPlaced #blue
+OrderPlaced -[#blue]->> Broker: OrderPlaced
+activate Broker
 deactivate OrderPlaced
 BFF -> Browser: OK
 deactivate BFF
