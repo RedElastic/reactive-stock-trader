@@ -37,7 +37,7 @@ public interface OrderState {
         BigDecimal price;
 
         public OrderStatus getStatus() {
-            return OrderStatus.Fulfilled;
+            return new OrderStatus.Fulfilled(price);
         }
 
         @Override
