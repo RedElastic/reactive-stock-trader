@@ -248,6 +248,28 @@ paths:
                     type: string
                     example: Portfolio ID not found
 
+  /api/portfolio/{portfolioId}/completedOrders:
+    get:
+      operationId: getCompletedOrders
+      summary: Get completed orders
+      tags:
+        - portfolio
+      responses:
+        '200':
+          description: Order IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - orderIds
+                properties:
+                  orderIds:
+                    type: array
+                    items:
+                      type: string
+
+
   /api/transfer:
     post:
       operationId: transferFunds

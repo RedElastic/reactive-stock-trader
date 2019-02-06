@@ -4,6 +4,7 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.TransferId;
 import lombok.extern.log4j.Log4j;
+import lombok.val;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -89,7 +90,9 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
     }
 
     private Behavior fundsRequestFailed(TransferState state) {
-        return newBehavior(Optional.of(state.withStatus(TransferState.Status.UnableToSecureFunds)));
+        BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.UnableToSecureFunds)));
+        builder.setCommandHandler(TransferCommand.RequestFundsFailed.class, this::ignore);
+        return builder.build();
     }
 
     private Behavior sendingFunds(TransferState state) {

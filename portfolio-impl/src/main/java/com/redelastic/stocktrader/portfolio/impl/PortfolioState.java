@@ -9,7 +9,9 @@ import lombok.Value;
 import lombok.experimental.Wither;
 
 import org.pcollections.HashTreePMap;
+import org.pcollections.HashTreePSet;
 import org.pcollections.PMap;
+import org.pcollections.PSet;
 
 import java.math.BigDecimal;
 
@@ -29,6 +31,7 @@ public interface PortfolioState extends Jsonable {
         @NonNull LoyaltyLevel loyaltyLevel;
         @NonNull Holdings holdings;
         @NonNull PMap<OrderId, PortfolioEvent.OrderPlaced> activeOrders;
+        @NonNull PSet<OrderId> completedOrders;
 
         public static Open initialState(String name) {
             return Open.builder()
@@ -37,6 +40,7 @@ public interface PortfolioState extends Jsonable {
                     .funds(BigDecimal.valueOf(0))
                     .activeOrders(HashTreePMap.empty())
                     .holdings(Holdings.EMPTY)
+                    .completedOrders(HashTreePSet.empty())
                     .build();
         }
 
@@ -58,6 +62,12 @@ public interface PortfolioState extends Jsonable {
 
         Open update(PortfolioEvent.OrderPlaced evt) {
             return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
+        }
+
+        Open orderCompleted(OrderId orderId) {
+            return this
+                    .withActiveOrders(activeOrders.minus(orderId))
+                    .withCompletedOrders(completedOrders.plus(orderId));
         }
 
 

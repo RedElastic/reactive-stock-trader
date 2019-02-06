@@ -18,4 +18,6 @@ public class PortfolioSummary {
     BigDecimal funds;
 
     @NonNull PSequence<EquityHolding> equities;
+
+    @NonNull PSequence<CompletedOrder> completedOrders;
 }

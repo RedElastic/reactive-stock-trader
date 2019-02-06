@@ -8,6 +8,7 @@ import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import controllers.forms.portfolio.OpenPortfolioForm;
 import controllers.forms.portfolio.PlaceOrderForm;
 import lombok.val;
+import models.CompletedOrder;
 import models.EquityHolding;
 import models.PortfolioSummary;
 import models.PortfolioView;
@@ -91,6 +92,17 @@ public class PortfolioController extends Controller {
                                             .build()
                                         ).collect(toList())
                                 ))
+                                .completedOrders(
+                                        ConsPStack.from(
+                                                model.getCompletedOrders().stream()
+                                                        .map(orderId ->
+                                                                CompletedOrder.builder()
+                                                                .orderId(orderId.getId())
+                                                                .build()
+                                                        )
+                                                        .collect(toList())
+                                        )
+                                )
                                 .build()
                 );
         return summaryView
