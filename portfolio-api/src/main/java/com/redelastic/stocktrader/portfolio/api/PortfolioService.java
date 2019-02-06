@@ -67,7 +67,8 @@ public interface PortfolioService extends Service {
                 restCall(Method.POST, "/api/portfolio", this::openPortfolio),
                 restCall(Method.POST,"/api/portfolio/:portfolioId/close", this::closePortfolio),
                 restCall(Method.GET,"/api/portfolio/:portfolioId", this::getPortfolio),
-                restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder)
+                restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder),
+                restCall(Method.POST, "/api/portfolio/:portfolio/processTransfer", this::processTransfer)
         ).withTopics(
             topic(ORDERS_TOPIC_ID, this::orderPlaced)
         ).withPathParamSerializer(PortfolioId.class, PortfolioId.pathParamSerializer);

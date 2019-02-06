@@ -48,7 +48,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .atLeastOnce(
                         Flow.<TransferRequest>create()
                                 .filter(request -> request.getAccount() instanceof Account.Portfolio)
-                                .mapAsync(1, this::processTransferRequests)
+                                .mapAsyncUnordered(20, this::processTransferRequests)
                 );
     }
 
