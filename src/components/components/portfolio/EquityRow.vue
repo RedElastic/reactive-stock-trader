@@ -91,18 +91,20 @@
     },
     props: {
       equity: {
-        type: String,
+        type: Object,
         required: true
       }
     },
     data: function () {
       return {
-        quote: null
+        quote: {
+          companyName: null
+        }
       }
     },
     computed: {
       returnClass: function() {
-        if (quote.changePercent >= 0.0) {
+        if (this.quote.changePercent >= 0.0) {
           return 'positiveReturn';
         } else {
           return 'negativeReturn';
@@ -110,9 +112,9 @@
       },
     },
     mounted() {
-      IEX.get('/stock/' + equity.symbol + '/quote', {timeout: 2000})
-        .then(response => {
-          quote = response.data
+      IEX.get('/stock/' + this.equity.symbol + '/quote', {timeout: 2000})
+        .then(response => {          
+          this.quote = response.data;        
         })
         .catch(e => Vue.rollbar.error(e))
     }

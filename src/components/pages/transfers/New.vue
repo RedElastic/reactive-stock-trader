@@ -10,22 +10,10 @@
             @reset="onReset"
           >
             <div class="row">
-              <div class="col">
-                <b-form-group label="Deposit / Withdrawl">
-                  <b-form-radio-group
-                    id="depositWithdrawlGroup"
-                    v-model="form.depositWithdrawl"
-                    :options="options.depositWithdrawl"
-                    name="depositWithdrawlRadio"
-                  />
-                </b-form-group>
-              </div>
-            </div>                        
-            <div class="row">
-              <div class="col">
+              <div class="col-8">
                 <b-form-group
                   id="amountGroup"
-                  label="Amount (USD)"
+                  label="Transfer amount (USD)"
                   label-for="amount"
                 >
                   <b-form-input
@@ -36,8 +24,26 @@
                   />
                 </b-form-group>   
               </div>
-              <div class="col" />
-            </div> 
+            </div>
+            <div class="row">
+              <div class="col-3">
+                <b-form-group label="">
+                  <b-form-radio-group
+                    v-model="form.depositWithdrawl"
+                    :options="options.fromTo"
+                    name="depositWithdrawl"
+                  />
+                </b-form-group>
+              </div>
+              <div class="col-5">
+                current portfolio ({{ shortPortfolioName }})
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-6">
+                {{ resultingAction }}
+              </div>
+            </div>
             <div class="row">
               <div class="col-6">
                 <b-form-select
@@ -128,17 +134,22 @@
 import {submitTransfer} from '@/common/transfers';
 import {activePortfolio} from '@/common/portfolio';
 
+const emptyForm = {
+  amount: null,
+  depositWithdrawl: null,
+  accountType: null,
+  accountId: null
+};
+
 export default { 
   data() {
     return {
       submitted: false,
-      form: {
-        
-      },
+      form: Object.assign({}, emptyForm),
       options: {
-        depositWithdrawl: [
-          { value: 'deposit', text: 'Deposit' },
-          { value: 'withdrawl', text: 'Withdrawl' }
+        fromTo: [
+          { value: 'portfolioWithdrawl', text: 'From' },
+          { value: 'portfolioDeposit', text: 'To' }
         ],
         accountType: [
           { value: null, text: 'Choose an account...' },
@@ -149,16 +160,24 @@ export default {
     }
   },
   computed: {
+    shortPortfolioName() {
+      return activePortfolio.id.substring(0,8);
+    },
+    resultingAction() {
+      return this.form.depositWithdrawl === 'portfolioWithdrawl' ? 'To'
+        : this.form.depositWithdrawl === 'portfolioDeposit' ? 'From'
+        : "(From/To)";
+    }
   },
   mounted() {    
   },
   methods: {
     onSubmit() {
       submitTransfer(this.form);
+      Object.assign(this.form, emptyForm);
     },
     onReset() {
-      this.form = {
-      }
+      Object.assign(this.form, emptyForm);
     }
   }
 }
