@@ -8,10 +8,7 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
-import com.redelastic.stocktrader.broker.api.BrokerService;
-import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.broker.api.OrderStatus;
-import com.redelastic.stocktrader.broker.api.Quote;
+import com.redelastic.stocktrader.broker.api.*;
 import com.redelastic.stocktrader.broker.impl.order.OrderEntity;
 import com.redelastic.stocktrader.broker.impl.order.OrderEvent;
 import com.redelastic.stocktrader.broker.impl.order.OrderRepository;
@@ -19,6 +16,8 @@ import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
+import com.redelastic.stocktrader.portfolio.api.order.Order;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,12 +56,12 @@ public class BrokerServiceImpl implements BrokerService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(OrderId orderId) {
+    public ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId) {
 
         return notUsed ->
                 orderRepository
                         .get(orderId)
-                        .getStatus();
+                        .getSummary();
     }
 
     @Override

@@ -82,7 +82,7 @@ public class PortfolioServiceImplTest {
         }
 
         @Override
-        public ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(OrderId orderId) {
+        public ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId) {
             return null;
         }
 

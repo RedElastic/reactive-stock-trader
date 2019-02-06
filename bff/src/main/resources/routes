@@ -1,5 +1,5 @@
 GET     /api/portfolio/:portfolioId             controllers.PortfolioController.getPortfolio(portfolioId)
-GET     /api/portfolio/:portfolioId/summary     controllers.PortfolioController.getSummary(portfolioId)
+GET     /api/portfolio/:portfolioId/summary     controllers.PortfolioController.getSummary(portfolioId, includeOrderInfo: Boolean ?= false, includePrices: Boolean ?= false)
 POST    /api/portfolio                          controllers.PortfolioController.openPortfolio()
 POST    /api/portfolio/:portfolioId/order       controllers.PortfolioController.placeOrder(portfolioId)
 

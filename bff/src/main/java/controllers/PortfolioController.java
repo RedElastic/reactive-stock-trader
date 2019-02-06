@@ -1,6 +1,11 @@
 package controllers;
 
+import com.redelastic.CSHelper;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
+import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.OrderSummary;
+import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
@@ -11,8 +16,9 @@ import lombok.val;
 import models.CompletedOrder;
 import models.EquityHolding;
 import models.PortfolioSummary;
-import models.PortfolioView;
+import models.Portfolio;
 import org.pcollections.ConsPStack;
+import org.pcollections.PSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
@@ -23,7 +29,10 @@ import play.mvc.Result;
 import play.mvc.Results;
 import services.quote.QuoteService;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -36,6 +45,7 @@ public class PortfolioController extends Controller {
 
     private final PortfolioService portfolioService;
     private final QuoteService quoteService;
+    private final BrokerService brokerService;
 
     private final Form<PlaceOrderForm> placeOrderForm;
     private final Form<OpenPortfolioForm> openPortfolioForm;
@@ -43,9 +53,11 @@ public class PortfolioController extends Controller {
     @Inject
     private PortfolioController(PortfolioService portfolioService,
                                 QuoteService quoteService,
+                                BrokerService brokerService,
                                 FormFactory formFactory) {
         this.portfolioService = portfolioService;
         this.quoteService = quoteService;
+        this.brokerService = brokerService;
         this.placeOrderForm = formFactory.form(PlaceOrderForm.class);
         this.openPortfolioForm = formFactory.form(OpenPortfolioForm.class);
     }
@@ -59,7 +71,7 @@ public class PortfolioController extends Controller {
                 .thenCompose(view ->
                         quoteService.priceHoldings(view.getHoldings())
                             .thenApply(pricedHoldings ->
-                                    PortfolioView.builder()
+                                    Portfolio.builder()
                                         .portfolioId(view.getPortfolioId().getId())
                                         .name(view.getName())
                                         .funds(view.getFunds())
@@ -73,41 +85,81 @@ public class PortfolioController extends Controller {
             .thenApply(Results::ok);
     }
 
-    public CompletionStage<Result> getSummary(String portfolioId) {
+    public CompletionStage<Result> getSummary(String portfolioId, Boolean includeOrderInfo, Boolean includePrices) {
         val getModel = portfolioService
                 .getPortfolio(new PortfolioId(portfolioId))
-                .invoke();
+                .invoke()
+                .toCompletableFuture();
 
-        val summaryView = getModel
-                .thenApply(model ->
-                        PortfolioSummary.builder()
-                                .portfolioId(model.getPortfolioId().getId())
-                                .name(model.getName())
-                                .funds(model.getFunds())
-                                .equities(ConsPStack.from(
+        CompletableFuture<PSequence<CompletedOrder>> getCompletedOrders =
+                includeOrderInfo ?
+                        getModel
+                            .thenApply(PortfolioView::getCompletedOrders)
+                            .thenCompose(this::completedOrders)
+                            .toCompletableFuture()
+                : CompletableFuture.completedFuture(null);
+
+        CompletableFuture<PSequence<EquityHolding>> getEquityHoldings =
+                includePrices ?
+                        getModel
+                            .<PSequence<EquityHolding>>thenApply(model ->
+                                    ConsPStack.from(
                                         model.getHoldings().stream().map(holding ->
-                                        EquityHolding.builder()
-                                            .symbol(holding.getSymbol())
-                                            .shares(holding.getShareCount())
-                                            .build()
-                                        ).collect(toList())
-                                ))
-                                .completedOrders(
-                                        ConsPStack.from(
-                                                model.getCompletedOrders().stream()
-                                                        .map(orderId ->
-                                                                CompletedOrder.builder()
-                                                                .orderId(orderId.getId())
-                                                                .build()
-                                                        )
-                                                        .collect(toList())
-                                        )
-                                )
-                                .build()
-                );
+                                            EquityHolding.builder()
+                                                    .symbol(holding.getSymbol())
+                                                    .shares(holding.getShareCount())
+                                                    .build()
+                                    ).collect(toList())))
+                            .toCompletableFuture()
+                        : CompletableFuture.completedFuture(null);
+
+        val summaryView = CompletableFuture
+                .allOf(getModel, getCompletedOrders, getEquityHoldings)
+                .thenApply(done -> {
+                    PortfolioView model = getModel.join();
+                    PSequence<CompletedOrder> completedOrders = getCompletedOrders.join();
+                    PSequence<EquityHolding> equities = getEquityHoldings.join();
+                    return PortfolioSummary.builder()
+                            .portfolioId(model.getPortfolioId().getId())
+                            .name(model.getName())
+                            .funds(model.getFunds())
+                            .completedOrders(completedOrders)
+                            .equities(equities)
+                            .build();
+                });
+
         return summaryView
                 .thenApply(Json::toJson)
                 .thenApply(Results::ok);
+    }
+
+    private CompletionStage<PSequence<CompletedOrder>> completedOrders(PSequence<OrderId> orderIds) {
+        return CSHelper.allOf(
+                orderIds.stream()
+                        .map(orderId ->
+                                brokerService
+                                        .getOrderSummary(orderId)
+                                        .invoke()
+                                        .exceptionally(ex -> Optional.empty())
+                                        .thenApply(summary -> toCompletedOrder(orderId, summary.orElse(null)))
+                                        .toCompletableFuture())
+                        .collect(toList())
+        ).thenApply(ConsPStack::from);
+    }
+
+    private CompletedOrder toCompletedOrder(OrderId orderId, @Nullable OrderSummary orderSummary) {
+        if (orderSummary != null) {
+            return CompletedOrder.builder()
+                    .orderId(orderId.getId())
+                    .symbol(orderSummary.getSymbol())
+                    .shares(orderSummary.getShares())
+                    .tradeType(orderSummary.getTradeType())
+                    .build();
+        } else {
+            return CompletedOrder.builder()
+                    .orderId(orderId.getId())
+                    .build();
+        }
     }
 
     public CompletionStage<Result> openPortfolio() {
