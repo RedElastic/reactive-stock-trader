@@ -70,7 +70,8 @@
 </template>
 
 <script>
-  import EquityRow from '@/components/components/portfolio/EquityRow.vue'
+  import EquityRow from '@/components/components/portfolio/EquityRow.vue';
+  import * as portfolioService from '@/common/portfolio';
 
   export default {
     name: 'Portfolio',
@@ -118,6 +119,36 @@
           ],
           "version":1.0
         }
+      }
+    },
+    mounted() {
+      portfolioService.getDetails()
+        .then(details => {
+          this.portfolio.name = details.name;
+          this.portfolio.cashOnHand = details.funds;
+          let equities = details.holdings.map(holding => ({
+            symbol: holding.symbol,
+            shares: holding.shareCount,
+            value: holding.marketValue,
+            returnValue: null,
+            returnPercent: null,
+            return24h: null,
+            returnPercent24h: null
+          }));
+          this.portfolio.equities = equities;
+          let equitiesValue = equities.reduce((acc,eq) => acc + eq.value, 0);
+          this.portfolio.value = this.portfolio.cashOnHand + equitiesValue;
+          this.portfolio.returnValue = null;
+          this.portfolio.returnPercent = null;
+          this.portfolio.returnPercent = null;
+          this.portfolio.returnPercent24h = null;
+        });
+      
+    },
+    methods: {
+      update() {
+        
+        
       }
     }
   } 

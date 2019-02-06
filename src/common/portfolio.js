@@ -2,6 +2,8 @@ import axios from 'axios';
 import {bffBaseURL} from '@/common/config';
 import qs from 'qs';
 
+const baseUrl = bffBaseURL + '/api/portfolio';
+
 export let activePortfolio = {
   state: {
     id: window.sessionStorage.portfolioId,
@@ -35,7 +37,7 @@ export function open(request) {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    url: bffBaseURL + '/api/portfolio',
+    url: baseUrl,
     data: formData
   }).then((response) => {    
     const portfolioId = response.data.portfolioId;
@@ -46,11 +48,16 @@ export function open(request) {
 }
 
 export function load(portfolioId) {
-  const request = axios.get(
-    bffBaseURL + '/api/portfolio/' + portfolioId + '/summary');
+  const request = axios.get(baseUrl + '/' + portfolioId + '/summary');
   request.then(response => {
     activePortfolio.id = response.data.portfolioId;
     activePortfolio.name = response.data.name;
   });
   return request;
+}
+
+export function getDetails(portfolioId) {
+  if (portfolioId == null) { portfolioId = activePortfolio.id; }
+  const request = axios.get(baseUrl + '/' + portfolioId);
+  return request.then(response => response.data);
 }

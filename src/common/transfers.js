@@ -24,7 +24,7 @@ export function deposit(amount, accountType, accountId) {
 
 export function submitTransfer(transferRequest) {
   let formData = new FormData();
-  if (transferRequest.depositWithdrawl === "withdrawl") {
+  if (transferRequest.depositWithdrawl === "portfolioWithdrawl") {
     formData.append('destinationType', transferRequest.accountType);
     formData.append('destinationId', transferRequest.accountId);
     formData.append('sourceType', 'portfolio');
