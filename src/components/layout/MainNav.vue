@@ -33,7 +33,7 @@
         </b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
-    <b-container>Active Portfolio: {{ shortName }}</b-container>
+    <b-container>Active Portfolio: {{ portfolio.name }} ({{ portfolio.id | shortUUID }})</b-container>
   </b-navbar>
 </template>
 
@@ -45,11 +45,6 @@
       return {
         portfolio: activePortfolio.state
       }
-    },
-    computed: {
-      shortName() {
-        return this.portfolio.name + ' (' + this.portfolio.id.substring(0,8) + ')';
-      }      
     }
   }
 </script>

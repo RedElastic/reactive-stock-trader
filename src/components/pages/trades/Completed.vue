@@ -43,12 +43,15 @@
           </tr>
         </thead>
         <tbody style="font-size:0.8em;">
-          <tr>
+          <tr 
+            v-for="order in orders"
+            :key="order.id"
+          >
             <td scope="row">
               12/12/12
             </td>
             <td>11:46:01am EST</td>
-            <td>XKJNFKH123</td>
+            <td>{{ order.id | shortUUID }}</td>
             <td>Trade</td>
             <td>AAPL:NASDAQ</td>
             <td>&nbsp;</td>
@@ -65,7 +68,23 @@
 </template>
 
 <script>
+  import * as portfolio from '@/common/portfolio';
+  
   export default {  
+    data() {
+      return {
+        orders: [        
+        ]
+      };
+    },
+    mounted() {
+      portfolio.getSummary()
+        .then(summary => {
+          this.orders = summary.completedOrders.map(order => ({
+            id: order.orderId
+          }));
+        });
+    }
   } 
 </script>
 

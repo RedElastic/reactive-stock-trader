@@ -38,7 +38,7 @@
                 </b-form-group>
               </div>
               <div class="col-5">
-                current portfolio ({{ shortPortfolioName }})
+                current portfolio ({{ portfoliId | shortUUID }})
               </div>
             </div>
             <div class="row">
@@ -166,8 +166,8 @@ export default {
     }
   },
   computed: {
-    shortPortfolioName() {
-      return activePortfolio.id.substring(0,8);
+    portfolioId() {
+      return activePortfolio.id;
     },
     resultingAction() {
       return this.form.depositWithdrawl === 'portfolioWithdrawl' ? 'To'
