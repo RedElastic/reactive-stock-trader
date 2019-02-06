@@ -52,6 +52,7 @@ public class OrderRepositoryImpl implements OrderRepository {
 
                 OrderResult.Fulfilled completedOrder = OrderResult.Fulfilled.builder()
                         .portfolioId(order.getPortfolioId())
+                        .orderId(order.getOrderId())
                         .trade(trade)
                         .build();
                 return Pair.create(completedOrder, eventAndOffset.second());

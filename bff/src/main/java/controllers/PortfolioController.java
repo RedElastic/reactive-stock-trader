@@ -8,7 +8,10 @@ import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import controllers.forms.portfolio.OpenPortfolioForm;
 import controllers.forms.portfolio.PlaceOrderForm;
 import lombok.val;
+import models.EquityHolding;
+import models.PortfolioSummary;
 import models.PortfolioView;
+import org.pcollections.ConsPStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
@@ -22,6 +25,8 @@ import services.quote.QuoteService;
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
+import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("WeakerAccess")
 public class PortfolioController extends Controller {
@@ -65,6 +70,32 @@ public class PortfolioController extends Controller {
         return pricedView
             .thenApply(Json::toJson)
             .thenApply(Results::ok);
+    }
+
+    public CompletionStage<Result> getSummary(String portfolioId) {
+        val getModel = portfolioService
+                .getPortfolio(new PortfolioId(portfolioId))
+                .invoke();
+
+        val summaryView = getModel
+                .thenApply(model ->
+                        PortfolioSummary.builder()
+                                .portfolioId(model.getPortfolioId().getId())
+                                .name(model.getName())
+                                .funds(model.getFunds())
+                                .equities(ConsPStack.from(
+                                        model.getHoldings().stream().map(holding ->
+                                        EquityHolding.builder()
+                                            .symbol(holding.getSymbol())
+                                            .shares(holding.getShareCount())
+                                            .build()
+                                        ).collect(toList())
+                                ))
+                                .build()
+                );
+        return summaryView
+                .thenApply(Json::toJson)
+                .thenApply(Results::ok);
     }
 
     public CompletionStage<Result> openPortfolio() {

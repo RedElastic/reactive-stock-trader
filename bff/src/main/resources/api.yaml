@@ -60,7 +60,7 @@ paths:
   /api/portfolio/{portfolioId}:
     get:
       operationId: getPortfolio
-      summary: Get portfolio contents
+      summary: Get portfolio contents with current market values
       tags:
         - portfolio
       parameters:
@@ -93,6 +93,9 @@ paths:
                     type: array
                     items:
                       type: object
+                      required:
+                        - symbol
+                        - shareCount
                       properties:
                         symbol:
                           type: string
@@ -113,6 +116,73 @@ paths:
                     - symbol: RHT
                       shareCount: 10
                       marketValue: 1212.78
+        '404':
+          description: No such portfolio ID
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    example: Invalid portfolio ID.
+
+  /api/portfolio/{portfolioId}/summary:
+    get:
+      operationId: getPortfolioSummary
+      summary: Get portfolio contents
+      tags:
+        - portfolio
+      parameters:
+        - in: path
+          name: portfolioId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current state of the portfolio
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - portfolioId
+                  - name
+                  - funds
+                  - holdings
+                properties:
+                  portfolioId:
+                    type: string
+                  name:
+                    type: string
+                  funds:
+                    type: number
+                    minimum: 0
+                  equities:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - symbol
+                        - shareCount
+                      properties:
+                        symbol:
+                          type: string
+                          description: The stock ticker symbol
+                        shareCount:
+                          type: integer
+                example:
+                  portfolioId: <portfolio id>
+                  name: retirement savings
+                  funds: 123.95
+                  holdings:
+                    - symbol: IBM
+                      shareCount: 12
+                    - symbol: RHT
+                      shareCount: 10
         '404':
           description: No such portfolio ID
           content:
