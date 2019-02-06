@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 @Value
 @Builder
-public class PortfolioView {
+public class Portfolio {
 
     @NonNull String portfolioId;
 

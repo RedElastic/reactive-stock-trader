@@ -5,10 +5,11 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
+import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.broker.impl.trade.TradeService;
 import com.redelastic.stocktrader.portfolio.api.order.Order;
-import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.OrderId;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,11 @@ public class OrderModelImpl implements OrderModel {
         // Note that our service call responds with Done after the PlaceOrder command is accepted, it does not
         // wait for the order to be fulfilled (which, in general, may require some time).
         return placeOrder.thenApply(o -> Done.getInstance());
+    }
+
+    @Override
+    public CompletionStage<Optional<OrderSummary>> getSummary() {
+        return orderEntity.ask(OrderCommand.GetSummary.INSTANCE);
     }
 
     public CompletionStage<Optional<OrderStatus>> getStatus() {

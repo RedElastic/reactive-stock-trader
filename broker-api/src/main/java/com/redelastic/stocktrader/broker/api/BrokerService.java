@@ -27,7 +27,7 @@ public interface BrokerService extends Service {
    * @param orderId ID for the order.
    * @return Status of the order, if it exists, empty if no such order ID is known.
    */
-  ServiceCall<NotUsed, Optional<OrderStatus>> getOrderStatus(OrderId orderId);
+  ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId);
 
   /**
    * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
@@ -42,7 +42,7 @@ public interface BrokerService extends Service {
     // @formatter:off
     return named("broker").withCalls(
             restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
-            restCall(Method.GET, "/api/order/:orderId", this::getOrderStatus)
+            restCall(Method.GET, "/api/order/:orderId", this::getOrderSummary)
     ).withTopics(
             topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
               .withProperty(KafkaProperties.partitionKeyStrategy(), orderResult -> orderResult.getPortfolioId().getId())

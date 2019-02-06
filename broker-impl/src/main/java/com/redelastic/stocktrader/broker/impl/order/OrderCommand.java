@@ -6,6 +6,7 @@ import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
+import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.portfolio.api.order.Order;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import lombok.EqualsAndHashCode;
@@ -35,5 +36,12 @@ abstract class OrderCommand implements Jsonable {
     static class GetStatus extends OrderCommand implements ReplyType<Optional<OrderStatus>> {
         private GetStatus() {}
         public static GetStatus INSTANCE = new GetStatus();
+    }
+
+    @Value
+    @EqualsAndHashCode(callSuper = false)
+    static class GetSummary extends OrderCommand implements ReplyType<Optional<OrderSummary>> {
+        private GetSummary() {}
+        public static GetSummary INSTANCE = new GetSummary();
     }
 }

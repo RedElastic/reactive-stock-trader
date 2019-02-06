@@ -5,6 +5,7 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
+import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.portfolio.api.order.Order;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.OrderId;
@@ -65,6 +66,18 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             ctx.reply(Optional.of(state().getStatus()));
         }
 
+        void getSummary(OrderCommand.GetSummary cmd, ReadOnlyCommandContext<Optional<OrderSummary>> ctx) {
+            OrderSummary orderSummary = OrderSummary.builder()
+                    .orderId(getOrderId())
+                    .portfolioId(state().getPortfolioId())
+                    .symbol(state().getOrderDetails().getSymbol())
+                    .shares(state().getOrderDetails().getShares())
+                    .tradeType(state().getOrderDetails().getTradeType())
+                    .status(state().getStatus())
+                    .build();
+            ctx.reply(Optional.of(orderSummary));
+        }
+
         void ignoreDuplicatePlacements(OrderCommand.PlaceOrder cmd, ReadOnlyCommandContext<Order> ctx) {
             OrderDetails orderDetails = cmd.getOrderDetails();
             if (orderDetails.equals(state().getOrderDetails())) {
@@ -88,6 +101,8 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
          */
         void setCommonBehavior(BehaviorBuilder builder) {
             builder.setReadOnlyCommandHandler(OrderCommand.GetStatus.class, this::getStatus);
+            builder.setReadOnlyCommandHandler(OrderCommand.GetSummary.class, this::getSummary);
+
             builder.setReadOnlyCommandHandler(OrderCommand.PlaceOrder.class, this::ignoreDuplicatePlacements);
         }
     }
@@ -191,6 +206,9 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
             builder.setCommandHandler(OrderCommand.PlaceOrder.class, this::placeOrder);
             builder.setEventHandlerChangingBehavior(OrderEvent.OrderReceived.class, this::processing);
+            builder.setReadOnlyCommandHandler(OrderCommand.GetSummary.class, (cmd,ctx) ->
+                    ctx.reply(Optional.empty()));
+
             this.behavior = builder.build();
         }
 
