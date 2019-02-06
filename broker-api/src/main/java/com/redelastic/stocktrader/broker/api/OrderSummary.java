@@ -10,6 +10,7 @@ import lombok.Value;
 @Value
 @Builder
 public class OrderSummary {
+
     @NonNull OrderId orderId;
     @NonNull PortfolioId portfolioId;
     @NonNull TradeType tradeType;

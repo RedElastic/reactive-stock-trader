@@ -13,6 +13,6 @@ public class CompletedOrder {
     @NonNull String orderId;
     String symbol;
     Integer shares;
-    BigDecimal sharePrice;
+    BigDecimal price;
     TradeType tradeType;
 }

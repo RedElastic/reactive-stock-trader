@@ -4,6 +4,7 @@ import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
@@ -31,7 +32,6 @@ import services.quote.QuoteService;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -140,7 +140,11 @@ public class PortfolioController extends Controller {
                                 brokerService
                                         .getOrderSummary(orderId)
                                         .invoke()
-                                        .exceptionally(ex -> Optional.empty())
+                                        .thenApply(o -> { log.info(o.toString()); return o; })
+                                        .exceptionally(ex -> {
+                                            ex.printStackTrace();
+                                            return Optional.empty();
+                                        })
                                         .thenApply(summary -> toCompletedOrder(orderId, summary.orElse(null)))
                                         .toCompletableFuture())
                         .collect(toList())
@@ -149,12 +153,15 @@ public class PortfolioController extends Controller {
 
     private CompletedOrder toCompletedOrder(OrderId orderId, @Nullable OrderSummary orderSummary) {
         if (orderSummary != null) {
-            return CompletedOrder.builder()
+            val builder = CompletedOrder.builder()
                     .orderId(orderId.getId())
                     .symbol(orderSummary.getSymbol())
                     .shares(orderSummary.getShares())
-                    .tradeType(orderSummary.getTradeType())
-                    .build();
+                    .tradeType(orderSummary.getTradeType());
+            if (orderSummary.getStatus() instanceof OrderStatus.Fulfilled) {
+                builder.price(((OrderStatus.Fulfilled) orderSummary.getStatus()).getPrice());
+            }
+            return builder.build();
         } else {
             return CompletedOrder.builder()
                     .orderId(orderId.getId())
