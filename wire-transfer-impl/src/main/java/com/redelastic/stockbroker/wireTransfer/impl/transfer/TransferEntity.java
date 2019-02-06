@@ -73,7 +73,17 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                         evt -> ctx.reply(Done.getInstance())
                 ));
         builder.setEventHandlerChangingBehavior(TransferEvent.FundsRetrieved.class,
-                evt -> sendingFunds(state));
+                evt -> sendingFunds(state().get()));
+        builder.setCommandHandler(TransferCommand.RequestFundsFailed.class, (cmd, ctx) ->
+                ctx.thenPersist(
+                        new TransferEvent.CouldNotSecureFunds(
+                                getTransferId(),
+                                state().get().getTransferDetails()
+                        ),
+                        evt -> ctx.reply(Done.getInstance())
+                ));
+        builder.setEventHandlerChangingBehavior(TransferEvent.CouldNotSecureFunds.class,
+                evt -> fundsRequestFailed(state().get()));
 
         return builder.build();
     }
