@@ -22,14 +22,11 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
 
     private final Logger log = LoggerFactory.getLogger(PortfolioRepositoryImpl.class);
 
-    private final BrokerService brokerService;
-
     private final PersistentEntityRegistry persistentEntities;
 
     @Inject
     public PortfolioRepositoryImpl(BrokerService brokerService,
                                    PersistentEntityRegistry persistentEntities) {
-        this.brokerService = brokerService;
         this.persistentEntities = persistentEntities;
         persistentEntities.register(PortfolioEntity.class);
     }
@@ -52,7 +49,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
 
     @Override
     public PortfolioModel get(PortfolioId portfolioId) {
-        return new PortfolioModel(brokerService, persistentEntities, portfolioId);
+        return new PortfolioModel(persistentEntities, portfolioId);
     }
 
     @Override

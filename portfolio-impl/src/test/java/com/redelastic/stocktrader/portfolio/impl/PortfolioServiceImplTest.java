@@ -168,6 +168,7 @@ public class PortfolioServiceImplTest {
             PortfolioView view = service.getPortfolio(portfolioId).invoke().toCompletableFuture().get(5, SECONDS);
             assertEquals(1, view.getHoldings().size());
             assertTrue(view.getHoldings().contains(new Holding(symbol, shares)));
+            assertTrue(view.getCompletedOrders().contains(orderId));
         });
     }
 

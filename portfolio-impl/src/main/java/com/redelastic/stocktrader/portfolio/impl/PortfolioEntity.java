@@ -158,9 +158,9 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             setEventHandler(PortfolioEvent.FundsCredited.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.SharesDebited.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.OrderFulfilled.class, evt ->
-                    state().withActiveOrders(state().getActiveOrders().minus(evt.getOrderId())));
+                    state().orderCompleted(evt.getOrderId()));
             setEventHandler(PortfolioEvent.OrderFailed.class, evt ->
-                state().withActiveOrders(state().getActiveOrders().minus(evt.getOrderId())));
+                state().orderCompleted(evt.getOrderId()));
 
             setEventHandlerChangingState(PortfolioEvent.LiquidationStarted.class, evt ->
                     PortfolioState.Liquidating.builder()

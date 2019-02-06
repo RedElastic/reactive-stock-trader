@@ -10,8 +10,13 @@ import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
+import org.pcollections.ConsPStack;
+import org.pcollections.PSequence;
 
+import java.util.ArrayList;
 import java.util.concurrent.CompletionStage;
+
+import static java.util.stream.Collectors.toList;
 
 /* Facade for a PortfolioModel. Wraps up all the logic surrounding an individual PortfolioEntity.
  * The PersistentEntity class itself can get large, so this wrapper can hold some of the logic around interactions with
@@ -20,14 +25,11 @@ import java.util.concurrent.CompletionStage;
 class PortfolioModel {
 
     private final PersistentEntityRef<PortfolioCommand> portfolioEntity;
-    private final BrokerService brokerService;
     private final PortfolioId portfolioId;
 
-    PortfolioModel(BrokerService brokerService,
-                   PersistentEntityRegistry registry,
+    PortfolioModel(PersistentEntityRegistry registry,
                    PortfolioId portfolioId) {
         this.portfolioEntity = registry.refFor(PortfolioEntity.class, portfolioId.getId());
-        this.brokerService = brokerService;
         this.portfolioId = portfolioId;
     }
 
@@ -40,6 +42,8 @@ class PortfolioModel {
                                 .name(portfolio.getName())
                                 .funds(portfolio.getFunds())
                                 .holdings(portfolio.getHoldings().asSequence())
+                                .completedOrders(
+                                        ConsPStack.from(portfolio.getCompletedOrders()))
                                 .build()
                 );
     }
