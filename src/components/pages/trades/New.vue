@@ -2,8 +2,8 @@
   <div class="row">
     <div class="col">
       <b-form
-        @submit="submitOrder"
-        @reset="handleReset"
+        @submit="placeOrder"
+        @reset="resetOrder"
       >
         <!-- overview -->
         <div class="row mt-3">
@@ -221,7 +221,7 @@
   import {IEX} from '@/common/http.js'
   import Vue from 'vue'
   import _ from 'lodash'
-  import {placeOrder} from '@/common/portfolio';
+  import * as portfolio from '@/common/portfolio';
   
   const emptyForm = {
     order: '',  
@@ -308,10 +308,7 @@
           }
         }
       },
-      handleSubmit() {
-        this.submitted = true
-      },
-      handleReset() {
+      resetOrder() {
         Object.assign(form, emptyForm);
         this.quote = {
           symbol: '',
@@ -326,8 +323,8 @@
           .catch(e => Vue.rollbar.error(e))
         }, 
         1000),
-      submitOrder() {
-        placeOrder({          
+      placeOrder() {
+        portfolio.placeOrder({          
             symbol: this.form.symbol, 
             shares: this.form.shares, 
             tradeType: this.form.order,
