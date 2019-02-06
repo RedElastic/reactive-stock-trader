@@ -1,6 +1,5 @@
 import axios from 'axios';
 import {bffBaseURL} from '@/common/config';
-import qs from 'qs';
 
 const baseUrl = bffBaseURL + '/api/portfolio';
 const portfolioUrl = () => baseUrl + '/' + activePortfolio.id;
@@ -56,10 +55,13 @@ export function load(portfolioId) {
     });
 }
 
-export function getSummary(portfolioId) {
+export function getSummary({portfolioId, includeOrders, includeSharePrices}) {
   if (portfolioId == null) { portfolioId = activePortfolio.id; }
+  const url = new URL('/api/portfolio/' + portfolioId + '/summary', baseUrl);
+  if (includeOrders) url.searchParams.append('includeOrderInfo', true);
+  if (includeSharePrices) url.searchParams.append('includePrices', true);
   return axios
-    .get(baseUrl + '/' + portfolioId + '/summary')
+    .get(url.toString())
     .then(response => response.data);  
 }
 

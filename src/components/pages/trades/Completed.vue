@@ -53,10 +53,10 @@
             <td>11:46:01am EST</td>
             <td>{{ order.id | shortUUID }}</td>
             <td>Trade</td>
-            <td>AAPL:NASDAQ</td>
-            <td>&nbsp;</td>
-            <td>50</td>
-            <td>123.12 USD</td>
+            <td>{{ order.symbol }}</td>
+            <td>{{ order.sharesBought || '&nbsp;' }}</td>
+            <td>{{ order.sharesSold || '&nbsp;' }}</td>
+            <td>{{ order.price | toCurrency }}</td>
             <td>&nbsp;</td>
             <td>12,134</td>
             <td>134,123 USD</td>
@@ -78,11 +78,22 @@
       };
     },
     mounted() {
-      portfolio.getSummary()
+      portfolio.getSummary({ includeOrders: true })
         .then(summary => {
-          this.orders = summary.completedOrders.map(order => ({
-            id: order.orderId
-          }));
+          console.dir(summary);
+          this.orders = summary.completedOrders.map(order => {
+            let line = {
+              id: order.orderId,
+              symbol: order.symbol,
+              price: order.price
+            };
+            if (order.tradeType === 'BUY') {
+              line.sharesBought = order.shares;
+            } else {
+              line.sharesSold = order.shares;
+            }
+            return line;
+          });
         });
     }
   } 
