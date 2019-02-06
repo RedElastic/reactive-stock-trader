@@ -48,12 +48,18 @@ export function open(request) {
 }
 
 export function load(portfolioId) {
-  const request = axios.get(baseUrl + '/' + portfolioId + '/summary');
-  request.then(response => {
-    activePortfolio.id = response.data.portfolioId;
-    activePortfolio.name = response.data.name;
-  });
-  return request;
+  getSummary(portfolioId)
+    .then(summary => {
+      activePortfolio.id = summary.portfolioId;
+      activePortfolio.name = summary.name;
+    });
+}
+
+export function getSummary(portfolioId) {
+  if (portfolioId == null) { portfolioId = activePortfolio.id; }
+  return axios
+    .get(baseUrl + '/' + portfolioId + '/summary')
+    .then(response => response.data);  
 }
 
 export function getDetails(portfolioId) {

@@ -18,8 +18,10 @@
                 >
                   <b-form-input
                     id="amount"
-                    v-model="form.amount"
-                    type="text"
+                    v-model.number="form.amount"
+                    type="number"
+                    min=0
+                    step=0.01
                     required
                   />
                 </b-form-group>   
@@ -104,7 +106,7 @@
               Cash on Hand (current)
             </div>
             <div class="col">
-              $15200.12
+              {{ portfolio.cashOnHand | toCurrency }}
             </div>
           </div>
           <div class="row">
@@ -112,7 +114,7 @@
               Transfer amount
             </div>
             <div class="col">
-              -$323.12
+              {{ form.amount | toCurrency }}
             </div>
           </div>
           <div class="row">
@@ -120,7 +122,7 @@
               Cash on Hand (after)
             </div>
             <div class="col">
-              $15200.12
+              {{ afterTransfer | toCurrency }}
             </div>
           </div>
         </div>
@@ -133,6 +135,7 @@
 <script>
 import {submitTransfer} from '@/common/transfers';
 import {activePortfolio} from '@/common/portfolio';
+import {getSummary as portfolioSummary} from '@/common/portfolio';
 
 const emptyForm = {
   amount: null,
@@ -146,6 +149,9 @@ export default {
     return {
       submitted: false,
       form: Object.assign({}, emptyForm),
+      portfolio: {
+        cashOnHand: null
+      },
       options: {
         fromTo: [
           { value: 'portfolioWithdrawl', text: 'From' },
@@ -167,9 +173,20 @@ export default {
       return this.form.depositWithdrawl === 'portfolioWithdrawl' ? 'To'
         : this.form.depositWithdrawl === 'portfolioDeposit' ? 'From'
         : "(From/To)";
+    },
+    afterTransfer() {
+      return this.form.depositWithdrawl === 'portfolioWithdrawl' 
+        ? this.portfolio.cashOnHand - this.form.amount
+        : this.form.depositWithdrawl === 'portfolioDeposit' 
+        ? this.portfolio.cashOnHand + this.form.amount        
+        : null;
     }
   },
-  mounted() {    
+  mounted() {   
+     portfolioSummary()
+       .then(portfolio => {
+         this.portfolio.cashOnHand = portfolio.funds;
+       });
   },
   methods: {
     onSubmit() {
