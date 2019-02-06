@@ -56,7 +56,7 @@
             <td>{{ order.symbol }}</td>
             <td>{{ order.sharesBought || '&nbsp;' }}</td>
             <td>{{ order.sharesSold || '&nbsp;' }}</td>
-            <td>123.12 USD</td>
+            <td>{{ order.price | toCurrency }}</td>
             <td>&nbsp;</td>
             <td>12,134</td>
             <td>134,123 USD</td>
@@ -84,7 +84,8 @@
           this.orders = summary.completedOrders.map(order => {
             let line = {
               id: order.orderId,
-              symbol: order.symbol
+              symbol: order.symbol,
+              price: order.price
             };
             if (order.tradeType === 'BUY') {
               line.sharesBought = order.shares;
