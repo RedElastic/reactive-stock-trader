@@ -1,12 +1,20 @@
 # Install and Run
 
+## The backend
 - Install Java 8 SDK
 - [Install SBT](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
 - `sbt runAll`
 
-The front end API is exposed on port 9000. 
+The BFF exposes an API to the front end on port 9000. 
 
-The UI project can be found [here](https://github.com/RedElastic/reactive-stock-trader-ui). By default it is configured to expect the backend on localhost:9000. 
+## The UI
+Install Node.js and NPM, then 
+```shell
+cd ui
+npm install
+npm run serve
+```
+
 
 # Command line use of API
 
