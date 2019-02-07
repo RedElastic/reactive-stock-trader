@@ -7,6 +7,10 @@ import lombok.Data;
 @Data
 public class PlaceOrderForm {
 
+    String symbol;
+    int shares;
+    Order order;
+
     public enum Order {
         buy,
         sell;
@@ -22,10 +26,4 @@ public class PlaceOrderForm {
             }
         }
     }
-
-    String symbol;
-
-    int shares;
-
-    Order order;
 }

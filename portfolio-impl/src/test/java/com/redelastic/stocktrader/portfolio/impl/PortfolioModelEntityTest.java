@@ -3,12 +3,12 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.actor.ActorSystem;
 import akka.testkit.javadsl.TestKit;
 import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.TradeType;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.OrderId;
-import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.Open;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioCommand.PlaceOrder;
 import lombok.val;
@@ -53,7 +53,7 @@ public class PortfolioModelEntityTest {
         val portfolioId = new PortfolioId("portfolioId");
         String pName = "portfolioName";
         String symbol = "IBM";
-        val orderId =  new OrderId( "orderId" );
+        val orderId = new OrderId("orderId");
         int shareCount = 3;
 
         OrderDetails orderDetails = OrderDetails.builder()
@@ -63,7 +63,7 @@ public class PortfolioModelEntityTest {
                 .orderType(OrderType.Market.INSTANCE)
                 .build();
 
-        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = createPortfolioEntity(portfolioId.getId());
+        PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> driver = createPortfolioEntity(portfolioId.getId());
 
         PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome =
                 driver.run(
@@ -78,7 +78,7 @@ public class PortfolioModelEntityTest {
     public void moneyTransfers() {
         val portfolioId = new PortfolioId("portfolioId");
         String pName = "portfolioName";
-        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, pName);
+        PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, pName);
 
         BigDecimal amount = new BigDecimal("123.45");
         BigDecimal difference = BigDecimal.valueOf(1);
@@ -91,7 +91,7 @@ public class PortfolioModelEntityTest {
                 .amount(amount.subtract(difference))
                 .build();
 
-        PersistentEntityTestDriver.Outcome<PortfolioEvent,Optional<PortfolioState>> outcome = driver.run(
+        PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome = driver.run(
                 transferIn,
                 transferOut
         );
@@ -100,7 +100,7 @@ public class PortfolioModelEntityTest {
                 new PortfolioEvent.FundsCredited(portfolioId, amount)));
         assertTrue(outcome.events().contains(
                 new PortfolioEvent.FundsDebited(portfolioId, amount.subtract(difference))));
-        assertThat(difference, comparesEqualTo(((PortfolioState.Open)outcome.state().get()).getFunds()));
+        assertThat(difference, comparesEqualTo(((PortfolioState.Open) outcome.state().get()).getFunds()));
     }
 
     @Test
@@ -109,10 +109,10 @@ public class PortfolioModelEntityTest {
         String portfolioName = "portfolio name";
         String symbol = "IBM";
         int shareCount = 10;
-        val orderId = new OrderId( "orderId" );
+        val orderId = new OrderId("orderId");
         BigDecimal price = new BigDecimal("1242.25");
-        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
-        PersistentEntityTestDriver.Outcome<PortfolioEvent,Optional<PortfolioState>> outcome = driver.run(
+        PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
+        PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome = driver.run(
                 new PortfolioCommand.CompleteTrade(
                         orderId,
                         Trade.builder()
@@ -124,11 +124,11 @@ public class PortfolioModelEntityTest {
                 ),
                 new PortfolioCommand.PlaceOrder(orderId,
                         OrderDetails.builder()
-                            .symbol(symbol)
-                            .shares(shareCount+1)
-                            .tradeType(TradeType.SELL)
-                            .orderType(OrderType.Market.INSTANCE)
-                            .build()
+                                .symbol(symbol)
+                                .shares(shareCount + 1)
+                                .tradeType(TradeType.SELL)
+                                .orderType(OrderType.Market.INSTANCE)
+                                .build()
                 )
         );
         assertEquals(2, outcome.getReplies().size());
@@ -140,14 +140,14 @@ public class PortfolioModelEntityTest {
         val portfolioId = new PortfolioId("portfolioId");
         String portfolioName = "portfolio name";
         BigDecimal amount = new BigDecimal("101.40");
-        PersistentEntityTestDriver<PortfolioCommand,PortfolioEvent,Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
-        PersistentEntityTestDriver.Outcome<PortfolioEvent,Optional<PortfolioState>> outcome = driver.run(
+        PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
+        PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome = driver.run(
                 new PortfolioCommand.ReceiveFunds(amount)
         );
 
         assertTrue(outcome.state().isPresent());
         assertThat(outcome.state().get(), instanceOf(PortfolioState.Open.class));
-        assertEquals(amount, ((PortfolioState.Open)outcome.state().get()).getFunds());
+        assertEquals(amount, ((PortfolioState.Open) outcome.state().get()).getFunds());
     }
 
 }

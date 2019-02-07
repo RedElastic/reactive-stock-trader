@@ -16,11 +16,20 @@ import java.math.BigDecimal;
 public abstract class OrderType {
     private OrderType() {}
 
+    public abstract <T> T visit(Visitor<T> visitor);
+
+    public interface Visitor<T> {
+        T visit(Market m);
+
+        T visit(Limit l);
+    }
+
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class Market extends OrderType {
-        private Market() {}
         public static Market INSTANCE = new Market();
+
+        private Market() {}
 
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(this);
@@ -36,11 +45,4 @@ public abstract class OrderType {
             return visitor.visit(this);
         }
     }
-
-    public interface Visitor<T> {
-        T visit(Market m);
-        T visit(Limit l);
-    }
-
-    public abstract  <T> T visit(Visitor<T> visitor);
 }

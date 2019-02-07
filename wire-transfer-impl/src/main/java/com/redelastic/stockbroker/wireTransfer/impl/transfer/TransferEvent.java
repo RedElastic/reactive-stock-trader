@@ -22,16 +22,30 @@ import lombok.Value;
         @JsonSubTypes.Type(TransferEvent.RefundDelivered.class)
 })
 public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Jsonable {
-    private TransferEvent() {}
-
     static final int NUM_SHARDS = 4;
     public static AggregateEventShards<TransferEvent> TAG = AggregateEventTag.sharded(TransferEvent.class, NUM_SHARDS);
+    private TransferEvent() {}
 
     @Override
     public AggregateEventTagger<TransferEvent> aggregateTag() {
         return TAG;
     }
 
+    public abstract <T> T visit(Visitor<T> visitor);
+
+    public interface Visitor<T> {
+        T visit(TransferInitiated transferInitiated);
+
+        T visit(FundsRetrieved fundsRetrieved);
+
+        T visit(CouldNotSecureFunds couldNotSecureFunds);
+
+        T visit(DeliveryConfirmed deliveryConfirmed);
+
+        T visit(DeliveryFailed deliveryFailed);
+
+        T visit(RefundDelivered refundDelivered);
+    }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
@@ -92,16 +106,4 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
-
-
-    public interface Visitor<T> {
-        T visit(TransferInitiated transferInitiated);
-        T visit(FundsRetrieved fundsRetrieved);
-        T visit(CouldNotSecureFunds couldNotSecureFunds);
-        T visit(DeliveryConfirmed deliveryConfirmed);
-        T visit(DeliveryFailed deliveryFailed);
-        T visit(RefundDelivered refundDelivered);
-    }
-
-    public abstract <T> T visit(Visitor<T> visitor);
 }

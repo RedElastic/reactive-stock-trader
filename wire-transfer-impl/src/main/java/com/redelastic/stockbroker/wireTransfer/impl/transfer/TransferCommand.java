@@ -24,36 +24,41 @@ public abstract class TransferCommand {
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class RequestFundsSuccessful extends TransferCommand implements ReplyType<Done> {
-        private RequestFundsSuccessful() {}
         public static RequestFundsSuccessful INSTANCE = new RequestFundsSuccessful();
+
+        private RequestFundsSuccessful() {}
     }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class RequestFundsFailed extends TransferCommand implements ReplyType<Done> {
-        private RequestFundsFailed() {}
         public static RequestFundsFailed INSTANCE = new RequestFundsFailed();
+
+        private RequestFundsFailed() {}
     }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class DeliveryFailed extends TransferCommand implements ReplyType<Done> {
-        private DeliveryFailed() {}
         public static DeliveryFailed INSTANCE = new DeliveryFailed();
+
+        private DeliveryFailed() {}
     }
 
 
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class DeliverySuccessful extends TransferCommand implements ReplyType<Done> {
-        private DeliverySuccessful() {}
         public static DeliverySuccessful INSTANCE = new DeliverySuccessful();
+
+        private DeliverySuccessful() {}
     }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class RefundSuccessful extends TransferCommand implements ReplyType<Done> {
-        private RefundSuccessful() {}
         public static RefundSuccessful INSTANCE = new RefundSuccessful();
+
+        private RefundSuccessful() {}
     }
 }

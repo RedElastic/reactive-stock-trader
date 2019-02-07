@@ -22,11 +22,11 @@ import java.util.function.Function;
 /**
  * Saga processor for transfers, this read side processes handles persisting progression of the saga through
  * the corresponding TransferEntities, and executing the steps of the saga.
- *
+ * <p>
  * The transfer saga requires:
  * 1. retrieving the funds from the source account
  * 2. sending the funds to the destination account
- *
+ * <p>
  * If the second step fails the funds should be refunded.
  */
 @Log4j

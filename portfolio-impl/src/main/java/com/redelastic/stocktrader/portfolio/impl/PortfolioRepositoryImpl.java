@@ -35,6 +35,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      * Initialize a new portfolio. We first generate a new ID for it and send it a setup message. In the very unlikely
      * circumstance that the ID is already in use we'll get an exception when we send the initialize command, we should
      * retry with a new UUID.
+     *
      * @param request
      * @return The PortfolioModel ID assigned.
      */
@@ -59,16 +60,16 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
 
     public Source<Pair<OrderPlaced, Offset>, ?> ordersStream(AggregateEventTag<PortfolioEvent> tag, Offset offset) {
         return persistentEntities.eventStream(tag, offset)
-            .filter(eventOffset ->
-                    eventOffset.first() instanceof PortfolioEvent.OrderPlaced
-            ).mapAsync(1, eventOffset -> {
-                    PortfolioEvent.OrderPlaced orderPlaced = (PortfolioEvent.OrderPlaced)eventOffset.first();
+                .filter(eventOffset ->
+                        eventOffset.first() instanceof PortfolioEvent.OrderPlaced
+                ).mapAsync(1, eventOffset -> {
+                    PortfolioEvent.OrderPlaced orderPlaced = (PortfolioEvent.OrderPlaced) eventOffset.first();
                     log.info(String.format("Publishing order %s", orderPlaced.getOrderId()));
                     return CompletableFuture.completedFuture(Pair.create(
                             orderPlaced.asDomainEvent(),
                             eventOffset.second()
                     ));
-            });
+                });
     }
 
 }

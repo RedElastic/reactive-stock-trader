@@ -2,13 +2,13 @@ package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.portfolio.api.order.Order;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.OrderId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,25 +25,27 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
         return snapshotState
                 .flatMap(Function.identity())
                 .map(orderState ->
-                    orderState.visit(new OrderState.Visitor<Behavior>() {
-                        @Override
-                        public Behavior visit(OrderState.Pending pending) {
-                            return new PendingBehaviorBuilder((OrderState.Pending) orderState).getBehavior();
-                        }
+                        orderState.visit(new OrderState.Visitor<Behavior>() {
+                            @Override
+                            public Behavior visit(OrderState.Pending pending) {
+                                return new PendingBehaviorBuilder((OrderState.Pending) orderState).getBehavior();
+                            }
 
-                        @Override
-                        public Behavior visit(OrderState.Fulfilled fulfilled) {
-                            return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
-                        }
+                            @Override
+                            public Behavior visit(OrderState.Fulfilled fulfilled) {
+                                return new FulfilledOrderBehaviorBuilder((OrderState.Fulfilled) orderState).getBehavior();
+                            }
 
-                        @Override
-                        public Behavior visit(OrderState.Failed failed) {
-                            return new FailedOrderBehavior((OrderState.Failed) orderState).getBehavior();
-                        }
-                    })
+                            @Override
+                            public Behavior visit(OrderState.Failed failed) {
+                                return new FailedOrderBehavior((OrderState.Failed) orderState).getBehavior();
+                            }
+                        })
                 )
                 .orElse(new UninitializedBehaviorBuilder().getBehavior());
     }
+
+    private OrderId getOrderId() { return new OrderId(entityId()); }
 
     /**
      * Base class for OrderBehavior covering pending and completed orderPlaced. Not this is not completely type safe, it is
@@ -106,7 +108,6 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             builder.setReadOnlyCommandHandler(OrderCommand.PlaceOrder.class, this::ignoreDuplicatePlacements);
         }
     }
-
 
     private class PendingBehaviorBuilder extends OrderBehaviourBuilder<OrderState.Pending> {
 
@@ -206,7 +207,7 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
             builder.setCommandHandler(OrderCommand.PlaceOrder.class, this::placeOrder);
             builder.setEventHandlerChangingBehavior(OrderEvent.OrderReceived.class, this::processing);
-            builder.setReadOnlyCommandHandler(OrderCommand.GetSummary.class, (cmd,ctx) ->
+            builder.setReadOnlyCommandHandler(OrderCommand.GetSummary.class, (cmd, ctx) ->
                     ctx.reply(Optional.empty()));
 
             this.behavior = builder.build();
@@ -227,8 +228,6 @@ public class OrderEntity extends PersistentEntity<OrderCommand, OrderEvent, Opti
             return new PendingBehaviorBuilder(evt.getOrder().getPortfolioId(), evt.getOrder().getDetails()).getBehavior();
         }
     }
-
-    private OrderId getOrderId() { return new OrderId(entityId()); }
 
 
 }

@@ -40,14 +40,14 @@ public class WireTransferServiceImpl implements WireTransferService {
 
         return transfer ->
                 transferRepository
-                    .get(transferId)
-                    .ask(TransferCommand.TransferFunds.builder()
-                            .source(transfer.getSourceAccount())
-                            .destination(transfer.getDestinationAccount())
-                            .amount(transfer.getFunds())
-                            .build()
-                    )
-                    .thenApply(done -> transferId);
+                        .get(transferId)
+                        .ask(TransferCommand.TransferFunds.builder()
+                                .source(transfer.getSourceAccount())
+                                .destination(transfer.getDestinationAccount())
+                                .amount(transfer.getFunds())
+                                .build()
+                        )
+                        .thenApply(done -> transferId);
     }
 
     @Override
@@ -71,9 +71,9 @@ public class WireTransferServiceImpl implements WireTransferService {
                 .eventStream(tag, offset)
                 .collect(collectByEvent(
                         new PFBuilder<TransferEvent, TransferRequest>()
-                        .match(TransferEvent.TransferInitiated.class, this::requestFunds)
-                        .match(TransferEvent.FundsRetrieved.class, this::sendFunds)
-                        .build()
+                                .match(TransferEvent.TransferInitiated.class, this::requestFunds)
+                                .match(TransferEvent.FundsRetrieved.class, this::sendFunds)
+                                .build()
                 ));
     }
 
@@ -96,21 +96,22 @@ public class WireTransferServiceImpl implements WireTransferService {
     /**
      * Build a partial function for collect that will operate on the event part only of the event stream (passing
      * through the offsets transparently).
+     *
      * @param pf
      * @param <A>
      * @param <B>
-     * @return collectByEvent(pf).isDefined(a,off) iff pf.isDefined(a)
-     *   && collectByEvent(pf).apply(a,off) = Pair(pf.apply(a), off)
+     * @return collectByEvent(pf).isDefined(a, off) iff pf.isDefined(a)
+     * && collectByEvent(pf).apply(a,off) = Pair(pf.apply(a), off)
      */
-    private <A,B> PartialFunction<Pair<A, Offset>, Pair<B, Offset>> collectByEvent(PartialFunction<A,B> pf) {
+    private <A, B> PartialFunction<Pair<A, Offset>, Pair<B, Offset>> collectByEvent(PartialFunction<A, B> pf) {
         return collectFirst(pf);
     }
 
     @SuppressWarnings("unchecked")
-    private <A, B, C>  PartialFunction<Pair<A,C>, Pair<B,C>> collectFirst(PartialFunction<A,B> pf) {
-        FI.TypedPredicate<Pair> isDefinedOnFirst = p -> pf.isDefinedAt((((Pair<A,C>)p).first()));
-        FI.Apply<Pair, Pair<B,C>> applyOnFirst = p -> Pair.create((pf.apply((A)p.first())), (C)p.second());
-        return new PFBuilder<Pair<A,C>, Pair<B,C>>()
+    private <A, B, C> PartialFunction<Pair<A, C>, Pair<B, C>> collectFirst(PartialFunction<A, B> pf) {
+        FI.TypedPredicate<Pair> isDefinedOnFirst = p -> pf.isDefinedAt((((Pair<A, C>) p).first()));
+        FI.Apply<Pair, Pair<B, C>> applyOnFirst = p -> Pair.create((pf.apply((A) p.first())), (C) p.second());
+        return new PFBuilder<Pair<A, C>, Pair<B, C>>()
                 .match(Pair.class, isDefinedOnFirst, applyOnFirst)
                 .build();
     }

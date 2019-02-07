@@ -1,7 +1,7 @@
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import com.redelastic.stocktrader.broker.api.BrokerService;
-import com.redelastic.stocktrader.broker.impl.*;
+import com.redelastic.stocktrader.broker.impl.BrokerServiceImpl;
 import com.redelastic.stocktrader.broker.impl.order.OrderRepository;
 import com.redelastic.stocktrader.broker.impl.order.OrderRepositoryImpl;
 import com.redelastic.stocktrader.broker.impl.quote.IexQuoteServiceImpl;

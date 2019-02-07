@@ -3,20 +3,15 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
-import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import org.pcollections.ConsPStack;
-import org.pcollections.PSequence;
 
-import java.util.ArrayList;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.stream.Collectors.toList;
 
 /* Facade for a PortfolioModel. Wraps up all the logic surrounding an individual PortfolioEntity.
  * The PersistentEntity class itself can get large, so this wrapper can hold some of the logic around interactions with
@@ -49,9 +44,8 @@ class PortfolioModel {
     }
 
 
-
     CompletionStage<Done> placeOrder(OrderId orderId, OrderDetails orderDetails) {
-        return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(orderId,  orderDetails));
+        return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(orderId, orderDetails));
     }
 
     CompletionStage<Done> processTrade(OrderId orderId, Trade trade) {

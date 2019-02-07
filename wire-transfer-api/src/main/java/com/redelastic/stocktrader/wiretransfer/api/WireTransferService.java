@@ -1,14 +1,12 @@
 package com.redelastic.stocktrader.wiretransfer.api;
 
-import static com.lightbend.lagom.javadsl.api.Service.named;
-import static com.lightbend.lagom.javadsl.api.Service.call;
-import static com.lightbend.lagom.javadsl.api.Service.topic;
-
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.redelastic.stocktrader.TransferId;
+
+import static com.lightbend.lagom.javadsl.api.Service.*;
 
 
 /**
@@ -16,26 +14,26 @@ import com.redelastic.stocktrader.TransferId;
  */
 public interface WireTransferService extends Service {
 
-  ServiceCall<Transfer, TransferId> transferFunds();
+    String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
+    String TRANSFER_REQUEST_TOPIC_ID = "WireTransfer-TransferRequest";
 
-  Topic<Transfer> completedTransfers();
+    ServiceCall<Transfer, TransferId> transferFunds();
 
-  Topic<TransferRequest> transferRequest();
+    Topic<Transfer> completedTransfers();
 
-  String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
-  String TRANSFER_REQUEST_TOPIC_ID = "WireTransfer-TransferRequest";
+    Topic<TransferRequest> transferRequest();
 
-  @Override
-  default Descriptor descriptor() {
-    // @formatter:off
+    @Override
+    default Descriptor descriptor() {
+        // @formatter:off
 
-    return named("wire-transfer").withCalls(
-            call(this::transferFunds)
+        return named("wire-transfer").withCalls(
+                call(this::transferFunds)
         )
-        .withTopics(
-                topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
-                topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
-        );
-    // @formatter:on
-  }
+                .withTopics(
+                        topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
+                        topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
+                );
+        // @formatter:on
+    }
 }

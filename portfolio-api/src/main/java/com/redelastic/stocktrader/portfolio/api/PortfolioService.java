@@ -7,9 +7,9 @@ import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.api.transport.Method;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.OrderId;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -18,10 +18,13 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  */
 public interface PortfolioService extends Service {
 
+    String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
+
     ServiceCall<OpenPortfolioDetails, PortfolioId> openPortfolio();
 
     /**
      * Place an order for a particular portfolio.
+     *
      * @param portfolioId ID for the portfolio placing the order.
      * @return Order ID when the order has been accepted. For a sell order this requires confirming that the
      * requested number of shares are available to be sold.
@@ -33,6 +36,7 @@ public interface PortfolioService extends Service {
      * Note that after selling all the equities the portfolio may still be in an overdrawn state (negative funds),
      * we will not close it until the balance of funds is zero. External action will be required to complete closure
      * of an overdrawn account.
+     *
      * @param portfolioId ID for the portfolio to liquidate.
      * @return Done when the liquidate command has been acknowledged.
      */
@@ -42,6 +46,7 @@ public interface PortfolioService extends Service {
 
     /**
      * Get a view of the portfolio, including the current valuation of the equities held in it.
+     *
      * @param portfolioId ID of the portfolio to view.
      * @return The current portfolio's state.
      */
@@ -51,12 +56,10 @@ public interface PortfolioService extends Service {
 
     /**
      * The orders placed by portfolios managed by this service.
+     *
      * @return Orders placed by portfolios.
      */
     Topic<OrderPlaced> orderPlaced();
-
-
-    String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
 
     @Override
     default Descriptor descriptor() {
@@ -65,12 +68,12 @@ public interface PortfolioService extends Service {
         return named("portfolio").withCalls(
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
                 restCall(Method.POST, "/api/portfolio", this::openPortfolio),
-                restCall(Method.POST,"/api/portfolio/:portfolioId/close", this::closePortfolio),
-                restCall(Method.GET,"/api/portfolio/:portfolioId", this::getPortfolio),
-                restCall(Method.POST,"/api/portfolio/:portfolioId/placeOrder", this::placeOrder),
+                restCall(Method.POST, "/api/portfolio/:portfolioId/close", this::closePortfolio),
+                restCall(Method.GET, "/api/portfolio/:portfolioId", this::getPortfolio),
+                restCall(Method.POST, "/api/portfolio/:portfolioId/placeOrder", this::placeOrder),
                 restCall(Method.POST, "/api/portfolio/:portfolio/processTransfer", this::processTransfer)
         ).withTopics(
-            topic(ORDERS_TOPIC_ID, this::orderPlaced)
+                topic(ORDERS_TOPIC_ID, this::orderPlaced)
         ).withPathParamSerializer(PortfolioId.class, PortfolioId.pathParamSerializer);
         // @formatter:on
 

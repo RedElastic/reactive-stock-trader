@@ -15,38 +15,40 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 public interface BrokerService extends Service {
 
-  /**
-   * Get the most recent share sharePrice for a stock.
-   * @param symbol Stock ticker symbol.
-   * @return
-   */
-  ServiceCall<NotUsed, Quote> getQuote(String symbol);
+    String ORDER_RESULTS_TOPIC_ID = "Broker-OrderResults";
 
-  /**
-   * Get the current status of an order.
-   * @param orderId ID for the order.
-   * @return Status of the order, if it exists, empty if no such order ID is known.
-   */
-  ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId);
+    /**
+     * Get the most recent share sharePrice for a stock.
+     *
+     * @param symbol Stock ticker symbol.
+     * @return
+     */
+    ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
-  /**
-   * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
-   * or otherwise).
-   */
-  Topic<OrderResult> orderResult();
+    /**
+     * Get the current status of an order.
+     *
+     * @param orderId ID for the order.
+     * @return Status of the order, if it exists, empty if no such order ID is known.
+     */
+    ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId);
 
-  String ORDER_RESULTS_TOPIC_ID = "Broker-OrderResults";
+    /**
+     * Completion events for orders, either successfully as a trade, or unsuccessfully (due to expiration of timeout
+     * or otherwise).
+     */
+    Topic<OrderResult> orderResult();
 
-  @Override
-  default Descriptor descriptor() {
-    // @formatter:off
-    return named("broker").withCalls(
-            restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
-            restCall(Method.GET, "/api/order/:orderId", this::getOrderSummary)
-    ).withTopics(
-            topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
-              .withProperty(KafkaProperties.partitionKeyStrategy(), orderResult -> orderResult.getPortfolioId().getId())
-    ).withPathParamSerializer(OrderId.class, OrderId.pathParamSerializer);
-    // @formatter:on
-  }
+    @Override
+    default Descriptor descriptor() {
+        // @formatter:off
+        return named("broker").withCalls(
+                restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
+                restCall(Method.GET, "/api/order/:orderId", this::getOrderSummary)
+        ).withTopics(
+                topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
+                        .withProperty(KafkaProperties.partitionKeyStrategy(), orderResult -> orderResult.getPortfolioId().getId())
+        ).withPathParamSerializer(OrderId.class, OrderId.pathParamSerializer);
+        // @formatter:on
+    }
 }

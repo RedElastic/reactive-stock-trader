@@ -17,12 +17,6 @@ public class CSHelper {
         this.scheduler = scheduler;
     }
 
-    public <T> CompletionStage<T> withTimeout(CompletionStage<T> resultFuture, int delay, TimeUnit timeUnit) {
-        CompletableFuture<T> timeoutFuture = new CompletableFuture<T>();
-        scheduler.schedule(() -> timeoutFuture.completeExceptionally(new TimeoutException()), delay, timeUnit);
-        return (CompletionStage<T>)CompletableFuture.anyOf(resultFuture.toCompletableFuture(), timeoutFuture);
-    }
-
     public static <T> CompletionStage<List<T>> allOf(List<CompletableFuture<T>> futures) {
 
         return CompletableFuture.allOf(
@@ -36,13 +30,14 @@ public class CSHelper {
 
     /**
      * Recover from specific exception
-     * @param cs CompletionStage to monitor
+     *
+     * @param cs             CompletionStage to monitor
      * @param exceptionClass Class of exception we want to handle.
-     * @param recovery Recovery process.
-     * @param <T> Type of response from the CompletionStage
-     * @param <E> Type of exception we want to recoverWith from.
+     * @param recovery       Recovery process.
+     * @param <T>            Type of response from the CompletionStage
+     * @param <E>            Type of exception we want to recoverWith from.
      * @return Completion stage that either completes successfully, if {@code cs} does, or if cs produces an
-     *  exception which is an instance of exceptionClass then the result behaves as {@code recovery}.
+     * exception which is an instance of exceptionClass then the result behaves as {@code recovery}.
      */
     public static <T, E extends Throwable> CompletionStage<T> recoverWith(CompletionStage<T> cs, Class<E> exceptionClass, Function<E, CompletionStage<T>> recovery) {
         return cs.handle((T r, Throwable ex) -> {
@@ -56,7 +51,7 @@ public class CSHelper {
                 }
             }
         })
-        .thenCompose(Function.identity());
+                .thenCompose(Function.identity());
     }
 
     public static <T, E extends Throwable> CompletionStage<T> recover(CompletionStage<T> cs, Class<E> exceptionClass, Function<E, T> recovery) {
@@ -65,6 +60,7 @@ public class CSHelper {
 
     /**
      * Create a CompletableFuture which completes exceptionally.
+     *
      * @param ex
      * @param <T>
      * @return A CompletionStage that completes exceptionally producing {@code ex}
@@ -73,5 +69,11 @@ public class CSHelper {
         CompletableFuture<T> future = new CompletableFuture<T>();
         future.completeExceptionally(ex);
         return future;
+    }
+
+    public <T> CompletionStage<T> withTimeout(CompletionStage<T> resultFuture, int delay, TimeUnit timeUnit) {
+        CompletableFuture<T> timeoutFuture = new CompletableFuture<T>();
+        scheduler.schedule(() -> timeoutFuture.completeExceptionally(new TimeoutException()), delay, timeUnit);
+        return (CompletionStage<T>) CompletableFuture.anyOf(resultFuture.toCompletableFuture(), timeoutFuture);
     }
 }

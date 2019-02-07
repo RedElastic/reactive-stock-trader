@@ -16,9 +16,8 @@ import static java.util.stream.Collectors.toList;
 @Value
 class Holdings {
 
-    @NonNull PMap<String, Integer> holdings;
-
     static Holdings EMPTY = new Holdings(HashTreePMap.empty());
+    @NonNull PMap<String, Integer> holdings;
 
     Holdings add(String symbol, int newShares) {
         int currentShares = 0;
@@ -49,10 +48,10 @@ class Holdings {
     }
 
     PSequence<Holding> asSequence() {
-         return ConsPStack.from(
-                 holdings.keySet().stream()
-                .map(symbol -> new Holding(symbol, holdings.get(symbol)))
-                .collect(toList()));
+        return ConsPStack.from(
+                holdings.keySet().stream()
+                        .map(symbol -> new Holding(symbol, holdings.get(symbol)))
+                        .collect(toList()));
     }
 
     int getShareCount(String symbol) {

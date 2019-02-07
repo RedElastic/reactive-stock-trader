@@ -2,7 +2,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HoldingsTest {
 
@@ -10,7 +10,7 @@ public class HoldingsTest {
     public void add() {
         Holdings holdings =
                 Holdings.EMPTY
-                .add("ABC", 10);
+                        .add("ABC", 10);
 
         assertEquals(holdings.getShareCount("ABC"), 10);
 
@@ -20,8 +20,8 @@ public class HoldingsTest {
     public void remove() {
         Holdings holdings =
                 Holdings.EMPTY
-                .add("ABC", 10)
-                .remove("ABC", 8);
+                        .add("ABC", 10)
+                        .remove("ABC", 8);
 
         assertEquals(holdings.getShareCount("ABC"), 2);
 

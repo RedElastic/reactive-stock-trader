@@ -20,6 +20,16 @@ public abstract class FundsTransfer {
 
     private FundsTransfer() {}
 
+    public abstract <T> T visit(Visitor<T> visitor);
+
+    public interface Visitor<T> {
+        T visit(Deposit deposit);
+
+        T visit(Withdrawl withdrawl);
+
+        T visit(Refund refund);
+    }
+
     @Value
     @EqualsAndHashCode(callSuper = false)
     @Builder
@@ -52,13 +62,5 @@ public abstract class FundsTransfer {
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
-
-    public interface Visitor<T> {
-        T visit(Deposit deposit);
-        T visit(Withdrawl withdrawl);
-        T visit(Refund refund);
-    }
-
-    public abstract <T> T visit(Visitor<T> visitor);
 
 }

@@ -19,6 +19,14 @@ public abstract class TransferRequest {
 
     public abstract Account getAccount();
 
+    public abstract <T> T visit(Visitor<T> visitor);
+
+    public interface Visitor<T> {
+        T visit(WithdrawlRequest withdrawlRequest);
+
+        T visit(DepositRequest depositRequest);
+    }
+
     @Value
     @Builder
     @EqualsAndHashCode(callSuper = false)
@@ -42,11 +50,4 @@ public abstract class TransferRequest {
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
-
-    public interface Visitor<T> {
-        T visit(WithdrawlRequest withdrawlRequest);
-        T visit(DepositRequest depositRequest);
-    }
-
-    public abstract <T> T  visit(Visitor<T> visitor);
 }

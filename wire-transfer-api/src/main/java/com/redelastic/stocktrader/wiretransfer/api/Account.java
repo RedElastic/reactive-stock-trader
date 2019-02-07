@@ -3,7 +3,6 @@ package com.redelastic.stocktrader.wiretransfer.api;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.portfolio.api.FundsTransfer;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 
