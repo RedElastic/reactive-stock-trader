@@ -1,14 +1,16 @@
-# Install
+# Install and Run
 
-Install Java 8 SDK
-Install SBT (`brew install sbt` on Mac)
-`sbt runAll`
+- Install Java 8 SDK
+- [Install SBT](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
+- `sbt runAll`
 
 The front end API is exposed on port 9000. 
 
-The `jq` command line tool for JSON is very handy for pretty printing JSON responses, on Mac this can be installed with `brew install jq`. 
+The UI project can be found [here](https://github.com/RedElastic/reactive-stock-trader-ui). By default it is configured to expect the backend on localhost:9000. 
 
 # Command line use of API
+
+The `jq` command line tool for JSON is very handy for pretty printing JSON responses, on Mac this can be installed with `brew install jq`.
 
 Create a new portfolio named "piggy bank savings":
 `PID=$(curl -X POST http:/localhost:9000/api/portfolio -F name="piggy bank savings"); echo $PID`
