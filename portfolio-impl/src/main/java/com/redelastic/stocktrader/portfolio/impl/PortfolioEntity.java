@@ -1,6 +1,7 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
+import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
@@ -52,6 +53,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
             builder.setCommandHandler(PortfolioCommand.Open.class, this::open);
             builder.setEventHandlerChangingBehavior(PortfolioEvent.Opened.class, this::opened);
+            builder.setReadOnlyCommandHandler(PortfolioCommand.GetState.class, (cmd, ctx) ->
+                    ctx.commandFailed(new NotFound(String.format("Portfolio %s not found.", entityId()))));
 
             return builder.build();
         }
