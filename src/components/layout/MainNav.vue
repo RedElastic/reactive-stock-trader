@@ -33,7 +33,11 @@
         </b-dropdown-item>
       </b-nav-item-dropdown>
     </b-navbar-nav>
-    <b-container>Active Portfolio: {{ portfolio.name }} ({{ portfolio.id | shortUUID }})</b-container>
+    <b-container 
+      v-if="portfolio.id"
+    >
+      Active Portfolio: {{ portfolio.name }} ({{ portfolio.id | shortUUID }})
+    </b-container>
   </b-navbar>
 </template>
 

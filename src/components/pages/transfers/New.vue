@@ -38,7 +38,7 @@
                 </b-form-group>
               </div>
               <div class="col-5">
-                current portfolio ({{ portfoliId | shortUUID }})
+                current portfolio ({{ portfolioId | shortUUID }})
               </div>
             </div>
             <div class="row">
@@ -135,7 +135,7 @@
 <script>
 import {submitTransfer} from '@/common/transfers';
 import {activePortfolio} from '@/common/portfolio';
-import {getSummary as portfolioSummary} from '@/common/portfolio';
+import {getPortfolio} from '@/common/portfolio';
 
 const emptyForm = {
   amount: null,
@@ -183,7 +183,7 @@ export default {
     }
   },
   mounted() {   
-     portfolioSummary()
+     getPortfolio()
        .then(portfolio => {
          this.portfolio.cashOnHand = portfolio.funds;
        });

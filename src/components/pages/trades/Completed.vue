@@ -78,9 +78,8 @@
       };
     },
     mounted() {
-      portfolio.getSummary({ includeOrders: true })
+      portfolio.getPortfolio({ includeOrders: true })
         .then(summary => {
-          console.dir(summary);
           this.orders = summary.completedOrders.map(order => {
             let line = {
               id: order.orderId,
