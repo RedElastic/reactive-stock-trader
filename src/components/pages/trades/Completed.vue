@@ -29,7 +29,7 @@
               Shares Sold
             </th>
             <th scope="col">
-              Price
+              Share Price
             </th>
             <th scope="col">
               Debit
@@ -48,18 +48,18 @@
             :key="order.id"
           >
             <td scope="row">
-              12/12/12
+              {{ order.date }}
             </td>
-            <td>11:46:01am EST</td>
+            <td>{{ order.time }}</td>
             <td>{{ order.id | shortUUID }}</td>
             <td>Trade</td>
             <td>{{ order.symbol }}</td>
-            <td>{{ order.sharesBought || '&nbsp;' }}</td>
-            <td>{{ order.sharesSold || '&nbsp;' }}</td>
+            <td>{{ order.sharesBought }}</td>
+            <td>{{ order.sharesSold }}</td>
             <td>{{ order.price | toCurrency }}</td>
-            <td>&nbsp;</td>
-            <td>12,134</td>
-            <td>134,123 USD</td>
+            <td>{{ order.debit }}</td>
+            <td>{{ order.credit }}</td>
+            <td>{{ order.cashOnHand }}</td>
           </tr>
         </tbody>
       </table>       
