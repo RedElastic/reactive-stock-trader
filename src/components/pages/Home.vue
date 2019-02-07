@@ -102,7 +102,9 @@
         };
       },
       loadPortfolio() {
-        portfolio.load(this.search.portfolioId);
+        portfolio.getPortfolio({
+          portfolioId: this.search.portfolioId
+        });
       }
     }
   } 
