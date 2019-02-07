@@ -31,7 +31,7 @@ public interface OrderState {
         OrderDetails orderDetails;
 
         public OrderStatus getStatus() {
-            return OrderStatus.Pending;
+            return OrderStatus.Pending.INSTANCE;
         }
 
         @Override
@@ -62,7 +62,7 @@ public interface OrderState {
         OrderDetails orderDetails;
 
         public OrderStatus getStatus() {
-            return OrderStatus.Failed;
+            return OrderStatus.Failed.INSTANCE;
         }
 
         @Override

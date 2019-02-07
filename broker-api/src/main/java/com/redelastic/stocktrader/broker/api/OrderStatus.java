@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public abstract class OrderStatus {
     private OrderStatus() {}
 
-    static class Pending extends OrderStatus {
+    public static class Pending extends OrderStatus {
         private Pending() {}
         public static Pending INSTANCE = new Pending();
     }
@@ -28,7 +28,7 @@ public abstract class OrderStatus {
         @NonNull BigDecimal price;
     }
 
-    static class Failed extends OrderStatus {
+    public static class Failed extends OrderStatus {
         private Failed() {}
         public static Failed INSTANCE = new Failed();
     }
