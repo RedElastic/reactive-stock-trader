@@ -47,22 +47,21 @@ export function open(request) {
   });
 }
 
-export function load(portfolioId) {
-  getSummary(portfolioId)
-    .then(summary => {
-      activePortfolio.id = summary.portfolioId;
-      activePortfolio.name = summary.name;
-    });
-}
-
-export function getSummary({portfolioId, includeOrders, includeSharePrices}) {
-  if (portfolioId == null) { portfolioId = activePortfolio.id; }
+export function getPortfolio(options) {
+  const {includeOrders, includeSharePrices} = options || {};
+  const portfolioId = activePortfolio.id;
   const url = new URL('/api/portfolio/' + portfolioId + '/summary', baseUrl);
   if (includeOrders) url.searchParams.append('includeOrderInfo', true);
   if (includeSharePrices) url.searchParams.append('includePrices', true);
-  return axios
-    .get(url.toString())
-    .then(response => response.data);  
+  const request = axios.get(url.toString());
+  return request.then(response => {
+      activePortfolio.id = response.data.portfolioId;
+      activePortfolio.name = response.data.name;
+    return response.data;      
+  })
+  .catch(err => {
+    activePortfolio.clear();
+  });
 }
 
 export function getDetails(portfolioId) {
