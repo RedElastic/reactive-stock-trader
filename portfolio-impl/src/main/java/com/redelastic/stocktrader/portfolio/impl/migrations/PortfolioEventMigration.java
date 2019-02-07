@@ -1,8 +1,8 @@
 package com.redelastic.stocktrader.portfolio.impl.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.lightbend.lagom.serialization.JacksonJsonMigration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 class PortfolioEventMigration extends JacksonJsonMigration {
 
     private final Logger log = LoggerFactory.getLogger(PortfolioEventMigration.class);
+
     @Override
     public int currentVersion() {
         return 2;

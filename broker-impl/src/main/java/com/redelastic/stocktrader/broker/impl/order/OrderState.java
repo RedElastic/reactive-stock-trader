@@ -15,6 +15,16 @@ public interface OrderState {
 
     PortfolioId getPortfolioId();
 
+    <T> T visit(Visitor<T> visitor);
+
+    interface Visitor<T> {
+        T visit(Pending pending);
+
+        T visit(Fulfilled fulfilled);
+
+        T visit(Failed failed);
+    }
+
     @Value
     class Pending implements OrderState {
         PortfolioId portfolioId;
@@ -60,13 +70,5 @@ public interface OrderState {
             return visitor.visit(this);
         }
     }
-
-    interface Visitor<T> {
-        T visit(Pending pending);
-        T visit(Fulfilled fulfilled);
-        T visit(Failed failed);
-    }
-
-    <T> T visit(Visitor<T> visitor);
 
 }

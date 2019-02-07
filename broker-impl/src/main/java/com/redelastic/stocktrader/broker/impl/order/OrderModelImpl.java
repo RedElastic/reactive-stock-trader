@@ -2,13 +2,13 @@ package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.broker.impl.trade.TradeService;
 import com.redelastic.stocktrader.portfolio.api.order.Order;
-import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +37,14 @@ public class OrderModelImpl implements OrderModel {
         //  Consider the implications.
         placeOrder.thenAccept(order ->
                 tradeService.placeOrder(order)
-                .exceptionally(ex -> {
-                    log.info(String.format("Order %s failed, %s.", orderEntity.entityId(), ex.toString()),ex);
-                    return new OrderResult.Failed(order.getPortfolioId(), new OrderId(orderEntity.entityId()));
-                })
-                .thenAccept(orderResult -> {
-                    log.info(String.format("Order %s completing.", orderEntity.entityId()));
-                    orderEntity.ask(new OrderCommand.CompleteOrder(orderResult));
-                })
+                        .exceptionally(ex -> {
+                            log.info(String.format("Order %s failed, %s.", orderEntity.entityId(), ex.toString()), ex);
+                            return new OrderResult.Failed(order.getPortfolioId(), new OrderId(orderEntity.entityId()));
+                        })
+                        .thenAccept(orderResult -> {
+                            log.info(String.format("Order %s completing.", orderEntity.entityId()));
+                            orderEntity.ask(new OrderCommand.CompleteOrder(orderResult));
+                        })
         );
         // Note that our service call responds with Done after the PlaceOrder command is accepted, it does not
         // wait for the order to be fulfilled (which, in general, may require some time).

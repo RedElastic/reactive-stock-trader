@@ -6,12 +6,12 @@ import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
-import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.wiretransfer.api.Account;
 import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
@@ -67,14 +67,14 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     private CompletionStage<Done> handleWithdrawl(TransferRequest.WithdrawlRequest request) {
-        PortfolioId portfolioId = ((Account.Portfolio)request.getAccount()).getPortfolioId();
+        PortfolioId portfolioId = ((Account.Portfolio) request.getAccount()).getPortfolioId();
         return portfolioRepository
                 .getRef(portfolioId)
                 .ask(PortfolioCommand.SendFunds.builder().amount(request.getAmount()).build());
     }
 
     private CompletionStage<Done> handleDeposit(TransferRequest.DepositRequest request) {
-        PortfolioId portfolioId = ((Account.Portfolio)request.getAccount()).getPortfolioId();
+        PortfolioId portfolioId = ((Account.Portfolio) request.getAccount()).getPortfolioId();
         return portfolioRepository
                 .getRef(portfolioId)
                 .ask(PortfolioCommand.ReceiveFunds.builder().amount(request.getAmount()).build());
@@ -95,16 +95,16 @@ public class PortfolioServiceImpl implements PortfolioService {
     public ServiceCall<NotUsed, Done> closePortfolio(PortfolioId portfolioId) {
         return notUsed ->
                 portfolioRepository
-                .getRef(portfolioId)
-                .ask(PortfolioCommand.ClosePortfolio.INSTANCE);
+                        .getRef(portfolioId)
+                        .ask(PortfolioCommand.ClosePortfolio.INSTANCE);
     }
 
     @Override
     public ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId) {
         return notUsed ->
-            portfolioRepository
-                    .get(portfolioId)
-                    .view();
+                portfolioRepository
+                        .get(portfolioId)
+                        .view();
     }
 
     @Override
@@ -112,22 +112,22 @@ public class PortfolioServiceImpl implements PortfolioService {
         val portfolioRef = portfolioRepository
                 .getRef(portfolioId);
         return fundsTransfer ->
-            fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
-                @Override
-                public CompletionStage<Done> visit(FundsTransfer.Deposit deposit) {
-                    return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds()));
-                }
+                fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
+                    @Override
+                    public CompletionStage<Done> visit(FundsTransfer.Deposit deposit) {
+                        return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds()));
+                    }
 
-                @Override
-                public CompletionStage<Done> visit(FundsTransfer.Withdrawl withdrawl) {
-                    return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds()));
-                }
+                    @Override
+                    public CompletionStage<Done> visit(FundsTransfer.Withdrawl withdrawl) {
+                        return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds()));
+                    }
 
-                @Override
-                public CompletionStage<Done> visit(FundsTransfer.Refund refund) {
-                    return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds(), refund.getTransferId()));
-                }
-            });
+                    @Override
+                    public CompletionStage<Done> visit(FundsTransfer.Refund refund) {
+                        return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds(), refund.getTransferId()));
+                    }
+                });
     }
 
     @Override

@@ -19,6 +19,7 @@ public abstract class OrderStatus {
 
     static class Pending extends OrderStatus {
         private Pending() {}
+        public static Pending INSTANCE = new Pending();
     }
 
     @Value
@@ -29,14 +30,7 @@ public abstract class OrderStatus {
 
     static class Failed extends OrderStatus {
         private Failed() {}
-    }
-
-    public static Pending Pending;
-    public static Failed Failed;
-
-    static {
-        Pending = new Pending();
-        Failed = new Failed();
+        public static Failed INSTANCE = new Failed();
     }
 
 }

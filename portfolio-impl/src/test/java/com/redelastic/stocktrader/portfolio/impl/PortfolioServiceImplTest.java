@@ -8,13 +8,13 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.testkit.ProducerStub;
 import com.lightbend.lagom.javadsl.testkit.ProducerStubFactory;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.TradeType;
 import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.broker.api.*;
-import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.OrderId;
-import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.portfolio.api.*;
+import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import com.redelastic.stocktrader.wiretransfer.api.Transfer;
 import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import static com.lightbend.lagom.javadsl.testkit.ServiceTest.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -46,8 +45,8 @@ public class PortfolioServiceImplTest {
     public static void setUp() {
         server = startServer(defaultSetup().withCassandra()
                 .configureBuilder(b ->
-                    b.overrides(bind(BrokerService.class).to(BrokerStub.class))
-                     .overrides(bind(WireTransferService.class).to(WireTransferStub.class))
+                        b.overrides(bind(BrokerService.class).to(BrokerStub.class))
+                                .overrides(bind(WireTransferService.class).to(WireTransferStub.class))
                 ));
     }
 
@@ -56,66 +55,6 @@ public class PortfolioServiceImplTest {
         if (server != null) {
             server.stop();
             server = null;
-        }
-    }
-
-
-
-
-    // Could consider mocking this per test, however this will require creating a new server per test (to resolve DI),
-    // which will spin up C* each time and slow the tests down.
-    static class BrokerStub implements BrokerService {
-
-        static ProducerStub<OrderResult> orderResultProducerStub;
-
-        static BigDecimal sharePrice = new BigDecimal("152.12");
-
-        @Inject
-        BrokerStub(ProducerStubFactory producerFactory) {
-            orderResultProducerStub = producerFactory.producer(ORDER_RESULTS_TOPIC_ID);
-        }
-
-        @Override
-        public ServiceCall<NotUsed, Quote> getQuote(String symbol) {
-            return notUsed -> CompletableFuture.completedFuture(
-                    Quote.builder().symbol(symbol).sharePrice(sharePrice).build());
-        }
-
-        @Override
-        public ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId) {
-            return null;
-        }
-
-        @Override
-        public Topic<OrderResult> orderResult() {
-            return orderResultProducerStub.topic();
-        }
-    }
-
-    static class WireTransferStub implements WireTransferService {
-
-        static ProducerStub<TransferRequest> transferRequestProducerStub;
-        static ProducerStub<Transfer> transferProducerStub;
-
-        @Inject
-        WireTransferStub(ProducerStubFactory producerStubFactory) {
-            transferRequestProducerStub = producerStubFactory.producer(TRANSFER_REQUEST_TOPIC_ID);
-            transferProducerStub = producerStubFactory.producer(PORTFOLIO_TRANSFER_TOPIC_ID);
-        }
-
-        @Override
-        public ServiceCall<Transfer, TransferId> transferFunds() {
-            return null;
-        }
-
-        @Override
-        public Topic<Transfer> completedTransfers() {
-            return transferProducerStub.topic();
-        }
-
-        @Override
-        public Topic<TransferRequest> transferRequest() {
-            return transferRequestProducerStub.topic();
         }
     }
 
@@ -204,7 +143,6 @@ public class PortfolioServiceImplTest {
         });
 
 
-
         BigDecimal sharePrice = BrokerStub.sharePrice;
         OrderResult orderResult = OrderResult.Fulfilled.builder()
                 .portfolioId(portfolioId)
@@ -252,7 +190,7 @@ public class PortfolioServiceImplTest {
                 .get(5, SECONDS)
                 .getHoldings();
 
-        assertEquals(sharesToBuy-sharesToSell, holdingsDuringSale.get(0).getShareCount());
+        assertEquals(sharesToBuy - sharesToSell, holdingsDuringSale.get(0).getShareCount());
 
         BrokerStub.orderResultProducerStub.send(sellOrderResult);
 
@@ -307,6 +245,63 @@ public class PortfolioServiceImplTest {
         assertEquals(1, view.getHoldings().size());
         assertEquals(sharesToBuy, view.getHoldings().get(0).getShareCount());
 
+    }
+
+    // Could consider mocking this per test, however this will require creating a new server per test (to resolve DI),
+    // which will spin up C* each time and slow the tests down.
+    static class BrokerStub implements BrokerService {
+
+        static ProducerStub<OrderResult> orderResultProducerStub;
+
+        static BigDecimal sharePrice = new BigDecimal("152.12");
+
+        @Inject
+        BrokerStub(ProducerStubFactory producerFactory) {
+            orderResultProducerStub = producerFactory.producer(ORDER_RESULTS_TOPIC_ID);
+        }
+
+        @Override
+        public ServiceCall<NotUsed, Quote> getQuote(String symbol) {
+            return notUsed -> CompletableFuture.completedFuture(
+                    Quote.builder().symbol(symbol).sharePrice(sharePrice).build());
+        }
+
+        @Override
+        public ServiceCall<NotUsed, Optional<OrderSummary>> getOrderSummary(OrderId orderId) {
+            return null;
+        }
+
+        @Override
+        public Topic<OrderResult> orderResult() {
+            return orderResultProducerStub.topic();
+        }
+    }
+
+    static class WireTransferStub implements WireTransferService {
+
+        static ProducerStub<TransferRequest> transferRequestProducerStub;
+        static ProducerStub<Transfer> transferProducerStub;
+
+        @Inject
+        WireTransferStub(ProducerStubFactory producerStubFactory) {
+            transferRequestProducerStub = producerStubFactory.producer(TRANSFER_REQUEST_TOPIC_ID);
+            transferProducerStub = producerStubFactory.producer(PORTFOLIO_TRANSFER_TOPIC_ID);
+        }
+
+        @Override
+        public ServiceCall<Transfer, TransferId> transferFunds() {
+            return null;
+        }
+
+        @Override
+        public Topic<Transfer> completedTransfers() {
+            return transferProducerStub.topic();
+        }
+
+        @Override
+        public Topic<TransferRequest> transferRequest() {
+            return transferRequestProducerStub.topic();
+        }
     }
 
 }

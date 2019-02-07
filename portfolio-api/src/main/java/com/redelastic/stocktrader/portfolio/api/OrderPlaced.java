@@ -1,8 +1,8 @@
 package com.redelastic.stocktrader.portfolio.api;
 
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.OrderId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;

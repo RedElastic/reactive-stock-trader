@@ -6,5 +6,5 @@ import org.pcollections.PSequence;
 import java.util.concurrent.CompletionStage;
 
 public interface QuoteService {
-    CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding>holdings);
+    CompletionStage<PSequence<ValuedHolding>> priceHoldings(PSequence<Holding> holdings);
 }

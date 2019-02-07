@@ -2,8 +2,8 @@ package com.redelastic.stocktrader.broker.api;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.OrderId;
+import com.redelastic.stocktrader.PortfolioId;
 import lombok.*;
 
 /**
@@ -19,7 +19,16 @@ public abstract class OrderResult {
     private OrderResult() {}
 
     public abstract PortfolioId getPortfolioId();
+
     public abstract OrderId getOrderId();
+
+    public abstract <T> T visit(Visitor<T> visitor);
+
+    public interface Visitor<T> {
+        T visit(Fulfilled orderFulfilled);
+
+        T visit(Failed orderFailed);
+    }
 
     @Value
     @Builder
@@ -42,11 +51,4 @@ public abstract class OrderResult {
 
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }
     }
-
-    public interface Visitor<T> {
-        T visit(Fulfilled orderFulfilled);
-        T visit(Failed orderFailed);
-    }
-
-    public abstract <T> T visit(Visitor<T> visitor);
 }

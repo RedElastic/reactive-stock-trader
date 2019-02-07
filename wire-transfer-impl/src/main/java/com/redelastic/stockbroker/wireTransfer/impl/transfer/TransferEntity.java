@@ -4,7 +4,6 @@ import akka.Done;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.TransferId;
 import lombok.extern.log4j.Log4j;
-import lombok.val;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -38,7 +37,6 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
     private TransferId getTransferId() {
         return new TransferId(entityId());
     }
-
 
 
     private Behavior empty() {
@@ -127,7 +125,6 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);
         return builder.build();
     }
-
 
 
     private Behavior refundSent(TransferState state) {

@@ -10,13 +10,11 @@ import lombok.Value;
 
 public interface OrderEvent extends Jsonable, AggregateEvent<OrderEvent> {
 
-    Order getOrder();
-
-
     int NUM_SHARDS = 20; // TODO: Determine the appropriate value
-
     AggregateEventShards<OrderEvent> TAG =
             AggregateEventTag.sharded(OrderEvent.class, NUM_SHARDS);
+
+    Order getOrder();
 
     @Override
     default AggregateEventShards<OrderEvent> aggregateTag() {

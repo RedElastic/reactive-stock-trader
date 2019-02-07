@@ -34,14 +34,16 @@ abstract class OrderCommand implements Jsonable {
     @Value
     @EqualsAndHashCode(callSuper = false)
     static class GetStatus extends OrderCommand implements ReplyType<Optional<OrderStatus>> {
-        private GetStatus() {}
         public static GetStatus INSTANCE = new GetStatus();
+
+        private GetStatus() {}
     }
 
     @Value
     @EqualsAndHashCode(callSuper = false)
     static class GetSummary extends OrderCommand implements ReplyType<Optional<OrderSummary>> {
-        private GetSummary() {}
         public static GetSummary INSTANCE = new GetSummary();
+
+        private GetSummary() {}
     }
 }

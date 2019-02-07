@@ -1,6 +1,5 @@
 package com.redelastic.stocktrader.wiretransfer.api;
 
-import com.redelastic.stocktrader.TransferId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

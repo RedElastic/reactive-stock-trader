@@ -14,21 +14,6 @@ import java.util.Locale;
 class FormattersProvider implements Provider<Formatters> {
 
     private final MessagesApi messagesApi;
-
-    @Inject
-    public FormattersProvider(MessagesApi messagesApi) {
-        this.messagesApi = messagesApi;
-    }
-
-    @Override
-    public Formatters get() {
-        Formatters formatters = new Formatters(messagesApi);
-
-        formatters.register(TradeType.class, orderTypeFormatter);
-
-        return formatters;
-    }
-
     private final SimpleFormatter<TradeType> orderTypeFormatter = new SimpleFormatter<TradeType>() {
         @Override
         public TradeType parse(String text, Locale locale) throws ParseException {
@@ -45,4 +30,18 @@ class FormattersProvider implements Provider<Formatters> {
             return tradeType.name();
         }
     };
+
+    @Inject
+    public FormattersProvider(MessagesApi messagesApi) {
+        this.messagesApi = messagesApi;
+    }
+
+    @Override
+    public Formatters get() {
+        Formatters formatters = new Formatters(messagesApi);
+
+        formatters.register(TradeType.class, orderTypeFormatter);
+
+        return formatters;
+    }
 }

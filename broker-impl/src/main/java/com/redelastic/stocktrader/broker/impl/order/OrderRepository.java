@@ -4,8 +4,8 @@ import akka.japi.Pair;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
-import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.OrderId;
+import com.redelastic.stocktrader.broker.api.OrderResult;
 
 public interface OrderRepository {
 

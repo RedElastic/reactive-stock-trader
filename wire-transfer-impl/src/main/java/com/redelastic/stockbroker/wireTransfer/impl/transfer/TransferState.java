@@ -9,15 +9,6 @@ import lombok.experimental.Wither;
 @Wither
 public class TransferState implements Jsonable {
 
-    enum Status {
-        FundsRequested,
-        UnableToSecureFunds,
-        FundsSent,
-        DeliveryConfirmed,
-        RefundSent,
-        RefundDelivered
-    }
-
     @NonNull TransferDetails transferDetails;
     @NonNull Status status;
 
@@ -31,6 +22,15 @@ public class TransferState implements Jsonable {
                 Status.FundsRequested
         );
 
+    }
+
+    enum Status {
+        FundsRequested,
+        UnableToSecureFunds,
+        FundsSent,
+        DeliveryConfirmed,
+        RefundSent,
+        RefundDelivered
     }
 
 }

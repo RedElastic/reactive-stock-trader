@@ -1,16 +1,15 @@
 package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.japi.Pair;
-import akka.japi.pf.PFBuilder;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
+import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.broker.impl.trade.TradeService;
 import com.redelastic.stocktrader.portfolio.api.order.Order;
-import com.redelastic.stocktrader.OrderId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,32 +39,32 @@ public class OrderRepositoryImpl implements OrderRepository {
         return persistentEntities
                 .eventStream(tag, offset)
                 .filter(eventOffset ->
-                eventOffset.first() instanceof OrderEvent.OrderFulfilled ||
-                        eventOffset.first() instanceof OrderEvent.OrderFailed
-        ).map(eventAndOffset -> {
-            if (eventAndOffset.first() instanceof OrderEvent.OrderFulfilled) {
-                OrderEvent.OrderFulfilled fulfilled = (OrderEvent.OrderFulfilled) eventAndOffset.first();
-                Order order = fulfilled.getOrder();
-                Trade trade = fulfilled.getTrade();
+                        eventOffset.first() instanceof OrderEvent.OrderFulfilled ||
+                                eventOffset.first() instanceof OrderEvent.OrderFailed
+                ).map(eventAndOffset -> {
+                    if (eventAndOffset.first() instanceof OrderEvent.OrderFulfilled) {
+                        OrderEvent.OrderFulfilled fulfilled = (OrderEvent.OrderFulfilled) eventAndOffset.first();
+                        Order order = fulfilled.getOrder();
+                        Trade trade = fulfilled.getTrade();
 
-                log.info(String.format("Order %s fulfilled.", order.getOrderId()));
+                        log.info(String.format("Order %s fulfilled.", order.getOrderId()));
 
-                OrderResult.Fulfilled completedOrder = OrderResult.Fulfilled.builder()
-                        .portfolioId(order.getPortfolioId())
-                        .orderId(order.getOrderId())
-                        .trade(trade)
-                        .build();
-                return Pair.create(completedOrder, eventAndOffset.second());
-            } else if (eventAndOffset.first() instanceof OrderEvent.OrderFailed) {
-                OrderEvent.OrderFailed failed = (OrderEvent.OrderFailed) eventAndOffset.first();
-                return Pair.create(
-                        new OrderResult.Failed(failed.getOrder().getPortfolioId(), failed.getOrder().getOrderId()),
-                        eventAndOffset.second()
-                );
-            } else {
-                throw new IllegalStateException();
-            }
-        });
+                        OrderResult.Fulfilled completedOrder = OrderResult.Fulfilled.builder()
+                                .portfolioId(order.getPortfolioId())
+                                .orderId(order.getOrderId())
+                                .trade(trade)
+                                .build();
+                        return Pair.create(completedOrder, eventAndOffset.second());
+                    } else if (eventAndOffset.first() instanceof OrderEvent.OrderFailed) {
+                        OrderEvent.OrderFailed failed = (OrderEvent.OrderFailed) eventAndOffset.first();
+                        return Pair.create(
+                                new OrderResult.Failed(failed.getOrder().getPortfolioId(), failed.getOrder().getOrderId()),
+                                eventAndOffset.second()
+                        );
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                });
     }
 
     private OrderModel createModel(OrderId orderId) {

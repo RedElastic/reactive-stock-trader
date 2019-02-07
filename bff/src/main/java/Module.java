@@ -1,6 +1,6 @@
+import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.api.ServiceAcl;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;
-import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.client.ServiceClientGuiceSupport;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;

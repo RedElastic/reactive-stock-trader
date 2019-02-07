@@ -5,6 +5,6 @@ import lombok.Value;
 
 @Value
 public class Holding {
-     @NonNull String symbol;
-     int shareCount;
+    @NonNull String symbol;
+    int shareCount;
 }

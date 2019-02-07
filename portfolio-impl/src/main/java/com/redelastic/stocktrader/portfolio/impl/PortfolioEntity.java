@@ -43,6 +43,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 .orElse(new UninitializedBehavior().getBehaviour());
     }
 
+    PortfolioId getPortfolioId() { return new PortfolioId(entityId()); }
+
     class UninitializedBehavior {
 
         Behavior getBehaviour() {
@@ -72,23 +74,23 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         }
     }
 
-
     /**
      * Provides a stronger typed interface for defining state specific behavior. When we're in a specific state we
      * should have the corresponding behaviour, and vice-versa.
+     *
      * @param <State>
      */
     abstract class PortfolioBehaviorBuilder<State extends PortfolioState> {
-        // Shadow parent state() method with behaviour specific state so we don't need downcasts throughout.
-        @SuppressWarnings("unchecked")
-        State state() { return (State)PortfolioEntity.this.state().get(); }
-
         final BehaviorBuilder builder;
 
         PortfolioBehaviorBuilder(PortfolioState state) {
             builder = newBehaviorBuilder(Optional.of(state));
             builder.setCommandHandler(PortfolioCommand.Open.class, this::rejectOpen);
         }
+
+        // Shadow parent state() method with behaviour specific state so we don't need downcasts throughout.
+        @SuppressWarnings("unchecked")
+        State state() { return (State) PortfolioEntity.this.state().get(); }
 
         Persist rejectOpen(PortfolioCommand.Open cmd, CommandContext<Done> ctx) {
             ctx.commandFailed(new PortfolioAlreadyOpened(getPortfolioId()));
@@ -130,7 +132,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         }
     }
 
-
     private class OpenPortfolioBehavior extends PortfolioBehaviorBuilder<PortfolioState.Open> {
 
         OpenPortfolioBehavior(PortfolioEvent.Opened evt) {
@@ -160,7 +161,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             setEventHandler(PortfolioEvent.OrderFulfilled.class, evt ->
                     state().orderCompleted(evt.getOrderId()));
             setEventHandler(PortfolioEvent.OrderFailed.class, evt ->
-                state().orderCompleted(evt.getOrderId()));
+                    state().orderCompleted(evt.getOrderId()));
 
             setEventHandlerChangingState(PortfolioEvent.LiquidationStarted.class, evt ->
                     PortfolioState.Liquidating.builder()
@@ -238,7 +239,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         private PersistentEntity.Persist placeOrder(PortfolioCommand.PlaceOrder placeOrder, CommandContext<Done> ctx) {
             log.info(String.format("Placing order %s", placeOrder.toString()));
             OrderDetails orderDetails = placeOrder.getOrderDetails();
-            switch(orderDetails.getTradeType()) {
+            switch (orderDetails.getTradeType()) {
                 case SELL:
                     int available = state().getHoldings().getShareCount(orderDetails.getSymbol());
                     if (available >= orderDetails.getShares()) {
@@ -296,6 +297,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
         /**
          * If a sell order failed then we can reclaim the shares.
+         *
          * @param cmd
          * @param ctx
          * @return
@@ -310,12 +312,12 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 return ctx.done();
             } else {
                 log.info(String.format("Order failure for order %s.", cmd.getOrderFailed().getOrderId()));
-                switch(orderPlaced.getOrderDetails().getTradeType()) {
+                switch (orderPlaced.getOrderDetails().getTradeType()) {
                     case SELL:
                         return ctx.thenPersistAll(Arrays.asList(
                                 new PortfolioEvent.SharesCredited(getPortfolioId(), orderPlaced.getOrderDetails().getSymbol(), orderPlaced.getOrderDetails().getShares()),
                                 new PortfolioEvent.OrderFailed(getPortfolioId(), cmd.getOrderFailed().getOrderId())
-                            ), () -> ctx.reply(Done.getInstance()));
+                        ), () -> ctx.reply(Done.getInstance()));
                     case BUY:
                         return ctx.thenPersist(
                                 new PortfolioEvent.OrderFailed(getPortfolioId(), cmd.getOrderFailed().getOrderId()),
@@ -349,7 +351,5 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         }
 
     }
-
-    PortfolioId getPortfolioId() { return new PortfolioId(entityId()); }
 
 }

@@ -3,8 +3,8 @@ import com.typesafe.config.Config;
 import play.Environment;
 import play.api.OptionalSourceMapper;
 import play.api.UsefulException;
-import play.http.DefaultHttpErrorHandler;
 import play.api.routing.Router;
+import play.http.DefaultHttpErrorHandler;
 import play.mvc.Http;
 import play.mvc.Result;
 

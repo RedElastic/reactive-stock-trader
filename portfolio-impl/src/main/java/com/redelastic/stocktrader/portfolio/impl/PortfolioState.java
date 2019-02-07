@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
-
 import org.pcollections.HashTreePMap;
 import org.pcollections.HashTreePSet;
 import org.pcollections.PMap;
@@ -21,6 +20,26 @@ import java.math.BigDecimal;
  * will accept applicable PortfolioEvents.
  */
 public interface PortfolioState extends Jsonable {
+
+    <T> T visit(Visitor<T> visitor);
+
+    enum Closed implements PortfolioState {
+        INSTANCE;
+
+        @Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visit(INSTANCE);
+        }
+
+    }
+
+    interface Visitor<T> {
+        T visit(Open open);
+
+        T visit(Liquidating liquidating);
+
+        T visit(Closed closed);
+    }
 
     @Value
     @Builder
@@ -91,23 +110,5 @@ public interface PortfolioState extends Jsonable {
         }
 
     }
-
-    enum Closed implements PortfolioState {
-        INSTANCE;
-
-        @Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visit(INSTANCE);
-        }
-
-    }
-
-    interface Visitor<T> {
-        T visit(Open open);
-        T visit(Liquidating liquidating);
-        T visit(Closed closed);
-    }
-
-    <T> T visit(Visitor<T> visitor);
 
 }

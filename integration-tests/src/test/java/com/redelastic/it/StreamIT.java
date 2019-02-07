@@ -3,21 +3,12 @@ package com.redelastic.it;
 import akka.actor.ActorSystem;
 import akka.stream.ActorMaterializer;
 import akka.stream.Materializer;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.client.integration.LagomClientFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
-import com.redelastic.stream.api.StreamService;
 
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertEquals;
 
 public class StreamIT {
 
@@ -36,11 +27,6 @@ public class StreamIT {
         mat = ActorMaterializer.create(system);
     }
 
-
-    private <T> T await(CompletionStage<T> future) throws Exception {
-        return future.toCompletableFuture().get(10, TimeUnit.SECONDS);
-    }
-
     @AfterClass
     public static void tearDown() {
         if (clientFactory != null) {
@@ -51,7 +37,9 @@ public class StreamIT {
         }
     }
 
-
+    private <T> T await(CompletionStage<T> future) throws Exception {
+        return future.toCompletableFuture().get(10, TimeUnit.SECONDS);
+    }
 
 
 }

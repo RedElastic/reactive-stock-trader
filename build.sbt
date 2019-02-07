@@ -1,4 +1,4 @@
-import sbt.util
+
 
 organization in ThisBuild := "com.redelastic"
 
@@ -122,11 +122,11 @@ lazy val bff = (project in file("bff"))
       lagomJavadslClient
     ),
 
-  PlayKeys.playMonitoredFiles ++= (sourceDirectories in (Compile, TwirlKeys.compileTemplates)).value,
-    
-  // EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
-  EclipseKeys.preTasks := Seq(compile in Compile)
-)
+    PlayKeys.playMonitoredFiles ++= (sourceDirectories in(Compile, TwirlKeys.compileTemplates)).value,
+
+    // EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
+    EclipseKeys.preTasks := Seq(compile in Compile)
+  )
 
 lazy val utils = (project in file("utils"))
   .settings(commonSettings)
@@ -146,7 +146,7 @@ val lagomApiDependencies = Seq(
 
 def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8"),
-  javacOptions in (Compile, compile) ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-parameters"),
+  javacOptions in(Compile, compile) ++= Seq("-Xlint:unchecked", "-Xlint:deprecation", "-parameters"),
   libraryDependencies += "org.hamcrest" % "hamcrest-all" % "1.3" % Test,
   libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test,
   crossPaths := false // Work around JUnit issue with SBT
