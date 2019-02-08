@@ -15,6 +15,7 @@ npm install
 npm run serve
 ```
 
+The UI will be served by default on [localhost:8080](http://localhost:8080).
 
 # Command line use of API
 
