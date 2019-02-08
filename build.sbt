@@ -121,6 +121,7 @@ lazy val bff = (project in file("bff"))
     libraryDependencies ++= Seq(
       lagomJavadslClient
     ),
+    httpIngressPaths := Seq("/api/"),
 
     PlayKeys.playMonitoredFiles ++= (sourceDirectories in(Compile, TwirlKeys.compileTemplates)).value,
 
