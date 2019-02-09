@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
+import com.lightbend.lagom.javadsl.api.transport.PolicyViolation;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
@@ -199,7 +200,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         private boolean isEmpty() {
             return state().getFunds().compareTo(BigDecimal.ZERO) == 0
                     && state().getHoldings().asSequence().isEmpty()
-                    && state().getActiveOrders().isEmpty();
+                    && state().getPendingOrders().isEmpty();
         }
 
 
@@ -211,7 +212,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                     entityId(),
                     trade.toString()
             ));
-            if (state().getActiveOrders().get(orderId) == null) {
+            if (state().getPendingOrders().get(orderId) == null) {
                 // This is a trade for an order that we don't believe to be active, presumably we've already processed
                 // the result of this order and this is a duplicate result.
                 // TODO: More complete tracking so we know that we're not dropping trades
@@ -285,7 +286,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                         evt -> ctx.reply(Done.getInstance())
                 );
             } else {
-                ctx.commandFailed(new InsufficientFunds(
+                ctx.commandFailed(new PolicyViolation(
                         String.format("Attempt to send %.2f, but only %.2f available.", cmd.getAmount(), state().getFunds())));
                 return ctx.done();
             }
@@ -307,7 +308,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
          */
         private PersistentEntity.Persist handleFailedOrder(PortfolioCommand.AcknowledgeOrderFailure cmd, CommandContext<Done> ctx) {
             log.info(String.format("Order %s failed for PortfolioModel %s.", cmd.getOrderFailed().getOrderId(), entityId()));
-            PortfolioEvent.OrderPlaced orderPlaced = state().getActiveOrders().get(cmd.getOrderFailed().getOrderId());
+            PortfolioEvent.OrderPlaced orderPlaced = state().getPendingOrders().get(cmd.getOrderFailed().getOrderId());
             if (orderPlaced == null) {
                 // Not currently an active order, this may be a duplicate message.
                 log.info(String.format("Order failure for order %s, which is not currently active.", cmd.getOrderFailed().getOrderId()));

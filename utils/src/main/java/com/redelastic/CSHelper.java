@@ -44,8 +44,8 @@ public class CSHelper {
             if (ex == null) {
                 return CompletableFuture.completedFuture(r);
             } else {
-                if (exceptionClass.isInstance(ex)) {
-                    return recovery.apply(exceptionClass.cast(ex));
+                if (ex instanceof CompletionException && exceptionClass.isInstance(ex.getCause())) {
+                    return recovery.apply(exceptionClass.cast(ex.getCause()));
                 } else {
                     return CSHelper.<T>failedFuture(ex);
                 }

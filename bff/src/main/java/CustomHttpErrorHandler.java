@@ -1,6 +1,7 @@
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.typesafe.config.Config;
+import lombok.extern.log4j.Log4j;
 import play.Environment;
 import play.api.OptionalSourceMapper;
 import play.api.UsefulException;
@@ -16,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
+@Log4j
 class CustomHttpErrorHandler extends DefaultHttpErrorHandler {
 
     @Inject
@@ -29,6 +31,7 @@ class CustomHttpErrorHandler extends DefaultHttpErrorHandler {
     @Override
     protected CompletionStage<Result> onDevServerError(Http.RequestHeader request, UsefulException exception) {
         if (exception.cause instanceof NotFound || exception.cause instanceof CompletionException && exception.cause.getCause() instanceof NotFound) {
+            log.error("Uncaught exception", exception);
             return CompletableFuture.completedFuture(Results.notFound());
         } else if (exception.cause instanceof TransportException) {
             // TODO Pull out the Lagom HTTP message and return that instead of double wrapped

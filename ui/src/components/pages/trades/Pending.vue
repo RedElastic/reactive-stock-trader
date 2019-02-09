@@ -9,7 +9,7 @@
     </div>
     <div class="row">
       <div
-        v-for="(order, index) in orders.pending" 
+        v-for="(order, index) in orders" 
         :key="order.symbol"
         class="col-6"
         :order="order"
@@ -93,48 +93,34 @@
 </template>
 
 <script>
-  
+import * as portfolio from '@/common/portfolio';
 
-  export default {      
-    data: function () {
-      return {
-        orders: {
-          "pending": [
-              {
-                  "id": "XKJNFKH123",
-                  "symbol": "AAPL",
-                  "company": "Apple Inc.",
-                  "exchange": "Nasdaq",
-                  "status": "Buy pending",
-                  "timestamp": 1318781876,
-                  "shares": 150,
-                  "limit": 150,
-                  "stop": 150
-              },               
-              {
-                  "id": "JDHBFJHSDF",
-                  "symbol": "MSFT",
-                  "company": "Microsoft",
-                  "exchange": "Nasdaq",
-                  "status": "Sell pending",
-                  "timestamp": 1318781876,
-                  "shares": 100
-              },               
-              {
-                  "id": "JDHBFJHSDF",
-                  "symbol": "IBM",
-                  "company": "International Business Machines",
-                  "exchange": "Nasdaq",
-                  "status": "Sell pending",
-                  "timestamp": 1318781876,
-                  "shares": 100
-              }
-          ],
-          "version":1.0
-        }
-      }
-    }
-  } 
+export default {  
+  data() {
+    return {
+      orders: [        
+      ]
+    };
+  },
+  mounted() {
+    portfolio.getPortfolio({ includeOrders: true })
+      .then(summary => {
+        this.orders = summary.pendingOrders.map(order => {
+          const line = {
+            id: order.orderId,
+            symbol: order.symbol,
+            price: order.price
+          };
+          if (order.tradeType === 'BUY') {
+            line.sharesBought = order.shares;
+          } else {
+            line.sharesSold = order.shares;
+          }
+          return line;
+        });
+      });
+  }
+} 
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

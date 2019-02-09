@@ -14,10 +14,10 @@ public class PortfolioSummary {
 
     @NonNull String name;
 
-    @NonNull
-    BigDecimal funds;
+    @NonNull BigDecimal funds;
 
     PSequence<EquityHolding> equities;
 
-    PSequence<CompletedOrder> completedOrders;
+    PSequence<Order> completedOrders;
+    PSequence<Order> pendingOrders;
 }

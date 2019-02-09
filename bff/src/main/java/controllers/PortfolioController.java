@@ -1,5 +1,7 @@
 package controllers;
 
+import com.lightbend.lagom.javadsl.api.transport.PolicyViolation;
+import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
@@ -10,11 +12,10 @@ import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import controllers.forms.portfolio.OpenPortfolioForm;
 import controllers.forms.portfolio.PlaceOrderForm;
 import lombok.val;
-import models.CompletedOrder;
+import models.Order;
 import models.EquityHolding;
 import models.Portfolio;
 import models.PortfolioSummary;
@@ -91,11 +92,19 @@ public class PortfolioController extends Controller {
                 .invoke()
                 .toCompletableFuture();
 
-        CompletableFuture<PSequence<CompletedOrder>> getCompletedOrders =
+        CompletableFuture<PSequence<Order>> getCompletedOrders =
                 includeOrderInfo ?
                         getModel
                                 .thenApply(PortfolioView::getCompletedOrders)
-                                .thenCompose(this::completedOrders)
+                                .thenCompose(this::getOrderDetails)
+                                .toCompletableFuture()
+                        : CompletableFuture.completedFuture(null);
+
+        CompletableFuture<PSequence<Order>> getPendingOrders =
+                includeOrderInfo ?
+                        getModel
+                                .thenApply(PortfolioView::getPendingOrders)
+                                .thenCompose(this::getOrderDetails)
                                 .toCompletableFuture()
                         : CompletableFuture.completedFuture(null);
 
@@ -114,16 +123,19 @@ public class PortfolioController extends Controller {
                         : CompletableFuture.completedFuture(null);
 
         val summaryView = CompletableFuture
-                .allOf(getModel, getCompletedOrders, getEquityHoldings)
+                .allOf(getModel, getCompletedOrders, getPendingOrders, getEquityHoldings)
                 .thenApply(done -> {
                     PortfolioView model = getModel.join();
-                    PSequence<CompletedOrder> completedOrders = getCompletedOrders.join();
+                    PSequence<Order> completedOrders = getCompletedOrders.join();
+                    PSequence<Order> pendingOrders = getPendingOrders.join();
                     PSequence<EquityHolding> equities = getEquityHoldings.join();
+
                     return PortfolioSummary.builder()
                             .portfolioId(model.getPortfolioId().getId())
                             .name(model.getName())
                             .funds(model.getFunds())
                             .completedOrders(completedOrders)
+                            .pendingOrders(pendingOrders)
                             .equities(equities)
                             .build();
                 });
@@ -133,7 +145,7 @@ public class PortfolioController extends Controller {
                 .thenApply(Results::ok);
     }
 
-    private CompletionStage<PSequence<CompletedOrder>> completedOrders(PSequence<OrderId> orderIds) {
+    private CompletionStage<PSequence<Order>> getOrderDetails(PSequence<OrderId> orderIds) {
         return CSHelper.allOf(
                 orderIds.stream()
                         .map(orderId ->
@@ -154,9 +166,9 @@ public class PortfolioController extends Controller {
         ).thenApply(ConsPStack::from);
     }
 
-    private CompletedOrder toCompletedOrder(OrderId orderId, @Nullable OrderSummary orderSummary) {
+    private Order toCompletedOrder(OrderId orderId, @Nullable OrderSummary orderSummary) {
         if (orderSummary != null) {
-            val builder = CompletedOrder.builder()
+            val builder = Order.builder()
                     .orderId(orderId.getId())
                     .symbol(orderSummary.getSymbol())
                     .shares(orderSummary.getShares())
@@ -166,7 +178,7 @@ public class PortfolioController extends Controller {
             }
             return builder.build();
         } else {
-            return CompletedOrder.builder()
+            return Order.builder()
                     .orderId(orderId.getId())
                     .build();
         }
@@ -197,16 +209,19 @@ public class PortfolioController extends Controller {
         } else {
             PlaceOrderForm orderForm = form.get();
 
-            OrderDetails order = OrderDetails.builder()
-                    .tradeType(orderForm.getOrder().toTradeType())
-                    .symbol(orderForm.getSymbol())
-                    .shares(orderForm.getShares())
-                    .orderType(OrderType.Market.INSTANCE)
-                    .build();
-            return portfolioService
+            CompletionStage<Result> response = portfolioService
                     .placeOrder(new PortfolioId(portfolioId))
-                    .invoke(order)
-                    .thenApply(done -> created());
+                    .invoke(orderForm.toOrderDetails())
+                    .thenApply(orderId ->
+                            Results.created(
+                                Json.newObject().put("orderId", orderId.getId())));
+
+            return CSHelper.recover(response, TransportException.class,
+                    ex -> {
+                log.error("cshelper recover", ex);
+                log.error(String.format("error code: %s", ex.errorCode().toString()));
+                return Results.status(ex.errorCode().http(), Json.newObject().put("error", ex.getMessage()));
+                    });
         }
     }
 

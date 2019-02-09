@@ -7,10 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Wither;
-import org.pcollections.HashTreePMap;
-import org.pcollections.HashTreePSet;
-import org.pcollections.PMap;
-import org.pcollections.PSet;
+import org.pcollections.*;
 
 import java.math.BigDecimal;
 
@@ -49,17 +46,17 @@ public interface PortfolioState extends Jsonable {
         @NonNull String name;
         @NonNull LoyaltyLevel loyaltyLevel;
         @NonNull Holdings holdings;
-        @NonNull PMap<OrderId, PortfolioEvent.OrderPlaced> activeOrders;
-        @NonNull PSet<OrderId> completedOrders;
+        @NonNull PMap<OrderId, PortfolioEvent.OrderPlaced> pendingOrders;
+        @NonNull PSequence<OrderId> completedOrders;
 
         public static Open initialState(String name) {
             return Open.builder()
                     .name(name)
                     .loyaltyLevel(LoyaltyLevel.BRONZE)
                     .funds(BigDecimal.valueOf(0))
-                    .activeOrders(HashTreePMap.empty())
+                    .pendingOrders(HashTreePMap.empty())
                     .holdings(Holdings.EMPTY)
-                    .completedOrders(HashTreePSet.empty())
+                    .completedOrders(ConsPStack.empty())
                     .build();
         }
 
@@ -80,12 +77,12 @@ public interface PortfolioState extends Jsonable {
         }
 
         Open update(PortfolioEvent.OrderPlaced evt) {
-            return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
+            return this.withPendingOrders(pendingOrders.plus(evt.getOrderId(), evt));
         }
 
         Open orderCompleted(OrderId orderId) {
             return this
-                    .withActiveOrders(activeOrders.minus(orderId))
+                    .withPendingOrders(pendingOrders.minus(orderId))
                     .withCompletedOrders(completedOrders.plus(orderId));
         }
 

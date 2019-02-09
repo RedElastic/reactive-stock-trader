@@ -328,7 +328,8 @@
             symbol: this.form.symbol, 
             shares: this.form.shares, 
             tradeType: this.form.order,
-            orderType: this.form.orderType
+            orderType: this.form.orderType,
+            limitPrice: this.form.limitPrice
         });
       } 
     }

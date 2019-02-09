@@ -73,9 +73,11 @@ export function getDetails(portfolioId) {
 export function placeOrder(order) {
   const portfolioId = activePortfolio.id;
   const formData = new FormData();
-  formData.append('symbol', order.symbol);
-  formData.append('shares', order.shares);
-  formData.append('order', order.tradeType);
+  if (order.symbol) formData.append('symbol', order.symbol);
+  if (order.shares) formData.append('shares', order.shares);
+  if (order.tradeType) formData.append('order', order.tradeType);
+  if (order.orderType) formData.append('orderType', order.orderType);
+  if (order.limitPrice) formData.append('limitPrice', order.limitPrice);
   
   axios({
       method: 'POST',

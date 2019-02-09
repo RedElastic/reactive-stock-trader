@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Value
 @Builder
-public class CompletedOrder {
+public class Order {
     @NonNull String orderId;
     String symbol;
     Integer shares;

@@ -37,8 +37,8 @@ class PortfolioModel {
                                 .name(portfolio.getName())
                                 .funds(portfolio.getFunds())
                                 .holdings(portfolio.getHoldings().asSequence())
-                                .completedOrders(
-                                        ConsPStack.from(portfolio.getCompletedOrders()))
+                                .pendingOrders(ConsPStack.from(portfolio.getPendingOrders().keySet()))
+                                .completedOrders(portfolio.getCompletedOrders())
                                 .build()
                 );
     }

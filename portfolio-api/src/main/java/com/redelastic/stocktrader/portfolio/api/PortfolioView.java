@@ -21,5 +21,7 @@ public class PortfolioView {
 
     @NonNull PSequence<Holding> holdings;
 
+    @NonNull PSequence<OrderId> pendingOrders;
+
     @NonNull PSequence<OrderId> completedOrders;
 }
