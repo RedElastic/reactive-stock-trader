@@ -1,7 +1,12 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import akka.NotUsed;
+import akka.actor.ActorSystem;
 import akka.japi.Pair;
+import akka.stream.ActorMaterializer;
+import akka.stream.Materializer;
 import akka.stream.javadsl.Source;
+import com.google.inject.Guice;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntityRef;
@@ -15,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -25,8 +31,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     private final PersistentEntityRegistry persistentEntities;
 
     @Inject
-    public PortfolioRepositoryImpl(BrokerService brokerService,
-                                   PersistentEntityRegistry persistentEntities) {
+    public PortfolioRepositoryImpl(PersistentEntityRegistry persistentEntities) {
         this.persistentEntities = persistentEntities;
         persistentEntities.register(PortfolioEntity.class);
     }
@@ -51,6 +56,39 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     @Override
     public PortfolioModel get(PortfolioId portfolioId) {
         return new PortfolioModel(persistentEntities, portfolioId);
+    }
+
+
+    public Source<PortfolioEvent, NotUsed> getJournal(PortfolioId portfolioId) {
+        return persistentEntities.eventStream(PortfolioEvent.TAG.forEntityId(portfolioId.getId()), Offset.NONE)
+                .map(Pair::first);
+    }
+
+    /**
+     * Replay the journal for a portfolio
+     * @param portfolioId Portfolio ID to replay
+     * @return Stream of pairs of event and resulting state
+     */
+    public Source<Pair<PortfolioEvent, PortfolioState>, NotUsed> getHistory(PortfolioId portfolioId) {
+        // FIXME: silently terminates on unhandled event, but unhandled events *should* not happen. (Unless the
+        // state implementation has changed from the historical context we're replaying. It would probably be better
+        // to error out the stream on an unhandled event.
+        Source<PortfolioEvent, NotUsed> events = getJournal(portfolioId);
+        Source<PortfolioState, NotUsed> states = events
+                .<Optional<PortfolioState>>scan(Optional.empty(),
+                        (state, event) -> {
+                            if (state.isPresent()) {
+                                return state.get().transition(event);
+                            } else if (event instanceof PortfolioEvent.Opened) {
+                                return Optional.of(PortfolioState.Open.initialState(((PortfolioEvent.Opened) event).getName()));
+                            } else {
+                                return Optional.empty();
+                            }
+                        })
+                .drop(1)
+                .takeWhile(Optional::isPresent)
+                .map(Optional::get);
+        return events.zip(states);
     }
 
     @Override

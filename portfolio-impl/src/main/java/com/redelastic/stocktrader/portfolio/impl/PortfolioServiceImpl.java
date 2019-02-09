@@ -2,7 +2,10 @@ package com.redelastic.stocktrader.portfolio.impl;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.actor.ActorSystem;
+import akka.stream.ActorMaterializer;
 import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Sink;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
@@ -29,6 +32,9 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final Logger log = LoggerFactory.getLogger(PortfolioServiceImpl.class);
 
     private final PortfolioRepository portfolioRepository;
+
+    @Inject
+    ActorSystem actorSystem;
 
     @Inject
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository,
@@ -101,6 +107,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId) {
+        portfolioRepository
+                .getHistory(portfolioId)
+                .to(Sink.foreach(p -> log.error(p.toString())))
+                .run(ActorMaterializer.create(actorSystem));
         return notUsed ->
                 portfolioRepository
                         .get(portfolioId)

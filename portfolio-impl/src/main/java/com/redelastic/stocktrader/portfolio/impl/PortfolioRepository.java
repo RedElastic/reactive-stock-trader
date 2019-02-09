@@ -1,5 +1,6 @@
 package com.redelastic.stocktrader.portfolio.impl;
 
+import akka.NotUsed;
 import akka.japi.Pair;
 import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
@@ -16,6 +17,10 @@ public interface PortfolioRepository {
     CompletionStage<PortfolioId> open(OpenPortfolioDetails request);
 
     PortfolioModel get(PortfolioId portfolioId);
+
+    Source<PortfolioEvent, NotUsed> getJournal(PortfolioId portfolioId);
+
+    Source<Pair<PortfolioEvent, PortfolioState>, NotUsed> getHistory(PortfolioId portfolioId);
 
     PersistentEntityRef<PortfolioCommand> getRef(PortfolioId portfolioId);
 

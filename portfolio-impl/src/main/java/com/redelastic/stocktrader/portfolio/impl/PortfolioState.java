@@ -3,6 +3,7 @@ package com.redelastic.stocktrader.portfolio.impl;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.portfolio.api.LoyaltyLevel;
+import com.redelastic.stocktrader.portfolio.impl.PortfolioEvent.*;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,7 +13,11 @@ import org.pcollections.HashTreePSet;
 import org.pcollections.PMap;
 import org.pcollections.PSet;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 
 /**
@@ -31,6 +36,12 @@ public interface PortfolioState extends Jsonable {
             return visitor.visit(INSTANCE);
         }
 
+        @Override
+        public Optional<PortfolioState> transition(PortfolioEvent evt) {
+            return Optional.empty();
+        }
+
+
     }
 
     interface Visitor<T> {
@@ -41,6 +52,8 @@ public interface PortfolioState extends Jsonable {
         T visit(Closed closed);
     }
 
+    Optional<PortfolioState> transition(PortfolioEvent evt);
+
     @Value
     @Builder
     @Wither
@@ -49,7 +62,7 @@ public interface PortfolioState extends Jsonable {
         @NonNull String name;
         @NonNull LoyaltyLevel loyaltyLevel;
         @NonNull Holdings holdings;
-        @NonNull PMap<OrderId, PortfolioEvent.OrderPlaced> activeOrders;
+        @NonNull PMap<OrderId, OrderPlaced> activeOrders;
         @NonNull PSet<OrderId> completedOrders;
 
         public static Open initialState(String name) {
@@ -63,36 +76,52 @@ public interface PortfolioState extends Jsonable {
                     .build();
         }
 
-        Open update(PortfolioEvent.FundsCredited evt) {
+        Open update(FundsCredited evt) {
             return this.withFunds(getFunds().add(evt.getAmount()));
         }
 
-        Open update(PortfolioEvent.FundsDebited evt) {
+        Open update(FundsDebited evt) {
             return this.withFunds(getFunds().subtract(evt.getAmount()));
         }
 
-        Open update(PortfolioEvent.SharesCredited evt) {
+        Open update(SharesCredited evt) {
             return this.withHoldings(holdings.add(evt.getSymbol(), evt.getShares()));
         }
 
-        Open update(PortfolioEvent.SharesDebited evt) {
+        Open update(SharesDebited evt) {
             return this.withHoldings(holdings.remove(evt.getSymbol(), evt.getShares()));
         }
 
-        Open update(PortfolioEvent.OrderPlaced evt) {
+        Open update(OrderPlaced evt) {
             return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
         }
 
-        Open orderCompleted(OrderId orderId) {
+        Open update(OrderFulfilled evt) {
             return this
-                    .withActiveOrders(activeOrders.minus(orderId))
-                    .withCompletedOrders(completedOrders.plus(orderId));
+                    .withActiveOrders(activeOrders.minus(evt.getOrderId()))
+                    .withCompletedOrders(completedOrders.plus(evt.getOrderId()));
+        }
+
+        Open update(OrderFailed evt) {
+            return this
+                    .withActiveOrders(activeOrders.minus(evt.getOrderId()))
+                    .withCompletedOrders(completedOrders.plus(evt.getOrderId()));
         }
 
 
         @Override
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(this);
+        }
+
+        @Override
+        public Optional<PortfolioState> transition(PortfolioEvent evt) {
+            try {
+                Method method = getClass().getDeclaredMethod("update", evt.getClass());
+                return Optional.of((Open)method.invoke(this, evt));
+            } catch (Exception ex) {
+                return Optional.empty();
+            }
         }
     }
 
@@ -107,6 +136,11 @@ public interface PortfolioState extends Jsonable {
         @Override
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(this);
+        }
+
+        @Override
+        public Optional<PortfolioState> transition(PortfolioEvent evt) {
+            return Optional.empty();
         }
 
     }
