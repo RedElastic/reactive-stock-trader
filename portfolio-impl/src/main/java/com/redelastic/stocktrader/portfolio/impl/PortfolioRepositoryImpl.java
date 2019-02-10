@@ -59,15 +59,15 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
     }
 
 
-    public Source<PortfolioEvent, NotUsed> getJournal(PortfolioId portfolioId) {
+    private Source<PortfolioEvent, NotUsed> getJournal(PortfolioId portfolioId) {
         return persistentEntities.eventStream(PortfolioEvent.TAG.forEntityId(portfolioId.getId()), Offset.NONE)
                 .map(Pair::first);
     }
 
     /**
-     * Replay the journal for a portfolio
+     * Replay the journal for a portfolio.
      * @param portfolioId Portfolio ID to replay
-     * @return Stream of pairs of event and resulting state
+     * @return Stream of pairs of an event and the resulting state of the portfolio after processing that event.
      */
     public Source<Pair<PortfolioEvent, PortfolioState>, NotUsed> getHistory(PortfolioId portfolioId) {
         // FIXME: silently terminates on unhandled event, but unhandled events *should* not happen. (Unless the
@@ -78,7 +78,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                 .<Optional<PortfolioState>>scan(Optional.empty(),
                         (state, event) -> {
                             if (state.isPresent()) {
-                                return state.get().transition(event);
+                                return Optional.ofNullable(state.get().update(event));
                             } else if (event instanceof PortfolioEvent.Opened) {
                                 return Optional.of(PortfolioState.Open.initialState(((PortfolioEvent.Opened) event).getName()));
                             } else {

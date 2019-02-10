@@ -13,11 +13,7 @@ import org.pcollections.HashTreePSet;
 import org.pcollections.PMap;
 import org.pcollections.PSet;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Optional;
 
 
 /**
@@ -28,6 +24,17 @@ public interface PortfolioState extends Jsonable {
 
     <T> T visit(Visitor<T> visitor);
 
+    /**
+     * State transition function. From a given state and event this produces the resulting state. The state transition
+     * function allows us to replay history, either to reconstruct an entities state to recover it from it's journal,
+     * or to support a projection (e.g. processing the journal to get a historical of the entity state.
+     * @param evt event to transition on
+     * @return The new state (null if there is no transition for the given state).
+     */
+    default PortfolioState update(PortfolioEvent evt) {
+        return null;
+    }
+
     enum Closed implements PortfolioState {
         INSTANCE;
 
@@ -35,12 +42,6 @@ public interface PortfolioState extends Jsonable {
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(INSTANCE);
         }
-
-        @Override
-        public Optional<PortfolioState> transition(PortfolioEvent evt) {
-            return Optional.empty();
-        }
-
 
     }
 
@@ -52,7 +53,7 @@ public interface PortfolioState extends Jsonable {
         T visit(Closed closed);
     }
 
-    Optional<PortfolioState> transition(PortfolioEvent evt);
+
 
     @Value
     @Builder
@@ -114,15 +115,6 @@ public interface PortfolioState extends Jsonable {
             return visitor.visit(this);
         }
 
-        @Override
-        public Optional<PortfolioState> transition(PortfolioEvent evt) {
-            try {
-                Method method = getClass().getDeclaredMethod("update", evt.getClass());
-                return Optional.of((Open)method.invoke(this, evt));
-            } catch (Exception ex) {
-                return Optional.empty();
-            }
-        }
     }
 
     @Value
@@ -138,10 +130,6 @@ public interface PortfolioState extends Jsonable {
             return visitor.visit(this);
         }
 
-        @Override
-        public Optional<PortfolioState> transition(PortfolioEvent evt) {
-            return Optional.empty();
-        }
 
     }
 
