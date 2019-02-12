@@ -105,9 +105,9 @@ npm run build
 
 Reactive Stock Trader uses Rollbar for debugging purposes. In order to make use of Rollbar:
 
-* copy `config.env` to `config.env.local`
+* copy `config.env` to `.env.local`
 * sign up at Rollbar and create an access token
-* change `VUE_APP_ROLLBAR_ACCESS_TOKEN` to your token in `config.env.local`
+* change `VUE_APP_ROLLBAR_ACCESS_TOKEN` to your token in `.env.local`
 
 Visit [Environment Variables and Modes](https://cli.vuejs.org/guide/mode-and-env.html) and [https://rollbar.com](Rollbar) for more details.
 
