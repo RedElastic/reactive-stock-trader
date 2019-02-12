@@ -31,6 +31,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import services.quote.QuoteService;
@@ -187,11 +188,10 @@ public class PortfolioController extends Controller {
                     .openPortfolio()
                     .invoke(openRequest)
                     .thenApply(portfolioId -> {
-                        val jsonResult = Json.newObject();
-                        jsonResult.put("portfolioId", portfolioId.getId());
-                        return jsonResult;
-                    })
-                    .thenApply(Results::created);
+                        val jsonResult = Json.newObject()
+                                .put("portfolioId", portfolioId.getId());
+                        return Results.created(jsonResult);
+                    });
         }
     }
 
@@ -211,7 +211,12 @@ public class PortfolioController extends Controller {
             return portfolioService
                     .placeOrder(new PortfolioId(portfolioId))
                     .invoke(order)
-                    .thenApply(done -> created());
+                    .thenApply(orderId -> {
+                        val jsonResult = Json.newObject()
+                                .put("orderId", orderId.getId());
+                        return Results.status(Http.Status.ACCEPTED, jsonResult);
+                    });
+
         }
     }
 
