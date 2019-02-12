@@ -1,6 +1,8 @@
 package controllers;
 
 import akka.NotUsed;
+import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Sink;
 import akka.stream.javadsl.Source;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
@@ -30,11 +32,9 @@ import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
 import play.libs.EventSource;
+import play.libs.F;
 import play.libs.Json;
-import play.mvc.Controller;
-import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Results;
+import play.mvc.*;
 import services.quote.QuoteService;
 
 import javax.annotation.Nullable;
@@ -92,19 +92,20 @@ public class PortfolioController extends Controller {
                 .thenApply(Results::ok);
     }
 
-    public CompletionStage<Result> getTransactions(String portfolioId) {
-        return portfolioService
-                .getTransactions(new PortfolioId(portfolioId))
-                .invoke()
-                .thenApply(transactions -> {
-                    val events = transactions
-                            .log("transactions")
-                            .map(Json::toJson)
-                            .map(EventSource.Event::event);
-                    return ok()
-                            .chunked(events.via(EventSource.flow()))
-                            .as(Http.MimeTypes.EVENT_STREAM);
-                });
+    public WebSocket getTransactions() {
+        return WebSocket.Text.acceptOrResult(request -> {
+            val portfolioId = request.queryString().get("portfolioId")[0];
+            return portfolioService
+                    .getTransactions(new PortfolioId(portfolioId))
+                    .invoke()
+                    .thenApply(transactions -> {
+                        val events = transactions
+                                .log("transactions")
+                                .map(Json::toJson)
+                                .map(Json::stringify);
+                        return F.Either.Right(Flow.fromSinkAndSource(Sink.ignore(), events));
+                    });
+        });
     }
 
     public CompletionStage<Result> getSummary(String portfolioId, Boolean includeOrderInfo, Boolean includePrices) {

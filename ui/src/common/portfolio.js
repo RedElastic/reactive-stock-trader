@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {bffBaseURL} from '@/common/config';
+import {bffHost, bffBaseURL} from '@/common/config';
 
 const baseUrl = bffBaseURL + '/api/portfolio';
 const portfolioUrl = () => baseUrl + '/' + activePortfolio.id;
@@ -92,6 +92,7 @@ export function placeOrder(order) {
 }
 
 
-export function getTransactionHistory(portfolioId) {
-  return new EventSource(portfolioUrl() + '/transactions');
+export function getTransactionHistory(options) {
+  const portfolioId = options && options.portfolioId ? options.portfolioId : activePortfolio.id;
+  return new WebSocket("ws://" + bffHost + '/api/portfolio/transactions?portfolioId=' + portfolioId);
 }

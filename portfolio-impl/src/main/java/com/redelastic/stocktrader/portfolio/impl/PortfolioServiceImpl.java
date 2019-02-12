@@ -44,7 +44,7 @@ public class PortfolioServiceImpl implements PortfolioService {
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
         // Note: Our order entity logic handles duplicate orderPlaced, hence at least once semantics work.
-        
+
     }
 
     @Override
