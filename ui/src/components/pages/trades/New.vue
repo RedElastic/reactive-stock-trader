@@ -195,6 +195,7 @@
             <div class="row mt-3">
               <div class="col">
                 <b-button
+                  :disabled="submitted"
                   type="submit"
                   variant="primary"
                   class="mr-3"
@@ -202,6 +203,7 @@
                   Place Order
                 </b-button>
                 <b-button
+                  :disabled="submitted"
                   type="reset"
                   variant="danger"
                 >
@@ -309,7 +311,7 @@
         }
       },
       resetOrder() {
-        Object.assign(form, emptyForm);
+        Object.assign(this.form, emptyForm);
         this.quote = {
           symbol: '',
           latestPrice: null
@@ -324,11 +326,15 @@
         }, 
         1000),
       placeOrder() {
+        this.submitted = true;
         portfolio.placeOrder({          
             symbol: this.form.symbol, 
             shares: this.form.shares, 
             tradeType: this.form.order,
             orderType: this.form.orderType
+        }).then(() => {
+          this.resetOrder();
+          this.submitted = false;
         });
       } 
     }

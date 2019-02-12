@@ -16,6 +16,7 @@ import play.data.Form;
 import play.data.FormFactory;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 
@@ -47,11 +48,10 @@ public class WireTransferController extends Controller {
                     .transferFunds()
                     .invoke(transfer)
                     .thenApply(response -> {
-                        val result = Json.newObject();
-                        result.put("transferId", response.getId());
-                        return result;
-                    })
-                    .thenApply(Results::created);
+                        val result = Json.newObject()
+                                .put("transferId", response.getId());
+                        return Results.status(Http.Status.ACCEPTED, result);
+                    });
         }
     }
 
