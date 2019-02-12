@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 RedElastic Inc.
+ * See LICENSE file for details.
+ */
+
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.typesafe.config.Config;
