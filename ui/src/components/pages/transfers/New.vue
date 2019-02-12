@@ -78,6 +78,7 @@
               <div class="col mt-3">
                 <b-button
                   type="submit"
+                  :disabled="submitted"
                   variant="primary"
                   class="mr-3"
                 >
@@ -85,6 +86,7 @@
                 </b-button>
                 <b-button
                   type="reset"
+                  :disabled="submitted"
                   variant="danger"
                 >
                   Reset
@@ -190,8 +192,12 @@ export default {
   },
   methods: {
     onSubmit() {
-      submitTransfer(this.form);
-      Object.assign(this.form, emptyForm);
+      this.submitted = true;
+      submitTransfer(this.form)
+        .then(() => {
+          this.submitted = false;
+          this.onReset();
+        });      
     },
     onReset() {
       Object.assign(this.form, emptyForm);
