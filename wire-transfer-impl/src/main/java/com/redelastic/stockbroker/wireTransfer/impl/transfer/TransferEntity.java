@@ -150,7 +150,7 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
     }
 
     private <C extends TransferCommand> Persist ignore(C cmd, CommandContext<Done> ctx) {
-        log.info(String.format("Ignoring command %s", cmd.toString()));
+        log.info(String.format("Ignoring command %s in state %s", cmd.toString(), state().toString()));
         ctx.reply(Done.getInstance());
         return ctx.done();
     }

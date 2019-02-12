@@ -49,7 +49,11 @@ export function open(request) {
 
 export function getPortfolio(options) {
   const {includeOrders, includeSharePrices} = options || {};
-  const portfolioId = activePortfolio.id;
+  const portfolioId = 
+    options && options.portfolioId 
+      ? options.portfolioId 
+      : activePortfolio.id;
+  
   const url = new URL('/api/portfolio/' + portfolioId + '/summary', baseUrl);
   if (includeOrders) url.searchParams.append('includeOrderInfo', true);
   if (includeSharePrices) url.searchParams.append('includePrices', true);
