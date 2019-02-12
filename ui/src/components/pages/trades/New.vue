@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col">
       <b-form
-        @submit="placeOrder"
+        @submit.prevent="placeOrder"
         @reset="resetOrder"
       >
         <!-- overview -->
