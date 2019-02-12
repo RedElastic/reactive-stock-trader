@@ -1,10 +1,18 @@
-# Introduction
+# Reactive in Practice: An Introduction
 
 **Reactive in practice: A complete guide to event-driven systems development** in Java is a 12 part series that takes learners through the entire spectrum of a real-world event-sourced project from inception to deployment. This reference architecture is to support the series, originally published on IBM Developer:
 
 - [Reactive in Practice on IBM Developer](https://developer.ibm.com/technologies/reactive-systems/)
 
 Complete examples of this material are very sparse in the industry because they are so time intensive to create. However, with the support of IBM and the IBM Developer portal, we've brought this material to life. We hope it inspires the community and showcases best practices of these technologies. Special thanks to Lightbend for peer review assistance.
+
+The main technologies showcased: 
+
+* Java
+* Lagom
+* Play
+* Kafka
+* Cassandra
 
 ## -- UNDER CONSTRUCTION --
 
