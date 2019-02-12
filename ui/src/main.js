@@ -25,12 +25,12 @@ Vue.config.productionTip = false
 Vue.use(VueRouter);
 Vue.use(BootstrapVue);
 Vue.use(Rollbar, {
-     accessToken: "***REMOVED***",
+     accessToken: process.env.VUE_APP_ROLLBAR_ACCESS_TOKEN,
      captureUncaught: true,
      captureUnhandledRejections: true,
      enabled: true,
      source_map_enabled: true,
-     environment: 'production',
+     environment: process.env.NODE_ENV,
      payload: {
        client: {
             javascript: {
