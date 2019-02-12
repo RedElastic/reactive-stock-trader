@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 RedElastic Inc.
+ * See LICENSE file for details.
+ */
+
 package com.redelastic.stocktrader.broker.impl.trade;
 
 import com.redelastic.stocktrader.broker.api.OrderResult;

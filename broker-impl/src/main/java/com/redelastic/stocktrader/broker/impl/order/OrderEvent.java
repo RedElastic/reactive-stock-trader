@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 RedElastic Inc.
+ * See LICENSE file for details.
+ */
+
 package com.redelastic.stocktrader.broker.impl.order;
 
 import com.lightbend.lagom.javadsl.persistence.AggregateEvent;

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 RedElastic Inc.
+ * See LICENSE file for details.
+ */
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

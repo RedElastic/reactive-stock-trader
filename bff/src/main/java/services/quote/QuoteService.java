@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 RedElastic Inc.
+ * See LICENSE file for details.
+ */
+
 package services.quote;
 
 import com.redelastic.stocktrader.portfolio.api.Holding;

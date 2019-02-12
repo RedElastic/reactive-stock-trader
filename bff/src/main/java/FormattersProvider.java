@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2019 RedElastic Inc.
+ * See LICENSE file for details.
+ */
+
 import com.redelastic.stocktrader.TradeType;
 import play.data.format.Formatters;
 import play.data.format.Formatters.SimpleFormatter;
