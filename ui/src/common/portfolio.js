@@ -81,14 +81,12 @@ export function placeOrder(order) {
   formData.append('shares', order.shares);
   formData.append('order', order.tradeType);
   
-  axios({
+  return axios({
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       url: portfolioUrl() + '/order',
       data: formData
-  })
-
-  
+  }); 
 }
