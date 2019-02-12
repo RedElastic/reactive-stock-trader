@@ -13,3 +13,4 @@ bin
 logs
 .idea
 *.iml
+ui/package-lock.json
