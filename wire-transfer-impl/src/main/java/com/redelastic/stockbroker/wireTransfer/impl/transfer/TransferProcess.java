@@ -110,13 +110,12 @@ public class TransferProcess extends ReadSideProcessor<TransferEvent> {
         @Override
         public CompletionStage<Done> visit(TransferEvent.FundsRetrieved evt) {
             val transferEntity = transferRepository.get(evt.getTransferId());
-            if (evt.getTransferDetails().getSource() instanceof Account.Portfolio) {
-
+            if (evt.getTransferDetails().getDestination() instanceof Account.Portfolio) {
                 val transfer = FundsTransfer.Deposit.builder()
                         .transferId(evt.getTransferId())
                         .funds(evt.getTransferDetails().getAmount())
                         .build();
-                val portfolioId = ((Account.Portfolio) evt.getTransferDetails().getSource()).getPortfolioId();
+                val portfolioId = ((Account.Portfolio) evt.getTransferDetails().getDestination()).getPortfolioId();
 
                 return portfolioService
                         .processTransfer(portfolioId)
