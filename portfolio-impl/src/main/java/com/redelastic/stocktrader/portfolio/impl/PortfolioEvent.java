@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.serialization.Jsonable;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
+import com.redelastic.stocktrader.TradeType;
 import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import lombok.AllArgsConstructor;
@@ -69,19 +70,21 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
     }
 
     @Value
-    class FundsDebited implements PortfolioEvent {
+    class TransferSent implements PortfolioEvent {
         @NonNull PortfolioId portfolioId;
+        @NonNull TransferId transferId;
         @NonNull BigDecimal amount;
     }
 
     @Value
-    class FundsCredited implements PortfolioEvent {
+    class TransferReceived implements PortfolioEvent {
         @NonNull PortfolioId portfolioId;
+        @NonNull TransferId transferId;
         @NonNull BigDecimal amount;
     }
 
     @Value
-    class RefundAccepted implements PortfolioEvent {
+    class RefundReceived implements PortfolioEvent {
         @NonNull PortfolioId portfolioId;
         @NonNull TransferId transferId;
         @NonNull BigDecimal amount;
@@ -105,9 +108,21 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
     }
 
     @Value
-    class OrderFulfilled implements PortfolioEvent {
+    class SharesBought implements PortfolioEvent {
         @NonNull PortfolioId portfolioId;
         @NonNull OrderId orderId;
+        @NonNull String symbol;
+        @NonNull BigDecimal sharePrice;
+        int shares;
+    }
+
+    @Value
+    class SharesSold implements PortfolioEvent {
+        @NonNull PortfolioId portfolioId;
+        @NonNull OrderId orderId;
+        @NonNull String symbol;
+        @NonNull BigDecimal sharePrice;
+        int shares;
     }
 
     @Value

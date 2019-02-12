@@ -2,6 +2,7 @@ package com.redelastic.stocktrader.portfolio.api;
 
 import akka.Done;
 import akka.NotUsed;
+import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
@@ -54,6 +55,8 @@ public interface PortfolioService extends Service {
 
     ServiceCall<FundsTransfer, Done> processTransfer(PortfolioId portfolioId);
 
+    ServiceCall<NotUsed, Source<Transaction, NotUsed>> getTransactions(PortfolioId portfolioId);
+
     /**
      * The orders placed by portfolios managed by this service.
      *
@@ -70,6 +73,7 @@ public interface PortfolioService extends Service {
                 restCall(Method.POST, "/api/portfolio", this::openPortfolio),
                 restCall(Method.POST, "/api/portfolio/:portfolioId/close", this::closePortfolio),
                 restCall(Method.GET, "/api/portfolio/:portfolioId", this::getPortfolio),
+                restCall(Method.GET, "/api/portfolio/:portfolioId/transactions", this::getTransactions),
                 restCall(Method.POST, "/api/portfolio/:portfolioId/placeOrder", this::placeOrder),
                 restCall(Method.POST, "/api/portfolio/:portfolio/processTransfer", this::processTransfer)
         ).withTopics(

@@ -77,8 +77,25 @@
         ]
       };
     },
-    mounted() {
-      portfolio.getPortfolio({ includeOrders: true })
+    created() {
+      const transactions = portfolio.getTransactionHistory();
+      transactions.onmessage = e => {
+        const event = JSON.parse(e.data);
+        console.log("type: " + event['type']);
+        if (event['type'] === "Transaction$SharesBought" 
+          || event['type'] === "Transaction$SharesSold") {
+            console.log("event: " + event);
+          const line = {
+            confId: event.orderId.id,
+            symbol: event.symbol,
+            shares: event.shares,
+            price: event.sharePrice,
+            cashOnHand: e.data.fundsBalance
+          };
+          orders.push(line);
+        }
+      };
+      /*portfolio.getPortfolio({ includeOrders: true })
         .then(summary => {
           this.orders = summary.completedOrders.map(order => {
             let line = {
@@ -94,6 +111,10 @@
             return line;
           });
         });
+        */
+    },
+    mounted() {
+      
     }
   } 
 </script>

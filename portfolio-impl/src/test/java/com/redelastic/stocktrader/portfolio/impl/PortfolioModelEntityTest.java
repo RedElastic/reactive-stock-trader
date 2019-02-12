@@ -6,6 +6,7 @@ import com.lightbend.lagom.javadsl.testkit.PersistentEntityTestDriver;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.TradeType;
+import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.order.OrderType;
@@ -83,13 +84,12 @@ public class PortfolioModelEntityTest {
         BigDecimal amount = new BigDecimal("123.45");
         BigDecimal difference = BigDecimal.valueOf(1);
 
-        PortfolioCommand.ReceiveFunds transferIn = PortfolioCommand.ReceiveFunds.builder()
-                .amount(amount)
-                .build();
+        TransferId transferInId = TransferId.newId();
 
-        PortfolioCommand.SendFunds transferOut = PortfolioCommand.SendFunds.builder()
-                .amount(amount.subtract(difference))
-                .build();
+        PortfolioCommand.ReceiveFunds transferIn = new PortfolioCommand.ReceiveFunds(amount, transferInId);
+
+        TransferId transferOutId = TransferId.newId();
+        PortfolioCommand.SendFunds transferOut = new PortfolioCommand.SendFunds(amount.subtract(difference), transferOutId);
 
         PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome = driver.run(
                 transferIn,
@@ -97,9 +97,9 @@ public class PortfolioModelEntityTest {
         );
         assertThat(outcome.state().get(), instanceOf(PortfolioState.Open.class));
         assertTrue(outcome.events().contains(
-                new PortfolioEvent.FundsCredited(portfolioId, amount)));
+                new PortfolioEvent.TransferReceived(portfolioId, transferInId, amount)));
         assertTrue(outcome.events().contains(
-                new PortfolioEvent.FundsDebited(portfolioId, amount.subtract(difference))));
+                new PortfolioEvent.TransferSent(portfolioId, transferOutId, amount.subtract(difference))));
         assertThat(difference, comparesEqualTo(((PortfolioState.Open) outcome.state().get()).getFunds()));
     }
 
@@ -140,9 +140,10 @@ public class PortfolioModelEntityTest {
         val portfolioId = new PortfolioId("portfolioId");
         String portfolioName = "portfolio name";
         BigDecimal amount = new BigDecimal("101.40");
+        val transferId = TransferId.newId();
         PersistentEntityTestDriver<PortfolioCommand, PortfolioEvent, Optional<PortfolioState>> driver = openPortfolioEntity(portfolioId, portfolioName);
         PersistentEntityTestDriver.Outcome<PortfolioEvent, Optional<PortfolioState>> outcome = driver.run(
-                new PortfolioCommand.ReceiveFunds(amount)
+                new PortfolioCommand.ReceiveFunds(amount, transferId)
         );
 
         assertTrue(outcome.state().isPresent());

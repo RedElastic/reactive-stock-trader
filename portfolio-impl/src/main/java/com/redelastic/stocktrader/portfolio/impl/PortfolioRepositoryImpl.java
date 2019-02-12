@@ -69,7 +69,7 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
      * @param portfolioId Portfolio ID to replay
      * @return Stream of pairs of an event and the resulting state of the portfolio after processing that event.
      */
-    public Source<Pair<PortfolioEvent, PortfolioState>, NotUsed> getHistory(PortfolioId portfolioId) {
+    public Source<HistoricEvent, NotUsed> getHistory(PortfolioId portfolioId) {
         // FIXME: silently terminates on unhandled event, but unhandled events *should* not happen. (Unless the
         // state implementation has changed from the historical context we're replaying. It would probably be better
         // to error out the stream on an unhandled event.
@@ -77,10 +77,22 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
         Source<PortfolioState, NotUsed> states = events
                 .<Optional<PortfolioState>>scan(Optional.empty(),
                         (state, event) -> {
-                            if (state.isPresent()) {
-                                return Optional.ofNullable(state.get().update(event));
+                            log.info("event: " + event.toString());
+                            log.info("state: " + state.toString());
+                            if (state.isPresent() && state.get() instanceof PortfolioState.Open) {
+                                if (event instanceof PortfolioEvent.OrderPlaced) {
+                                    Optional<PortfolioState> newstate = state.get().transition(event);
+                                    if (newstate != null) { log.info("next state: " + newstate.toString()); } else { log.info("next state: null"); }
+                                    return newstate;
+                                } else {
+                                    Optional<PortfolioState> newstate = ((PortfolioState.Open)state.get()).transition(event);
+                                    if (newstate != null) { log.info("next state: " + newstate.toString()); } else { log.info("next state: null"); }
+                                    return newstate;
+                                }
                             } else if (event instanceof PortfolioEvent.Opened) {
-                                return Optional.of(PortfolioState.Open.initialState(((PortfolioEvent.Opened) event).getName()));
+                                Optional<PortfolioState> newState = Optional.of(PortfolioState.Open.initialState(((PortfolioEvent.Opened) event).getName()));
+                                log.info(newState.toString());
+                                return newState;
                             } else {
                                 return Optional.empty();
                             }
@@ -88,7 +100,10 @@ public class PortfolioRepositoryImpl implements PortfolioRepository {
                 .drop(1)
                 .takeWhile(Optional::isPresent)
                 .map(Optional::get);
-        return events.zip(states);
+        return events
+                .zip(states)
+                .map(eventAndState -> new HistoricEvent(eventAndState.first(), eventAndState.second()))
+                .log("getHistoric");
     }
 
     @Override

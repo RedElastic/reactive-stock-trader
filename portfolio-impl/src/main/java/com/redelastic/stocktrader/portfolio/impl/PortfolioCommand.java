@@ -47,12 +47,14 @@ public interface PortfolioCommand extends Jsonable {
     @Builder
     class ReceiveFunds implements PortfolioCommand, ReplyType<Done> {
         @NonNull BigDecimal amount;
+        @NonNull TransferId transferId;
     }
 
     @Value
     @Builder
     class SendFunds implements PortfolioCommand, ReplyType<Done> {
         @NonNull BigDecimal amount;
+        @NonNull TransferId transferId;
     }
 
     @Value

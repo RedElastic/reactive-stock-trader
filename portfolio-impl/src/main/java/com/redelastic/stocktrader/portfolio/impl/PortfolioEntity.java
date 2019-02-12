@@ -5,6 +5,7 @@ import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
+import com.redelastic.stocktrader.TradeType;
 import com.redelastic.stocktrader.broker.api.Trade;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import org.slf4j.Logger;
@@ -158,10 +159,11 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
             setEventHandler(PortfolioEvent.OrderPlaced.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.SharesCredited.class, evt -> state().update(evt));
-            setEventHandler(PortfolioEvent.FundsDebited.class, evt -> state().update(evt));
-            setEventHandler(PortfolioEvent.FundsCredited.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.TransferReceived.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.TransferSent.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.SharesDebited.class, evt -> state().update(evt));
-            setEventHandler(PortfolioEvent.OrderFulfilled.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.SharesBought.class, evt -> state().update(evt));
+            setEventHandler(PortfolioEvent.SharesSold.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.OrderFailed.class, evt -> state().update(evt));
 
             setEventHandlerChangingState(PortfolioEvent.LiquidationStarted.class, evt ->
@@ -177,7 +179,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
         private Persist acceptRefund(PortfolioCommand.AcceptRefund cmd, CommandContext<Done> ctx) {
             return ctx.thenPersist(
-                    new PortfolioEvent.RefundAccepted(getPortfolioId(), cmd.getTransferId(), cmd.getAmount()),
+                    new PortfolioEvent.RefundReceived(getPortfolioId(), cmd.getTransferId(), cmd.getAmount()),
                     evt -> ctx.reply(Done.getInstance())
             );
         }
@@ -218,22 +220,17 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             } else {
                 switch (trade.getTradeType()) {
                     case BUY:
-                        return ctx.thenPersistAll(Arrays.asList(
-                                new PortfolioEvent.FundsDebited(getPortfolioId(), trade.getSharePrice()),
-                                new PortfolioEvent.SharesCredited(getPortfolioId(), trade.getSymbol(), trade.getShares()),
-                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), orderId)),
-                                () -> ctx.reply(Done.getInstance()));
-
+                        return ctx.thenPersist(
+                                new PortfolioEvent.SharesBought(getPortfolioId(), orderId, trade.getSymbol(), trade.getSharePrice(), trade.getShares()),
+                                evt -> ctx.reply(Done.getInstance()));
                     case SELL:
-                        return ctx.thenPersistAll(Arrays.asList(
-                                // Note: for a sale the shares have already been removed when we initiated the sale
-                                new PortfolioEvent.FundsCredited(getPortfolioId(), trade.getSharePrice()),
-                                new PortfolioEvent.OrderFulfilled(getPortfolioId(), orderId)),
-                                () -> ctx.reply(Done.getInstance()));
-
+                        return ctx.thenPersist(
+                                new PortfolioEvent.SharesSold(getPortfolioId(), orderId, trade.getSymbol(), trade.getSharePrice(), trade.getShares()),
+                                evt -> ctx.reply(Done.getInstance()));
                     default:
-                        throw new IllegalStateException();
+                        throw new IllegalStateException(String.format("Unexpected trade type: %s", trade.getTradeType().toString()));
                 }
+
             }
         }
 
@@ -279,7 +276,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         private PersistentEntity.Persist sendFunds(PortfolioCommand.SendFunds cmd, CommandContext<Done> ctx) {
             if (state().getFunds().compareTo(cmd.getAmount()) >= 0) {
                 return ctx.thenPersist(
-                        new PortfolioEvent.FundsDebited(getPortfolioId(), cmd.getAmount()),
+                        new PortfolioEvent.TransferSent(getPortfolioId(), cmd.getTransferId(), cmd.getAmount()),
                         evt -> ctx.reply(Done.getInstance())
                 );
             } else {
@@ -291,7 +288,7 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
         private PersistentEntity.Persist receiveFunds(PortfolioCommand.ReceiveFunds cmd, CommandContext<Done> ctx) {
             return ctx.thenPersist(
-                    new PortfolioEvent.FundsCredited(getPortfolioId(), cmd.getAmount()),
+                    new PortfolioEvent.TransferReceived(getPortfolioId(), cmd.getTransferId(), cmd.getAmount()),
                     evt -> ctx.reply(Done.getInstance())
             );
         }

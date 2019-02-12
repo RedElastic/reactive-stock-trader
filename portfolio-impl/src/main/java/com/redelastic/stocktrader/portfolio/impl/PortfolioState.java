@@ -13,7 +13,9 @@ import org.pcollections.HashTreePSet;
 import org.pcollections.PMap;
 import org.pcollections.PSet;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 
 /**
@@ -31,9 +33,18 @@ public interface PortfolioState extends Jsonable {
      * @param evt event to transition on
      * @return The new state (null if there is no transition for the given state).
      */
-    default PortfolioState update(PortfolioEvent evt) {
-        return null;
+
+    default Optional<PortfolioState> transition(PortfolioEvent evt) {
+        try {
+            Method method = getClass().getDeclaredMethod("update", evt.getClass());
+            return Optional.of((Open)method.invoke(this, evt));
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
     }
+
+    BigDecimal getFunds();
+
 
     enum Closed implements PortfolioState {
         INSTANCE;
@@ -43,6 +54,14 @@ public interface PortfolioState extends Jsonable {
             return visitor.visit(INSTANCE);
         }
 
+        @Override
+        public BigDecimal getFunds() {
+            return BigDecimal.ZERO;
+        }
+
+        public PortfolioState update(PortfolioEvent evt) {
+            return null;
+        }
     }
 
     interface Visitor<T> {
@@ -77,11 +96,11 @@ public interface PortfolioState extends Jsonable {
                     .build();
         }
 
-        Open update(FundsCredited evt) {
+        Open update(TransferReceived evt) {
             return this.withFunds(getFunds().add(evt.getAmount()));
         }
 
-        Open update(FundsDebited evt) {
+        Open update(TransferSent evt) {
             return this.withFunds(getFunds().subtract(evt.getAmount()));
         }
 
@@ -97,10 +116,20 @@ public interface PortfolioState extends Jsonable {
             return this.withActiveOrders(activeOrders.plus(evt.getOrderId(), evt));
         }
 
-        Open update(OrderFulfilled evt) {
+        Open update(SharesBought evt) {
             return this
+                    .withHoldings(holdings.add(evt.getSymbol(), evt.getShares()))
                     .withActiveOrders(activeOrders.minus(evt.getOrderId()))
-                    .withCompletedOrders(completedOrders.plus(evt.getOrderId()));
+                    .withCompletedOrders(completedOrders.plus(evt.getOrderId()))
+                    .withFunds(funds.subtract(evt.getSharePrice().multiply(BigDecimal.valueOf(evt.getShares()))));
+        }
+
+        Open update(SharesSold evt) {
+            return this
+                    .withHoldings(holdings.remove(evt.getSymbol(), evt.getShares()))
+                    .withActiveOrders(activeOrders.minus(evt.getOrderId()))
+                    .withCompletedOrders(completedOrders.plus(evt.getOrderId()))
+                    .withFunds(funds.add(evt.getSharePrice().multiply(BigDecimal.valueOf(evt.getShares()))));
         }
 
         Open update(OrderFailed evt) {
@@ -108,6 +137,8 @@ public interface PortfolioState extends Jsonable {
                     .withActiveOrders(activeOrders.minus(evt.getOrderId()))
                     .withCompletedOrders(completedOrders.plus(evt.getOrderId()));
         }
+
+
 
 
         @Override
@@ -129,7 +160,6 @@ public interface PortfolioState extends Jsonable {
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(this);
         }
-
 
     }
 

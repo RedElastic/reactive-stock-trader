@@ -3,9 +3,9 @@ package com.redelastic.stocktrader.portfolio.impl;
 import akka.Done;
 import akka.NotUsed;
 import akka.actor.ActorSystem;
-import akka.stream.ActorMaterializer;
+import akka.japi.pf.PFBuilder;
 import akka.stream.javadsl.Flow;
-import akka.stream.javadsl.Sink;
+import akka.stream.javadsl.Source;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @Singleton
@@ -76,14 +77,14 @@ public class PortfolioServiceImpl implements PortfolioService {
         PortfolioId portfolioId = ((Account.Portfolio) request.getAccount()).getPortfolioId();
         return portfolioRepository
                 .getRef(portfolioId)
-                .ask(PortfolioCommand.SendFunds.builder().amount(request.getAmount()).build());
+                .ask(new PortfolioCommand.SendFunds(request.getAmount(), request.getTransferId()));
     }
 
     private CompletionStage<Done> handleDeposit(TransferRequest.DepositRequest request) {
         PortfolioId portfolioId = ((Account.Portfolio) request.getAccount()).getPortfolioId();
         return portfolioRepository
                 .getRef(portfolioId)
-                .ask(PortfolioCommand.ReceiveFunds.builder().amount(request.getAmount()).build());
+                .ask(new PortfolioCommand.ReceiveFunds(request.getAmount(), request.getTransferId()));
     }
 
     @Override
@@ -107,10 +108,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId) {
-        portfolioRepository
-                .getHistory(portfolioId)
-                .to(Sink.foreach(p -> log.error(p.toString())))
-                .run(ActorMaterializer.create(actorSystem));
         return notUsed ->
                 portfolioRepository
                         .get(portfolioId)
@@ -125,12 +122,12 @@ public class PortfolioServiceImpl implements PortfolioService {
                 fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
                     @Override
                     public CompletionStage<Done> visit(FundsTransfer.Deposit deposit) {
-                        return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds()));
+                        return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds(), deposit.getTransferId()));
                     }
 
                     @Override
                     public CompletionStage<Done> visit(FundsTransfer.Withdrawl withdrawl) {
-                        return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds()));
+                        return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds(), withdrawl.getTransferId()));
                     }
 
                     @Override
@@ -166,9 +163,63 @@ public class PortfolioServiceImpl implements PortfolioService {
         });
     }
 
+
     @Override
     public Topic<OrderPlaced> orderPlaced() {
         return TopicProducer.taggedStreamWithOffset(PortfolioEvent.TAG.allTags(), portfolioRepository::ordersStream);
+    }
+
+    @Override
+    public ServiceCall<NotUsed, Source<Transaction, NotUsed>> getTransactions(PortfolioId portfolioId) {
+        return notUsed ->
+                CompletableFuture.completedFuture(
+                        portfolioRepository
+                                .getHistory(portfolioId)
+                                .log("history")
+                                .collect(new PFBuilder<HistoricEvent, Transaction>()
+                                        .match(HistoricEvent.class,
+                                                hEvt -> hEvt.getEvent() instanceof PortfolioEvent.TransferReceived,
+                                                hEvt -> {
+                                                    val evt = (PortfolioEvent.TransferReceived) hEvt.getEvent();
+                                                    return new Transaction.TransferReceived(
+                                                            evt.getTransferId(),
+                                                            evt.getAmount(),
+                                                            hEvt.getState().getFunds());
+                                                })
+                                        .match(HistoricEvent.class,
+                                                hEvt -> hEvt.getEvent() instanceof PortfolioEvent.TransferSent,
+                                                hEvt -> {
+                                                    val evt = (PortfolioEvent.TransferSent) hEvt.getEvent();
+                                                    return new Transaction.TransferSent(
+                                                            evt.getTransferId(),
+                                                            evt.getAmount(),
+                                                            hEvt.getState().getFunds());
+                                                })
+                                        .match(HistoricEvent.class,
+                                                hEvt -> hEvt.getEvent() instanceof PortfolioEvent.SharesBought,
+                                                hEvt -> {
+                                                    val evt = (PortfolioEvent.SharesBought) hEvt.getEvent();
+                                                    return new Transaction.SharesBought(
+                                                            evt.getOrderId(),
+                                                            evt.getSymbol(),
+                                                            evt.getShares(),
+                                                            evt.getSharePrice(),
+                                                            hEvt.getState().getFunds());
+                                                })
+                                        .match(HistoricEvent.class,
+                                                hEvt -> hEvt.getEvent() instanceof PortfolioEvent.SharesSold,
+                                                hEvt -> {
+                                                    val evt = (PortfolioEvent.SharesSold) hEvt.getEvent();
+                                                    return new Transaction.SharesSold(
+                                                            evt.getOrderId(),
+                                                            evt.getSymbol(),
+                                                            evt.getShares(),
+                                                            evt.getSharePrice(),
+                                                            hEvt.getState().getFunds());
+                                                })
+                                        .build()
+                                )
+                );
     }
 
 

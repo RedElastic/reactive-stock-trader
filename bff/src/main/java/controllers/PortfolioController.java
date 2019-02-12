@@ -1,5 +1,9 @@
 package controllers;
 
+import akka.NotUsed;
+import akka.stream.javadsl.Source;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
@@ -9,6 +13,7 @@ import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
+import com.redelastic.stocktrader.portfolio.api.Transaction;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import controllers.forms.portfolio.OpenPortfolioForm;
@@ -24,8 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.data.Form;
 import play.data.FormFactory;
+import play.libs.EventSource;
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 import services.quote.QuoteService;
@@ -85,6 +92,21 @@ public class PortfolioController extends Controller {
                 .thenApply(Results::ok);
     }
 
+    public CompletionStage<Result> getTransactions(String portfolioId) {
+        return portfolioService
+                .getTransactions(new PortfolioId(portfolioId))
+                .invoke()
+                .thenApply(transactions -> {
+                    val events = transactions
+                            .log("transactions")
+                            .map(Json::toJson)
+                            .map(EventSource.Event::event);
+                    return ok()
+                            .chunked(events.via(EventSource.flow()))
+                            .as(Http.MimeTypes.EVENT_STREAM);
+                });
+    }
+
     public CompletionStage<Result> getSummary(String portfolioId, Boolean includeOrderInfo, Boolean includePrices) {
         val getModel = portfolioService
                 .getPortfolio(new PortfolioId(portfolioId))
@@ -140,10 +162,6 @@ public class PortfolioController extends Controller {
                                 brokerService
                                         .getOrderSummary(orderId)
                                         .invoke()
-                                        .thenApply(o -> {
-                                            log.info(o.toString());
-                                            return o;
-                                        })
                                         .exceptionally(ex -> {
                                             ex.printStackTrace();
                                             return Optional.empty();

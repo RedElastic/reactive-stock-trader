@@ -18,7 +18,7 @@ public interface PortfolioRepository {
 
     PortfolioModel get(PortfolioId portfolioId);
 
-    Source<Pair<PortfolioEvent, PortfolioState>, NotUsed> getHistory(PortfolioId portfolioId);
+    Source<HistoricEvent, NotUsed> getHistory(PortfolioId portfolioId);
 
     PersistentEntityRef<PortfolioCommand> getRef(PortfolioId portfolioId);
 
