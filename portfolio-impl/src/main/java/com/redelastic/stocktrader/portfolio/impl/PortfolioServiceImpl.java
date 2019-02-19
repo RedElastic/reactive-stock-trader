@@ -52,11 +52,6 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Done> liquidatePortfolio(PortfolioId portfolioId) {
-        return null;
-    }
-
-    @Override
     public ServiceCall<NotUsed, Done> closePortfolio(PortfolioId portfolioId) {
         return notUsed ->
                 portfolioRepository

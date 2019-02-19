@@ -36,17 +36,6 @@ public interface PortfolioService extends Service {
      */
     ServiceCall<OrderDetails, OrderId> placeOrder(PortfolioId portfolioId);
 
-    /**
-     * Sell all equities (as market sell), then transfer all funds out, then close the portfolio.
-     * Note that after selling all the equities the portfolio may still be in an overdrawn state (negative funds),
-     * we will not close it until the balance of funds is zero. External action will be required to complete closure
-     * of an overdrawn account.
-     *
-     * @param portfolioId ID for the portfolio to liquidate.
-     * @return Done when the liquidate command has been acknowledged.
-     */
-    ServiceCall<NotUsed, Done> liquidatePortfolio(PortfolioId portfolioId);
-
     ServiceCall<NotUsed, Done> closePortfolio(PortfolioId portfolioId);
 
     /**
