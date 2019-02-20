@@ -36,11 +36,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                             }
 
                             @Override
-                            public Behavior visit(PortfolioState.Liquidating liquidating) {
-                                return new LiquidatingPortfolioBehaviour(liquidating).getBehavior();
-                            }
-
-                            @Override
                             public Behavior visit(PortfolioState.Closed closed) {
                                 return new ClosedPortfolioBehaviourBuilder().getBehavior();
                             }
@@ -128,11 +123,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
                 }
 
                 @Override
-                public Behavior visit(PortfolioState.Liquidating liquidating) {
-                    return new LiquidatingPortfolioBehaviour(liquidating).getBehavior();
-                }
-
-                @Override
                 public Behavior visit(PortfolioState.Closed closed) {
                     return new ClosedPortfolioBehaviourBuilder().getBehavior();
                 }
@@ -153,7 +143,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             builder.setCommandHandler(PortfolioCommand.PlaceOrder.class, this::placeOrder);
             builder.setCommandHandler(PortfolioCommand.CompleteTrade.class, this::completeTrade);
             builder.setCommandHandler(PortfolioCommand.AcknowledgeOrderFailure.class, this::handleFailedOrder);
-            builder.setCommandHandler(PortfolioCommand.Liquidate.class, this::liquidate);
             builder.setCommandHandler(PortfolioCommand.SendFunds.class, this::sendFunds);
             builder.setCommandHandler(PortfolioCommand.ReceiveFunds.class, this::receiveFunds);
             builder.setCommandHandler(PortfolioCommand.AcceptRefund.class, this::acceptRefund);
@@ -171,14 +160,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             setEventHandler(PortfolioEvent.OrderFailed.class, evt ->
                     state().orderCompleted(evt.getOrderId()));
 
-            setEventHandlerChangingState(PortfolioEvent.LiquidationStarted.class, evt ->
-                    PortfolioState.Liquidating.builder()
-                            .name(state().getName())
-                            .funds(state().getFunds())
-                            .loyaltyLevel(state().getLoyaltyLevel())
-                            .holdings(state().getHoldings())
-                            .build()
-            );
 
         }
 
@@ -336,18 +317,6 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
 
             }
 
-        }
-
-    }
-
-    /**
-     * Once we've entered the liquidating state we're waiting for the shares of our stocks to be sold. Once this
-     * happens we can transfer the funds out of the portfolio and close it.
-     */
-    private class LiquidatingPortfolioBehaviour extends PortfolioBehaviorBuilder<PortfolioState.Liquidating> {
-
-        LiquidatingPortfolioBehaviour(PortfolioState.Liquidating state) {
-            super(state);
         }
 
     }

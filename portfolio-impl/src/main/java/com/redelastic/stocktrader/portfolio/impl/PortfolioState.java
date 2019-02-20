@@ -41,8 +41,6 @@ public interface PortfolioState extends Jsonable {
     interface Visitor<T> {
         T visit(Open open);
 
-        T visit(Liquidating liquidating);
-
         T visit(Closed closed);
     }
 
@@ -99,21 +97,6 @@ public interface PortfolioState extends Jsonable {
         public <T> T visit(Visitor<T> visitor) {
             return visitor.visit(this);
         }
-    }
-
-    @Value
-    @Builder
-    final class Liquidating implements PortfolioState {
-        @NonNull BigDecimal funds;
-        @NonNull String name;
-        @NonNull LoyaltyLevel loyaltyLevel;
-        @NonNull Holdings holdings;
-
-        @Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visit(this);
-        }
-
     }
 
 }
