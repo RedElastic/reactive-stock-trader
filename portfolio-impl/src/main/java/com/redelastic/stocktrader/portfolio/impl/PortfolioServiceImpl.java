@@ -20,10 +20,17 @@ import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
+import com.lightbend.lagom.javadsl.persistence.ReadSide;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import java.util.List;
+
+import org.pcollections.PSequence;
+import org.pcollections.TreePVector;
 
 @Singleton
 public class PortfolioServiceImpl implements PortfolioService {
@@ -31,11 +38,15 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final Logger log = LoggerFactory.getLogger(PortfolioServiceImpl.class);
 
     private final PortfolioRepository portfolioRepository;
+    private final CassandraSession db;
 
     @Inject
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository,
-                                BrokerService brokerService) {
+                                BrokerService brokerService, 
+                                ReadSide readSide,
+                                CassandraSession db) {
         this.portfolioRepository = portfolioRepository;
+        this.db = db;
 
         // Listen for purchase order completions and send them to the corresponding portfolio
         brokerService.orderResult()
@@ -65,6 +76,18 @@ public class PortfolioServiceImpl implements PortfolioService {
                 portfolioRepository
                         .get(portfolioId)
                         .view();
+    }
+
+    @Override
+    public ServiceCall<NotUsed, PSequence<String>> getAllPortfolios() {
+        return req -> {
+          CompletionStage<PSequence<String>> result = db.selectAll("SELECT * FROM portfolio")
+            .thenApply(rows -> {
+                List<String> portfolios = rows.stream().map(row -> row.getString("name")).collect(Collectors.toList());
+                return TreePVector.from(portfolios);
+            });
+          return result;
+        };
     }
 
     @Override

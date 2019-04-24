@@ -43,8 +43,8 @@ interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
     @Builder
     @AllArgsConstructor
     class Opened implements PortfolioEvent {
-        @NonNull PortfolioId portfolioId;
-        @NonNull String name;
+        @NonNull public PortfolioId portfolioId;
+        @NonNull public String name;
 
     }
 
