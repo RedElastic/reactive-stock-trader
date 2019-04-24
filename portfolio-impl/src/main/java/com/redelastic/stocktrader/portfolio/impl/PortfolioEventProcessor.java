@@ -64,7 +64,7 @@ public class PortfolioEventProcessor extends ReadSideProcessor<PortfolioEvent> {
   }
 
   private CompletionStage<Done> prepareWritePortfolios() {
-    return session.prepare("INSERT INTO portfolio (userId, followedBy) VALUES (?, ?)").thenApply(ps -> {
+    return session.prepare("INSERT INTO portfolio (portfolioId, name) VALUES (?, ?)").thenApply(ps -> {
       setWritePortfolios(ps);
       return Done.getInstance();
     });

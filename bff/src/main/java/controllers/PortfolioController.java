@@ -91,6 +91,16 @@ public class PortfolioController extends Controller {
                 .thenApply(Results::ok);
     }
 
+    public CompletionStage<Result> getAllPortfolios() {
+        val portfolioNames = portfolioService
+                .getAllPortfolios()
+                .invoke();
+
+        return portfolioNames
+                .thenApply(Json::toJson)
+                .thenApply(Results::ok);
+    }
+
     public CompletionStage<Result> getSummary(String portfolioId, Boolean includeOrderInfo, Boolean includePrices) {
         val getModel = portfolioService
                 .getPortfolio(new PortfolioId(portfolioId))
