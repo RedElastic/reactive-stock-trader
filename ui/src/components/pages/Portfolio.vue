@@ -1,7 +1,6 @@
 <template>    
   <div class="row">
     <div class="col">
-      <!-- overview -->
       <div class="row mt-3">
         <div class="col-7">
           <h2>
@@ -61,15 +60,12 @@
           </div>     
         </div>      
       </div>
-      <!-- /overview -->
-
       <equity-row
         v-for="(equity, index) in portfolio.equities"
         :key="equity.symbol"
         :equity="equity"
         :index="index"
       />
-      <!-- /equities -->
     </div>
   </div>
 </template>

@@ -5,9 +5,9 @@
     </div>
     <div class="col-6 py-5 text-right">
       Learn how to build reactive systems!<br>
-                                  <a href="#">
-                                    Visit the IBM Stock Trader series of tutorials
-                                  </a>
+      <a href="#">
+        Visit the IBM Stock Trader series of tutorials
+      </a>
     </div>
   </div>
 </template>

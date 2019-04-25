@@ -5,19 +5,24 @@
 
 package com.redelastic.stocktrader.portfolio.api;
 
-import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
-import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.pcollections.PSequence;
+
+import java.math.BigDecimal;
 
 @Value
 @Builder
-@AllArgsConstructor
-public class OrderPlaced {
+public class PortfolioSummary {
+
+	public PortfolioSummary(PortfolioId id, String name) { 
+		this.portfolioId = id;
+		this.name = name;
+	}
+
     @NonNull PortfolioId portfolioId;
-    @NonNull OrderId orderId;
-    @NonNull OrderDetails orderDetails;
+
+    @NonNull String name;
 }

@@ -17,13 +17,27 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.portfolio.api.*;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.PortfolioSummary;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
+import com.lightbend.lagom.javadsl.persistence.ReadSide;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import java.util.List;
+
+import org.pcollections.PSequence;
+import org.pcollections.TreePVector;
+
+import akka.stream.javadsl.Source;
+
+import com.redelastic.stocktrader.PortfolioId;
+
+import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class PortfolioServiceImpl implements PortfolioService {
@@ -31,18 +45,22 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final Logger log = LoggerFactory.getLogger(PortfolioServiceImpl.class);
 
     private final PortfolioRepository portfolioRepository;
+    private final CassandraSession db;
 
     @Inject
     public PortfolioServiceImpl(PortfolioRepository portfolioRepository,
-                                BrokerService brokerService) {
+                                BrokerService brokerService, 
+                                ReadSide readSide,
+                                CassandraSession db) {
         this.portfolioRepository = portfolioRepository;
+        this.db = db;
 
         // Listen for purchase order completions and send them to the corresponding portfolio
         brokerService.orderResult()
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
-        // Note: Our order entity logic handles duplicate orderPlaced, hence at least once semantics work.
-
+        
+        readSide.register(PortfolioEventProcessor.class);
     }
 
     @Override
@@ -65,6 +83,23 @@ public class PortfolioServiceImpl implements PortfolioService {
                 portfolioRepository
                         .get(portfolioId)
                         .view();
+    }
+
+    @Override
+    public ServiceCall<NotUsed, PSequence<PortfolioSummary>> getAllPortfolios() {
+        return request -> {
+            CompletionStage<PSequence<PortfolioSummary>> result = db.selectAll(
+                "SELECT portfolioId, name FROM portfolio_summary;").thenApply(rows -> {
+                    List<PortfolioSummary> summary = rows.stream().map(row -> 
+                        PortfolioSummary.builder()
+                            .portfolioId(new PortfolioId(row.getString("portfolioId")))
+                            .name(row.getString("name"))
+                            .build())
+                        .collect(Collectors.toList());
+                    return TreePVector.from(summary);
+                });
+            return result;
+        };
     }
 
     @Override
