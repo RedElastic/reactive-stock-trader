@@ -55,14 +55,14 @@ public class PortfolioEventProcessor extends ReadSideProcessor<PortfolioEvent> {
   private CompletionStage<Done> prepareCreateTables() {
     // @formatter:off
     return session.executeCreateTable(
-        "CREATE TABLE IF NOT EXISTS portfolio ("
+        "CREATE TABLE IF NOT EXISTS portfolio_summary ("
           + "portfolioId text, name text, "
           + "PRIMARY KEY (portfolioId))");
     // @formatter:on
   }
 
   private CompletionStage<Done> prepareWritePortfolios() {
-    return session.prepare("INSERT INTO portfolio (portfolioId, name) VALUES (?, ?)").thenApply(
+    return session.prepare("INSERT INTO portfolio_summary (portfolioId, name) VALUES (?, ?)").thenApply(
       ps -> {
         this.writePortfolios = ps;
         return Done.getInstance();

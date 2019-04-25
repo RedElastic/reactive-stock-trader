@@ -89,8 +89,11 @@ public class PortfolioServiceImpl implements PortfolioService {
     public ServiceCall<NotUsed, Source<PortfolioSummary, ?>> getAllPortfolios() {
         return request -> {
             Source<PortfolioSummary, ?> summaries = db.select(
-                    "SELECT portfolioId, name FROM portfolio;").map(row -> 
-                        new PortfolioSummary(new PortfolioId(row.getString("portfolioId")), row.getString("name")));
+                    "SELECT portfolioId, name FROM portfolio_summary;").map(row ->
+                        PortfolioSummary.builder()
+                            .portfolioId(new PortfolioId(row.getString("portfolioId")))
+                            .name(row.getString("name"))
+                            .build());
             return CompletableFuture.completedFuture(summaries);
         };
     }

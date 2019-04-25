@@ -94,7 +94,8 @@ public class PortfolioController extends Controller {
     public CompletionStage<Result> getAllPortfolios() {
         val portfolios = portfolioService
                 .getAllPortfolios()
-                .invoke();
+                .invoke()
+                .toCompletableFuture();
 
         return portfolios
                 .thenApply(Json::toJson)
