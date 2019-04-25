@@ -35,38 +35,9 @@
         </div>
         <div class="col-6">
           <h2>Choose a portfolio</h2>        
-          <b-form @submit.prevent="loadPortfolio">
-            <b-form-group
-              id="symbolGroup"
-              label="Search for portfolio by name"
-              label-for="symbol"
-            >
-              <b-form-input
-                id="name"
-                v-model="search.name"
-                type="text"
-              />
-            </b-form-group>
-            <b-form-group
-              id="symbolGroup"
-              label="Search for portfolio by ID"
-              label-for="symbol"
-            >
-              <b-form-input
-                id="portfolioId"
-                v-model="search.portfolioId"
-                type="text"
-                required
-              />
-            </b-form-group>
-            <b-button
-              type="submit"
-              variant="primary"
-              class="mr-3"
-            >
-              Lookup Portfolio
-            </b-button>
-          </b-form>
+          <p v-for="portfolio in portfolios" :key="portfolio.id">
+            <button v-on:click="setActivePortfolio(portfolio.id, portfolio.name)">Select</button>&nbsp;<b>{{ portfolio.name }}</b>&nbsp;({{ portfolio.id }})
+          </p>
         </div>
       </div>
       <!-- /equities -->
@@ -75,17 +46,28 @@
 </template>
 
 <script>
-  import * as portfolio from '@/common/portfolio';
+  import * as portfolioService from '@/common/portfolio';
   export default {  
     data() {
       return {
         open: this.emptyOpenForm(),
-        search: this.emptySearchForm()
+        search: this.emptySearchForm(),
+        portfolios: null
       }
+    },
+    mounted() {
+      portfolioService.getAllPortfolios()
+        .then(portfolios => {          
+          let p = portfolios.map(portfolio => ({
+            id: portfolio.portfolioId.id,
+            name: portfolio.name
+          }));
+          this.portfolios = p;
+        });
     },
     methods: {
       openPortfolio() {
-        portfolio.open(this.open);
+        portfolioService.open(this.open);
       },
       resetOpenPortfolio() {
         this.open = this.emptyOpenForm();
@@ -101,10 +83,8 @@
           portfolioId: null
         };
       },
-      loadPortfolio() {
-        portfolio.getPortfolio({
-          portfolioId: this.search.portfolioId
-        });
+      setActivePortfolio(id, name) {
+        portfolioService.setActivePortfolio(id, name);
       }
     }
   } 

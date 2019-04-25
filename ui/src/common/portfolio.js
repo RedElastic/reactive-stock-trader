@@ -28,6 +28,7 @@ export let activePortfolio = {
     this.name = null;
   }
 }
+
 export function open(request) {
   const formData = new FormData();
   formData.append('name', request.name);
@@ -47,25 +48,15 @@ export function open(request) {
   });
 }
 
-export function getPortfolio(options) {
-  const {includeOrders, includeSharePrices} = options || {};
-  const portfolioId = 
-    options && options.portfolioId 
-      ? options.portfolioId 
-      : activePortfolio.id;
-  
-  const url = new URL('/api/portfolio/' + portfolioId + '/summary', baseUrl);
-  if (includeOrders) url.searchParams.append('includeOrderInfo', true);
-  if (includeSharePrices) url.searchParams.append('includePrices', true);
+export function setActivePortfolio(id, name) {
+  activePortfolio.id = id;
+  activePortfolio.name = name;
+}
+
+export function getAllPortfolios() {
+  const url = new URL('/api/portfolio', baseUrl);
   const request = axios.get(url.toString());
-  return request.then(response => {
-      activePortfolio.id = response.data.portfolioId;
-      activePortfolio.name = response.data.name;
-    return response.data;      
-  })
-  .catch(err => {
-    activePortfolio.clear();
-  });
+  return request.then(response => response.data);
 }
 
 export function getDetails(portfolioId) {
