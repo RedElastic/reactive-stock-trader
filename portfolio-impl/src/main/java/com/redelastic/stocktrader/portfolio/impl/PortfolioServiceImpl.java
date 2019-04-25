@@ -86,15 +86,19 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Source<PortfolioSummary, ?>> getAllPortfolios() {
+    public ServiceCall<NotUsed, PSequence<PortfolioSummary>> getAllPortfolios() {
         return request -> {
-            Source<PortfolioSummary, ?> summaries = db.select(
-                    "SELECT portfolioId, name FROM portfolio_summary;").map(row ->
+            CompletionStage<PSequence<PortfolioSummary>> result = db.selectAll(
+                "SELECT portfolioId, name FROM portfolio_summary;").thenApply(rows -> {
+                    List<PortfolioSummary> summary = rows.stream().map(row -> 
                         PortfolioSummary.builder()
                             .portfolioId(new PortfolioId(row.getString("portfolioId")))
                             .name(row.getString("name"))
-                            .build());
-            return CompletableFuture.completedFuture(summaries);
+                            .build())
+                        .collect(Collectors.toList());
+                    return TreePVector.from(summary);
+                });
+            return result;
         };
     }
 

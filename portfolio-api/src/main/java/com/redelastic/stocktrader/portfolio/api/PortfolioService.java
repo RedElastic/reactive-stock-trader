@@ -39,7 +39,7 @@ public interface PortfolioService extends Service {
 
     ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId);
 
-    ServiceCall<NotUsed, Source<PortfolioSummary, ?>> getAllPortfolios();
+    ServiceCall<NotUsed, PSequence<PortfolioSummary>> getAllPortfolios();
 
     Topic<OrderPlaced> orderPlaced();
 
