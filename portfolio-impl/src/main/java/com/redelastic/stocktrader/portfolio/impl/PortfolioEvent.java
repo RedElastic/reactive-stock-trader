@@ -27,10 +27,10 @@ import java.math.BigDecimal;
 
 interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
 
-    int NUM_SHARDS = 20; // TODO: Determine the appropriate value
+    int NUM_SHARDS = 20;
 
     AggregateEventShards<PortfolioEvent> TAG =
-            AggregateEventTag.sharded(PortfolioEvent.class, NUM_SHARDS);
+          AggregateEventTag.sharded(PortfolioEvent.class, NUM_SHARDS);
 
     @Override
     default AggregateEventShards<PortfolioEvent> aggregateTag() {

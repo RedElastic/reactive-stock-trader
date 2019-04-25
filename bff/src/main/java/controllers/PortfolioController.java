@@ -92,11 +92,11 @@ public class PortfolioController extends Controller {
     }
 
     public CompletionStage<Result> getAllPortfolios() {
-        val portfolioNames = portfolioService
+        val portfolios = portfolioService
                 .getAllPortfolios()
                 .invoke();
 
-        return portfolioNames
+        return portfolios
                 .thenApply(Json::toJson)
                 .thenApply(Results::ok);
     }

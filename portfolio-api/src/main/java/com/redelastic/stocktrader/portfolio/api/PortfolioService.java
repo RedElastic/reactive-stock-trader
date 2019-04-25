@@ -20,6 +20,8 @@ import org.pcollections.PSequence;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
+import akka.stream.javadsl.Source;
+
 /**
  *
  */
@@ -37,7 +39,7 @@ public interface PortfolioService extends Service {
 
     ServiceCall<NotUsed, PortfolioView> getPortfolio(PortfolioId portfolioId);
 
-    ServiceCall<NotUsed, PSequence<String>> getAllPortfolios();
+    ServiceCall<NotUsed, Source<PortfolioSummary, ?>> getAllPortfolios();
 
     Topic<OrderPlaced> orderPlaced();
 

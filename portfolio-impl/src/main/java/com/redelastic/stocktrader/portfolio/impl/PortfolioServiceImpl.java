@@ -17,6 +17,7 @@ import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.portfolio.api.*;
 import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
+import com.redelastic.stocktrader.portfolio.api.PortfolioSummary;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,12 @@ import java.util.List;
 
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
+
+import akka.stream.javadsl.Source;
+
+import com.redelastic.stocktrader.PortfolioId;
+
+import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class PortfolioServiceImpl implements PortfolioService {
@@ -52,8 +59,8 @@ public class PortfolioServiceImpl implements PortfolioService {
         brokerService.orderResult()
                 .subscribe()
                 .atLeastOnce(Flow.<OrderResult>create().mapAsync(1, this::handleOrderResult));
-        // Note: Our order entity logic handles duplicate orderPlaced, hence at least once semantics work.
-
+        
+        readSide.register(PortfolioEventProcessor.class);
     }
 
     @Override
@@ -79,14 +86,12 @@ public class PortfolioServiceImpl implements PortfolioService {
     }
 
     @Override
-    public ServiceCall<NotUsed, PSequence<String>> getAllPortfolios() {
-        return req -> {
-          CompletionStage<PSequence<String>> result = db.selectAll("SELECT * FROM portfolio")
-            .thenApply(rows -> {
-                List<String> portfolios = rows.stream().map(row -> row.getString("name")).collect(Collectors.toList());
-                return TreePVector.from(portfolios);
-            });
-          return result;
+    public ServiceCall<NotUsed, Source<PortfolioSummary, ?>> getAllPortfolios() {
+        return request -> {
+            Source<PortfolioSummary, ?> summaries = db.select(
+                    "SELECT portfolioId, name FROM portfolio;").map(row -> 
+                        new PortfolioSummary(new PortfolioId(row.getString("portfolioId")), row.getString("name")));
+            return CompletableFuture.completedFuture(summaries);
         };
     }
 

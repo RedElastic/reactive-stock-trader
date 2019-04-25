@@ -21,7 +21,9 @@ import com.redelastic.stocktrader.portfolio.impl.PortfolioEvent.Closed;
 
 import javax.inject.Inject;
 
-import static com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.completedStatement;
+import static com.lightbend.lagom.javadsl.persistence.cassandra.CassandraReadSide.*;
+
+import java.util.Arrays;
 
 public class PortfolioEventProcessor extends ReadSideProcessor<PortfolioEvent> {
 
@@ -36,22 +38,18 @@ public class PortfolioEventProcessor extends ReadSideProcessor<PortfolioEvent> {
     this.readSide = readSide;
   }
 
-  private void setWritePortfolios(PreparedStatement writePortfolios) {
-    this.writePortfolios = writePortfolios;
-  }
-
   @Override
   public PSequence<AggregateEventTag<PortfolioEvent>> aggregateTags() {
-    return TreePVector.singleton(PortfolioEventTag.INSTANCE);
+    return PortfolioEvent.TAG.allTags();
   }
 
   @Override
   public ReadSideHandler<PortfolioEvent> buildHandler() {
     return readSide.<PortfolioEvent>builder("portfolio_offset")
-            .setGlobalPrepare(this::prepareCreateTables)
-            .setPrepare((ignored) -> prepareWritePortfolios())
-            .setEventHandler(Opened.class, this::processPortfolioChanged)
-            .build();
+      .setGlobalPrepare(this::prepareCreateTables)
+      .setPrepare(tag -> prepareWritePortfolios())
+      .setEventHandler(Opened.class, this::processPortfolioChanged)
+      .build();
   }
 
   private CompletionStage<Done> prepareCreateTables() {
@@ -64,17 +62,20 @@ public class PortfolioEventProcessor extends ReadSideProcessor<PortfolioEvent> {
   }
 
   private CompletionStage<Done> prepareWritePortfolios() {
-    return session.prepare("INSERT INTO portfolio (portfolioId, name) VALUES (?, ?)").thenApply(ps -> {
-      setWritePortfolios(ps);
-      return Done.getInstance();
-    });
+    return session.prepare("INSERT INTO portfolio (portfolioId, name) VALUES (?, ?)").thenApply(
+      ps -> {
+        this.writePortfolios = ps;
+        return Done.getInstance();
+      }
+    );
   }
 
   private CompletionStage<List<BoundStatement>> processPortfolioChanged(Opened event) {
+    System.out.println("Portfolio opened: " + event.portfolioId.toString());
     BoundStatement bindWritePortfolios = writePortfolios.bind();
-    bindWritePortfolios.setString("portfolioId", String.valueOf(event.portfolioId));
+    bindWritePortfolios.setString("portfolioId", event.portfolioId.getId());
     bindWritePortfolios.setString("name", event.name);
-    return completedStatement(bindWritePortfolios);
+    return completedStatements(Arrays.asList(bindWritePortfolios));
   }
 
 }
