@@ -33,10 +33,12 @@
             </button>
           </b-form>
         </div>
-        <div class="col-6">
+        <div class="col-6" v-if="portfolios.length > 0">
           <h2>Choose a portfolio</h2>        
           <p v-for="portfolio in portfolios" :key="portfolio.id">
-            <button v-on:click="setActivePortfolio(portfolio.id, portfolio.name)">Select</button>&nbsp;<b>{{ portfolio.name }}</b>&nbsp;({{ portfolio.id }})
+            <button v-on:click="setActivePortfolio(portfolio.id, portfolio.name)" v-if="getActivePortfolio() !== portfolio.id">Select</button>
+            <button v-on:click="setActivePortfolio(portfolio.id, portfolio.name)" v-else disabled>Select</button>
+            &nbsp;<b>{{ portfolio.name }}</b>&nbsp;({{ portfolio.id }})
           </p>
         </div>
       </div>
@@ -51,8 +53,7 @@
     data() {
       return {
         open: this.emptyOpenForm(),
-        search: this.emptySearchForm(),
-        portfolios: null
+        portfolios: []
       }
     },
     mounted() {
@@ -67,7 +68,12 @@
     },
     methods: {
       openPortfolio() {
-        portfolioService.open(this.open);
+        portfolioService.open(this.open)
+          .then(response => {
+            this.open.name = "";
+            this.setActivePortfolio(response.id, response.name);
+            this.portfolios.push(response);
+          });
       },
       resetOpenPortfolio() {
         this.open = this.emptyOpenForm();
@@ -77,14 +83,11 @@
           name: null
         };
       },
-      emptySearchForm() {
-        return {
-          name: null,
-          portfolioId: null
-        };
-      },
       setActivePortfolio(id, name) {
         portfolioService.setActivePortfolio(id, name);
+      },
+      getActivePortfolio() {
+        return portfolioService.activePortfolio.id;
       }
     }
   } 

@@ -41,10 +41,11 @@ export function open(request) {
     url: baseUrl,
     data: formData
   }).then((response) => {    
-    const portfolioId = response.data.portfolioId;
-    activePortfolio.id = portfolioId;
-    activePortfolio.name = request.name;
-    return portfolioId;
+    const portfolioId = response.data.portfolioId;    
+    return {
+      id: portfolioId,
+      name: request.name
+    };
   });
 }
 
