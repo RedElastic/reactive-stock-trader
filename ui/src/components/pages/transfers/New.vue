@@ -107,7 +107,7 @@
               </div>
               <div class="row">
                 <div class="col">
-                  Cash on Hand (after)
+                  New cash on hand
                 </div>
                 <div class="col">
                   {{ afterTransfer | toCurrency }}
