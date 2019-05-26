@@ -5,14 +5,18 @@
         <div class="col-7">
           <h2>
             Portfolio <small class="text-muted">
-              {{ portfolio.name }}
+              {{ portfolioName }}
             </small>
           </h2>
           <div class="row">
             <div class="col">
-              Account #: {{ portfolioId }}
+              Account: {{ portfolioId }}
             </div>
           </div>
+        </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col-7">
           <div class="row">
             <div class="col">
               <div class="row">
@@ -139,6 +143,9 @@
     computed: {
       portfolioId() {
         return portfolioService.activePortfolio.id;
+      },
+      portfolioName() {
+        return portfolioService.activePortfolio.name;
       }
     },
     mounted() {

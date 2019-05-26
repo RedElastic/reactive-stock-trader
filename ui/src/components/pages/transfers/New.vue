@@ -28,7 +28,7 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-3">
+              <div class="col-8">
                 <b-form-group label="">
                   <b-form-radio-group
                     v-model="form.depositWithdrawl"
@@ -37,43 +37,24 @@
                   />
                 </b-form-group>
               </div>
-              <div class="col-5">
-                current portfolio ({{ portfolioId | shortUUID }})
-              </div>
             </div>
             <div class="row">
               <div class="col-6">
-                {{ resultingAction }}
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-6">
-                <b-form-select
-                  id="accountGroup"
-                  v-model="form.accountType"
-                  label="Bank Account"
-                  :options="options.accountType"
-                  label-for="accountSelect"
-                />
-              </div>
-            </div>         
-            <div class="row">
-              <div class="col">
                 <b-form-group
-                  id="accoundIdGroup"
-                  label="Account ID"
-                  label-for="accountId"
+                  id="accountGroup"
+                  label="External Account"
+                  label-for="accountType"
                 >
-                  <b-form-input
-                    id="accountId"
-                    v-model="form.accountId"
-                    type="text"
+                  <b-form-select
+                    id="accountType"
+                    v-model="form.accountType"
+                    :options="options.accountType"
+                    label-for="accountGroup"
                     required
                   />
-                </b-form-group>   
+                </b-form-group>
               </div>
-              <div class="col" />
-            </div> 
+            </div>                      
             <div class="row">
               <div class="col mt-3">
                 <b-button
@@ -95,36 +76,43 @@
             </div>
           </b-form>
         </div>          
-        <div class="col-5">          
-          <div class="row">
-            <div class="col">
-              <h4 class="mt-5">
-                Summary
-              </h4>
-            </div>
-          </div>          
-          <div class="row">
-            <div class="col">
-              Cash on Hand (current)
-            </div>
-            <div class="col">
-              {{ portfolio.cashOnHand | toCurrency }}
-            </div>
-          </div>
-          <div class="row">
-            <div class="col">
-              Transfer amount
-            </div>
-            <div class="col">
-              {{ form.amount | toCurrency }}
+        <div class="col-5">
+          <b-alert class="mb-5" v-model="showDismissibleAlert" variant="primary" dismissible>
+            Wire transfer has been initiated! Your cash will be available shortly. Please view pending wires for up-to-date transfer status.
+          </b-alert>          
+          <div class="card">
+            <div class="card-body">          
+              <h4>Active Portfolio</h4>          
+              <div class="row">
+                <div class="col">
+                  Cash on hand
+                </div>
+                <div class="col">
+                  {{ portfolio.cashOnHand | toCurrency }}
+                </div>
+              </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col">
-              Cash on Hand (after)
-            </div>
-            <div class="col">
-              {{ afterTransfer | toCurrency }}
+
+          <div class="card mt-5">
+            <div class="card-body">          
+              <h4>Transaction</h4>          
+              <div class="row">
+                <div class="col">
+                  Transfer amount
+                </div>
+                <div class="col">
+                  {{ form.amount | toCurrency }}
+                </div>
+              </div>
+              <div class="row">
+                <div class="col">
+                  Cash on Hand (after)
+                </div>
+                <div class="col">
+                  {{ afterTransfer | toCurrency }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -138,6 +126,7 @@
 import {submitTransfer} from '@/common/transfers';
 import {activePortfolio} from '@/common/portfolio';
 import {getPortfolio} from '@/common/portfolio';
+import {getDetails} from '@/common/portfolio';
 
 const emptyForm = {
   amount: null,
@@ -156,15 +145,16 @@ export default {
       },
       options: {
         fromTo: [
-          { value: 'portfolioWithdrawl', text: 'From' },
-          { value: 'portfolioDeposit', text: 'To' }
+          { value: 'portfolioWithdrawl', text: 'Withdrawal (out)' },
+          { value: 'portfolioDeposit', text: 'Deposit (in)' }
         ],
         accountType: [
           { value: null, text: 'Choose an account...' },
           { value: 'savings', text: 'Savings account' },
           { value: 'portfolio', text: 'Another portfolio' }
         ]
-      }
+      },
+      showDismissibleAlert: false
     }
   },
   computed: {
@@ -172,8 +162,8 @@ export default {
       return activePortfolio.id;
     },
     resultingAction() {
-      return this.form.depositWithdrawl === 'portfolioWithdrawl' ? 'To'
-        : this.form.depositWithdrawl === 'portfolioDeposit' ? 'From'
+      return this.form.depositWithdrawl === 'portfolioWithdrawl' ? 'Destination'
+        : this.form.depositWithdrawl === 'portfolioDeposit' ? 'Source'
         : "(From/To)";
     },
     afterTransfer() {
@@ -185,14 +175,15 @@ export default {
     }
   },
   mounted() {   
-     getPortfolio()
-       .then(portfolio => {
-         this.portfolio.cashOnHand = portfolio.funds;
+     getDetails()
+       .then(details => {
+         this.portfolio.cashOnHand = details.funds;
        });
   },
   methods: {
     onSubmit() {
       this.submitted = true;
+      this.showDismissibleAlert = true;
       submitTransfer(this.form)
         .then(() => {
           this.submitted = false;
