@@ -4,34 +4,10 @@
       Reactive Stock Trader
     </b-navbar-brand>
     <b-navbar-nav>
-      <b-nav-item to="/portfolio">
-        Portfolio
-      </b-nav-item>
-      <b-nav-item to="/quote">
-        Quote
-      </b-nav-item>
-      <b-nav-item-dropdown text="Trading">
-        <b-dropdown-item to="/trades/new">
-          Place New Order
-        </b-dropdown-item>
-        <b-dropdown-item to="/trades/pending">
-          Pending Orders
-        </b-dropdown-item>
-        <b-dropdown-item to="/trades/completed">
-          Completed Orders
-        </b-dropdown-item>
-      </b-nav-item-dropdown>
-      <b-nav-item-dropdown text="Transfers">
-        <b-dropdown-item to="/transfers/new">
-          Place Wire Transfer
-        </b-dropdown-item>
-        <b-dropdown-item to="/transfers/pending">
-          Pending Wires
-        </b-dropdown-item>
-        <b-dropdown-item to="/transfers/completed">
-          Completed Wires
-        </b-dropdown-item>
-      </b-nav-item-dropdown>
+      <b-nav-item to="/portfolio">Portfolio</b-nav-item>
+      <b-nav-item to="/quote">Quote</b-nav-item>
+      <b-nav-item to="/trades/new">Trades</b-nav-item>
+      <b-nav-item to="/transfers/new">Wire Transfers</b-nav-item>
     </b-navbar-nav>
     
     <b-navbar-nav v-if="portfolio.id" class="ml-auto">

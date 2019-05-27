@@ -5,6 +5,7 @@
 
 package com.redelastic.stockbroker.wireTransfer.impl;
 
+import akka.NotUsed;
 import akka.japi.Pair;
 import akka.japi.pf.FI;
 import akka.japi.pf.PFBuilder;
@@ -15,28 +16,42 @@ import com.lightbend.lagom.javadsl.broker.TopicProducer;
 import com.lightbend.lagom.javadsl.persistence.AggregateEventTag;
 import com.lightbend.lagom.javadsl.persistence.Offset;
 import com.lightbend.lagom.javadsl.persistence.ReadSide;
+import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferCommand;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferEvent;
+import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferEventProcessor;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferProcess;
 import com.redelastic.stockbroker.wireTransfer.impl.transfer.TransferRepositoryImpl;
 import com.redelastic.stocktrader.TransferId;
 import com.redelastic.stocktrader.wiretransfer.api.Transfer;
 import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
+import com.redelastic.stocktrader.wiretransfer.api.TransactionSummary;
 import scala.PartialFunction;
+
+import org.pcollections.PSequence;
+import org.pcollections.TreePVector;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+import java.util.List;
 
 import javax.inject.Inject;
 
 public class WireTransferServiceImpl implements WireTransferService {
 
     private final TransferRepositoryImpl transferRepository;
-
+    private final CassandraSession db;
 
     @Inject
     WireTransferServiceImpl(TransferRepositoryImpl transferRepository,
-                            ReadSide readSide) {
+                            ReadSide readSide,
+                            CassandraSession db) {
         this.transferRepository = transferRepository;
+        this.db = db;
         readSide.register(TransferProcess.class);
+        readSide.register(TransferEventProcessor.class);
     }
 
     @Override
@@ -66,6 +81,26 @@ public class WireTransferServiceImpl implements WireTransferService {
         return TopicProducer.taggedStreamWithOffset(TransferEvent.TAG.allTags(), this::transferRequestSource);
     }
 
+    @Override
+    public ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions() {
+        return request -> {
+            CompletionStage<PSequence<TransactionSummary>> result = db.selectAll(
+                "SELECT transferId, status, dateTime, source, destination, amount FROM transaction_summary;").thenApply(rows -> {
+                    List<TransactionSummary> summary = rows.stream().map(row -> 
+                        TransactionSummary.builder()
+                            .id(row.getString("transactionId"))
+                            .status(row.getString("status"))
+                            .dateTime(row.getString("dateTime"))
+                            .source(row.getString("source"))
+                            .destination(row.getString("destination"))
+                            .amount(row.getString("amount"))
+                            .build())
+                        .collect(Collectors.toList());
+                    return TreePVector.from(summary);
+                });
+            return result;
+        };
+    }
 
     private Source<Pair<Transfer, Offset>, ?> completedTransfersStream(AggregateEventTag<TransferEvent> tag, Offset offset) {
         return Source.empty(); // TODO
@@ -75,10 +110,10 @@ public class WireTransferServiceImpl implements WireTransferService {
         return transferRepository
                 .eventStream(tag, offset)
                 .collect(collectByEvent(
-                        new PFBuilder<TransferEvent, TransferRequest>()
-                                .match(TransferEvent.TransferInitiated.class, this::requestFunds)
-                                .match(TransferEvent.FundsRetrieved.class, this::sendFunds)
-                                .build()
+                    new PFBuilder<TransferEvent, TransferRequest>()
+                        .match(TransferEvent.TransferInitiated.class, this::requestFunds)
+                        .match(TransferEvent.FundsRetrieved.class, this::sendFunds)
+                        .build()
                 ));
     }
 

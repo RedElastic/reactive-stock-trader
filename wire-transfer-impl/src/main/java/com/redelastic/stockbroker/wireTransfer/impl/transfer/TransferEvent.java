@@ -55,8 +55,8 @@ public abstract class TransferEvent implements AggregateEvent<TransferEvent>, Js
     @Value
     @EqualsAndHashCode(callSuper = false)
     public static class TransferInitiated extends TransferEvent {
-        @NonNull TransferId transferId;
-        @NonNull TransferDetails transferDetails;
+        @NonNull public TransferId transferId;
+        @NonNull public TransferDetails transferDetails;
 
         @Override
         public <T> T visit(Visitor<T> visitor) { return visitor.visit(this); }

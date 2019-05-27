@@ -33,11 +33,11 @@
       </div>
       <div class="row mt-5">
         <div class="col-12" v-if="portfolios.length > 0">
-          <h3>Choose a portfolio</h3>        
+          <h3 class="mb-3">Switch portfolio</h3>        
           <p v-for="portfolio in portfolios" :key="portfolio.id">
             <button v-on:click="setActivePortfolio(portfolio.id, portfolio.name)" v-if="getActivePortfolio() !== portfolio.id">Select</button>
             <button v-on:click="setActivePortfolio(portfolio.id, portfolio.name)" v-else disabled>Select</button>
-            &nbsp;<b>{{ portfolio.name }}</b>&nbsp;({{ portfolio.id }})
+            &nbsp;<b>{{ portfolio.name }}</b><br>({{ portfolio.id }})
           </p>
         </div>
       </div>

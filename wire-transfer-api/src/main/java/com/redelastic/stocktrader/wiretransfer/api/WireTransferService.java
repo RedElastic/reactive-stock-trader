@@ -5,11 +5,14 @@
 
 package com.redelastic.stocktrader.wiretransfer.api;
 
+import akka.Done;
+import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.redelastic.stocktrader.TransferId;
+import org.pcollections.PSequence;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -27,6 +30,8 @@ public interface WireTransferService extends Service {
     Topic<Transfer> completedTransfers();
 
     Topic<TransferRequest> transferRequest();
+
+    ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions();
 
     @Override
     default Descriptor descriptor() {
