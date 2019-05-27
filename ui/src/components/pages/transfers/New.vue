@@ -149,15 +149,15 @@
             </tr>
           </thead>
           <tbody style="font-size:0.8em;">
-            <tr>
-              <td>XKJNFKH123</td>
-              <td>Pending</td>
+            <tr v-for="transfer in transfers">
+              <td>{{ transfer.id }}</td>
+              <td>{{ transfer.status }}</td>
               <td scope="row">
-                12/12/12 11:46:01am EST
+                {{ transfer.dateTime }}
               </td>
-              <td>d664aabb</td>                          
-              <td>Savings</td>
-              <td>123.12</td>
+              <td>{{ transfer.source }}</td>                          
+              <td>{{ transfer.destination }}</td>
+              <td>{{ transfer.amount }}</td>
             </tr>
           </tbody>
         </table>       
@@ -171,6 +171,7 @@ import {submitTransfer} from '@/common/transfers';
 import {activePortfolio} from '@/common/portfolio';
 import {getPortfolio} from '@/common/portfolio';
 import {getDetails} from '@/common/portfolio';
+import {getAllTransfers} from '@/common/transfers';
 
 const emptyForm = {
   amount: null,
@@ -184,6 +185,7 @@ export default {
     return {
       submitted: false,
       form: Object.assign({}, emptyForm),
+      transfers: [],
       portfolio: {
         cashOnHand: null
       },
@@ -219,19 +221,20 @@ export default {
     }
   },
   mounted() {   
-     getDetails().then(details => {
-       this.portfolio.cashOnHand = details.funds;
-     });
-  },
-  mounted() {
-    portfolioService.getAllPortfolios()
-      .then(portfolios => {          
-        let p = portfolios.map(portfolio => ({
-          id: portfolio.portfolioId.id,
-          name: portfolio.name
-        }));
-        this.portfolios = p;
-      });
+    getDetails().then(details => {
+     this.portfolio.cashOnHand = details.funds;
+    });
+    getAllTransfers().then(transfers => {          
+      let t = transfers.map(transfer => ({
+        id: transfer.id,
+        status: transfer.status,
+        dateTime: transfer.dateTime,
+        source: transfer.source,
+        destination: transfer.destination,
+        amount: transfer.amount
+      }));
+      this.transfers = t;
+    });
   },
   methods: {
     onSubmit() {

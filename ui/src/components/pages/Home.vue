@@ -76,14 +76,13 @@
       }
     },
     mounted() {
-      portfolioService.getAllPortfolios()
-        .then(portfolios => {          
-          let p = portfolios.map(portfolio => ({
-            id: portfolio.portfolioId.id,
-            name: portfolio.name
-          }));
-          this.portfolios = p;
-        });
+      portfolioService.getAllPortfolios().then(portfolios => {          
+        let p = portfolios.map(portfolio => ({
+          id: portfolio.portfolioId.id,
+          name: portfolio.name
+        }));
+        this.portfolios = p;
+      });
     },
     methods: {
       openPortfolio() {

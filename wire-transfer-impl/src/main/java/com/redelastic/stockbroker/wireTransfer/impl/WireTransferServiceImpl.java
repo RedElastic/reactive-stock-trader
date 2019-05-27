@@ -85,10 +85,10 @@ public class WireTransferServiceImpl implements WireTransferService {
     public ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions() {
         return request -> {
             CompletionStage<PSequence<TransactionSummary>> result = db.selectAll(
-                "SELECT transferId, status, dateTime, source, destination, amount FROM transaction_summary;").thenApply(rows -> {
+                "SELECT transferId, status, dateTime, source, destination, amount FROM transfer_summary;").thenApply(rows -> {
                     List<TransactionSummary> summary = rows.stream().map(row -> 
                         TransactionSummary.builder()
-                            .id(row.getString("transactionId"))
+                            .id(row.getString("transferid"))
                             .status(row.getString("status"))
                             .dateTime(row.getString("dateTime"))
                             .source(row.getString("source"))

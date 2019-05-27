@@ -43,16 +43,25 @@ public class WireTransferController extends Controller {
             return CompletableFuture.completedFuture(badRequest(form.errorsAsJson()));
         } else {
             Transfer transfer = populateTransfer(form.get());
-
             return wireTransferService
-                    .transferFunds()
-                    .invoke(transfer)
-                    .thenApply(response -> {
-                        val result = Json.newObject()
-                                .put("transferId", response.getId());
-                        return Results.status(Http.Status.ACCEPTED, result);
-                    });
+                .transferFunds()
+                .invoke(transfer)
+                .thenApply(response -> {
+                    val result = Json.newObject()
+                            .put("transferId", response.getId());
+                    return Results.status(Http.Status.ACCEPTED, result);
+                });
         }
+    }
+
+    public CompletionStage<Result> getAllTransfers() {
+        val transfers = wireTransferService
+            .getAllTransactions()
+            .invoke();
+
+        return transfers
+            .thenApply(Json::toJson)
+            .thenApply(Results::ok);
     }
 
     private Transfer populateTransfer(TransferForm form) {

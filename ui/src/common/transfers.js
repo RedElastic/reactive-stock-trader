@@ -22,6 +22,12 @@ export function deposit(amount, accountType, accountId) {
   return transfer.post('', request);
 }
 
+export function getAllTransfers() {
+  const url = new URL('/api/transfer', bffBaseURL);
+  const request = axios.get(url.toString());
+  return request.then(response => response.data);
+}
+
 export function submitTransfer(transferRequest) {
   let formData = new FormData();
   if (transferRequest.depositWithdrawl === "portfolioWithdrawl") {

@@ -5,7 +5,6 @@
 
 package com.redelastic.stocktrader.wiretransfer.api;
 
-import akka.Done;
 import akka.NotUsed;
 import com.lightbend.lagom.javadsl.api.Descriptor;
 import com.lightbend.lagom.javadsl.api.Service;
@@ -13,6 +12,7 @@ import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.redelastic.stocktrader.TransferId;
 import org.pcollections.PSequence;
+import com.lightbend.lagom.javadsl.api.transport.Method;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
 
@@ -27,23 +27,23 @@ public interface WireTransferService extends Service {
 
     ServiceCall<Transfer, TransferId> transferFunds();
 
+    ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions();
+
     Topic<Transfer> completedTransfers();
 
     Topic<TransferRequest> transferRequest();
 
-    ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions();
-
     @Override
     default Descriptor descriptor() {
         // @formatter:off
-
         return named("wire-transfer").withCalls(
-                call(this::transferFunds)
+            call(this::transferFunds),
+            restCall(Method.GET, "/api/transfer", this::getAllTransactions)
         )
-                .withTopics(
-                        topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
-                        topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
-                );
+        .withTopics(
+            topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
+            topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
+        );
         // @formatter:on
     }
 }
