@@ -29,17 +29,17 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
         return snapshotState
                 .flatMap(Function.identity())
                 .map(state ->
-                        state.visit(new PortfolioState.Visitor<Behavior>() {
-                            @Override
-                            public Behavior visit(PortfolioState.Open open) {
-                                return new OpenPortfolioBehavior(open).getBehavior();
-                            }
+                    state.visit(new PortfolioState.Visitor<Behavior>() {
+                        @Override
+                        public Behavior visit(PortfolioState.Open open) {
+                            return new OpenPortfolioBehavior(open).getBehavior();
+                        }
 
-                            @Override
-                            public Behavior visit(PortfolioState.Closed closed) {
-                                return new ClosedPortfolioBehaviourBuilder().getBehavior();
-                            }
-                        })
+                        @Override
+                        public Behavior visit(PortfolioState.Closed closed) {
+                            return new ClosedPortfolioBehaviourBuilder().getBehavior();
+                        }
+                    })
                 )
                 .orElse(new UninitializedBehavior().getBehaviour());
     }

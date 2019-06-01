@@ -27,7 +27,7 @@ public interface WireTransferService extends Service {
 
     ServiceCall<Transfer, TransferId> transferFunds();
 
-    ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions();
+    ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactionsFor(String portfolioId);
 
     Topic<Transfer> completedTransfers();
 
@@ -38,7 +38,7 @@ public interface WireTransferService extends Service {
         // @formatter:off
         return named("wire-transfer").withCalls(
             call(this::transferFunds),
-            restCall(Method.GET, "/api/transfer", this::getAllTransactions)
+            restCall(Method.GET, "/api/transfer/:portfolioId", this::getAllTransactionsFor)
         )
         .withTopics(
             topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),

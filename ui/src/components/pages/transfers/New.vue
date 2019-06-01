@@ -171,7 +171,7 @@ import {submitTransfer} from '@/common/transfers';
 import {activePortfolio} from '@/common/portfolio';
 import {getPortfolio} from '@/common/portfolio';
 import {getDetails} from '@/common/portfolio';
-import {getAllTransfers} from '@/common/transfers';
+import {getAllTransfersFor} from '@/common/transfers';
 
 const emptyForm = {
   amount: null,
@@ -224,7 +224,7 @@ export default {
     getDetails().then(details => {
      this.portfolio.cashOnHand = details.funds;
     });
-    getAllTransfers().then(transfers => {          
+    getAllTransfersFor(this.portfolioId).then(transfers => {          
       let t = transfers.map(transfer => ({
         id: transfer.id,
         status: transfer.status,

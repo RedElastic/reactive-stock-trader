@@ -47,6 +47,11 @@ public class TransferEventProcessor extends ReadSideProcessor<TransferEvent> {
       .setGlobalPrepare(this::prepareCreateTables)
       .setPrepare(tag -> prepareWriteTransfers())
       .setEventHandler(TransferInitiated.class, this::processTransferInitiated)
+      .setEventHandler(FundsRetrieved.class, this::processFundsRetrieved)
+      .setEventHandler(CouldNotSecureFunds.class, this::processCouldNotSecureFunds)
+      .setEventHandler(DeliveryConfirmed.class, this::processDeliveryConfirmed)
+      .setEventHandler(DeliveryFailed.class, this::processDeliveryFailed)
+      .setEventHandler(RefundDelivered.class, this::processRefundDelivered)
       .build();
   }
 
@@ -74,21 +79,44 @@ public class TransferEventProcessor extends ReadSideProcessor<TransferEvent> {
   }
 
   private CompletionStage<List<BoundStatement>> processTransferInitiated(TransferInitiated event) {
-    String transferId = event.transferId.getId();
-    String status = "Initiated";
+    return processTransferEvent("Transfer Initiated", event);
+  }
+
+  private CompletionStage<List<BoundStatement>> processFundsRetrieved(FundsRetrieved event) {
+    return processTransferEvent("Funds Retrieved", event);
+  }
+
+  private CompletionStage<List<BoundStatement>> processCouldNotSecureFunds(CouldNotSecureFunds event) {
+    return processTransferEvent("Could Not Secure Funds", event);
+  }
+
+  private CompletionStage<List<BoundStatement>> processDeliveryConfirmed(DeliveryConfirmed event) {
+    return processTransferEvent("Delivery Confirmed", event);
+  }
+
+  private CompletionStage<List<BoundStatement>> processDeliveryFailed(DeliveryFailed event) {
+    return processTransferEvent("Delivery Failed", event);
+  }
+
+  private CompletionStage<List<BoundStatement>> processRefundDelivered(RefundDelivered event) {
+    return processTransferEvent("Refund Delivered", event);
+  }
+
+  private CompletionStage<List<BoundStatement>> processTransferEvent(String status, TransferEvent event) {
+    String transferId = event.getTransferId().getId();
     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
     String source = null;
     String destination = null;
-    String amount = event.transferDetails.getAmount().toString();
+    String amount = event.getTransferDetails().getAmount().toString();
 
-    if (event.transferDetails.getSource() instanceof Account.Portfolio) {
-      source = ((Account.Portfolio) event.transferDetails.getSource()).getPortfolioId().getId();  
+    if (event.getTransferDetails().getSource() instanceof Account.Portfolio) {
+      source = ((Account.Portfolio) event.getTransferDetails().getSource()).getPortfolioId().getId();  
     } else {
       source = "Savings";
     }
 
     if (event.getTransferDetails().getDestination() instanceof Account.Portfolio) {
-      destination = ((Account.Portfolio) event.transferDetails.getDestination()).getPortfolioId().getId();  
+      destination = ((Account.Portfolio) event.getTransferDetails().getDestination()).getPortfolioId().getId();  
     } else {
       destination = "Savings";
     }

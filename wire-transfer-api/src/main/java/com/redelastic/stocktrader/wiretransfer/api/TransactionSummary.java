@@ -25,10 +25,10 @@ public class TransactionSummary {
 		this.amount = amount;
 	}
 
-    @NonNull String id;
-    @NonNull String status;
-    @NonNull String dateTime;
-    @NonNull String source;
-    @NonNull String destination;
-    @NonNull String amount;
+    @NonNull public String id;
+    @NonNull public String status;
+    @NonNull public String dateTime;
+    @NonNull public String source;
+    @NonNull public String destination;
+    @NonNull public String amount;
 }

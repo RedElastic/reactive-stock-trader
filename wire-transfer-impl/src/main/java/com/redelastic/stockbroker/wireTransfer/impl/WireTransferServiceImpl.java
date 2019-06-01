@@ -36,6 +36,7 @@ import javax.inject.Singleton;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.inject.Inject;
 
@@ -82,8 +83,9 @@ public class WireTransferServiceImpl implements WireTransferService {
     }
 
     @Override
-    public ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactions() {
+    public ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactionsFor(String portfolioId) {
         return request -> {
+            Predicate<TransactionSummary> predicate = s -> s.source.equals(portfolioId) || s.destination.equals(portfolioId);
             CompletionStage<PSequence<TransactionSummary>> result = db.selectAll(
                 "SELECT transferId, status, dateTime, source, destination, amount FROM transfer_summary;").thenApply(rows -> {
                     List<TransactionSummary> summary = rows.stream().map(row -> 
@@ -94,7 +96,8 @@ public class WireTransferServiceImpl implements WireTransferService {
                             .source(row.getString("source"))
                             .destination(row.getString("destination"))
                             .amount(row.getString("amount"))
-                            .build())
+                            .build())                        
+                        .filter(predicate)
                         .collect(Collectors.toList());
                     return TreePVector.from(summary);
                 });

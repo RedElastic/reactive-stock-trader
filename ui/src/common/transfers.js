@@ -22,8 +22,8 @@ export function deposit(amount, accountType, accountId) {
   return transfer.post('', request);
 }
 
-export function getAllTransfers() {
-  const url = new URL('/api/transfer', bffBaseURL);
+export function getAllTransfersFor(portfolioId) {
+  const url = new URL('/api/transfer/' + portfolioId, bffBaseURL);
   const request = axios.get(url.toString());
   return request.then(response => response.data);
 }

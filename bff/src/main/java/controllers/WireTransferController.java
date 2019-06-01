@@ -54,9 +54,9 @@ public class WireTransferController extends Controller {
         }
     }
 
-    public CompletionStage<Result> getAllTransfers() {
+    public CompletionStage<Result> getAllTransfersFor(String portfolioId) {
         val transfers = wireTransferService
-            .getAllTransactions()
+            .getAllTransactionsFor(portfolioId)
             .invoke();
 
         return transfers
