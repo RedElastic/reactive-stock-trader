@@ -109,6 +109,26 @@ public class WireTransferServiceImpl implements WireTransferService {
         };
     }
 
+    @Override
+    public ServiceCall<NotUsed, Source<String, NotUsed>> streamCompletedTransfers() {
+        // Service calls are implemented by returning a lambda that expects the request and returns a CompletionStage
+        // that will complete with the response. In this case, the request is expected to be empty and is not used,
+        // and the response will stream messages over a WebSocket as each one is received.
+        //
+        // See https://www.lagomframework.com/documentation/1.3.x/java/ServiceImplementation.html#Working-with-streams
+        // for details on how streaming service calls work in Lagom.
+        //
+        // Also see the comments in MessageHubConsumerService for more details on how to run this code.
+        return _request -> completedFuture(
+            completedTransfers()
+            .subscribe() // <-- you get back a Subscriber instance
+            .atLeastOnce(
+                Flow.fromFunction(
+                    (TransferCompleted event) -> {
+                      // do something;
+                    })));
+    }
+
     private Source<Pair<TransferCompleted, Offset>, ?> completedTransfersStream(AggregateEventTag<TransferEvent> tag, Offset offset) {
         return transferRepository.eventStream(tag, offset).collect(collectByEvent(
             new PFBuilder<TransferEvent, TransferCompleted>()
