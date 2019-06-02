@@ -29,7 +29,7 @@ public interface WireTransferService extends Service {
 
     ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactionsFor(String portfolioId);
 
-    Topic<Transfer> completedTransfers();
+    Topic<TransferCompleted> completedTransfers();
 
     Topic<TransferRequest> transferRequest();
 

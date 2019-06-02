@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Builder
 public class TransferDetails {
 
-    @NonNull Account source;
-    @NonNull Account destination;
-    @NonNull BigDecimal amount;
+    @NonNull public Account source;
+    @NonNull public Account destination;
+    @NonNull public BigDecimal amount;
 }

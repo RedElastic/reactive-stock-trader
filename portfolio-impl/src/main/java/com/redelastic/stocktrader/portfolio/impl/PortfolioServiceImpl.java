@@ -65,7 +65,6 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Override
     public ServiceCall<OpenPortfolioDetails, PortfolioId> openPortfolio() {
-
         return portfolioRepository::open;
     }
 
@@ -105,24 +104,24 @@ public class PortfolioServiceImpl implements PortfolioService {
     @Override
     public ServiceCall<FundsTransfer, Done> processTransfer(PortfolioId portfolioId) {
         val portfolioRef = portfolioRepository
-                .getRef(portfolioId);
+            .getRef(portfolioId);
         return fundsTransfer ->
-                fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
-                    @Override
-                    public CompletionStage<Done> visit(FundsTransfer.Deposit deposit) {
-                        return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds()));
-                    }
+            fundsTransfer.visit(new FundsTransfer.Visitor<CompletionStage<Done>>() {
+                @Override
+                public CompletionStage<Done> visit(FundsTransfer.Deposit deposit) {
+                    return portfolioRef.ask(new PortfolioCommand.ReceiveFunds(deposit.getFunds()));
+                }
 
-                    @Override
-                    public CompletionStage<Done> visit(FundsTransfer.Withdrawl withdrawl) {
-                        return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds()));
-                    }
+                @Override
+                public CompletionStage<Done> visit(FundsTransfer.Withdrawl withdrawl) {
+                    return portfolioRef.ask(new PortfolioCommand.SendFunds(withdrawl.getFunds()));
+                }
 
-                    @Override
-                    public CompletionStage<Done> visit(FundsTransfer.Refund refund) {
-                        return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds(), refund.getTransferId()));
-                    }
-                });
+                @Override
+                public CompletionStage<Done> visit(FundsTransfer.Refund refund) {
+                    return portfolioRef.ask(new PortfolioCommand.AcceptRefund(refund.getFunds(), refund.getTransferId()));
+                }
+            });
     }
 
     @Override
