@@ -121,25 +121,47 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
 
     private Behavior sendingFunds(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.FundsSent)));
-        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, (cmd, ctx) ->
-                ctx.thenPersist(
-                        new TransferEvent.DeliveryConfirmed(
-                                getTransferId(),
-                                state().get().getTransferDetails()
-                        ),
-                        evt -> ctx.reply(Done.getInstance())
-                ));
+        
+        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, (cmd, ctx) -> {                
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                Date date = new Date();
+
+                TransferCompleted transferCompletedEvent = TransferCompleted.builder()
+                    .id(getTransferId().toString())
+                    .status("Delivery Confirmed")
+                    .dateTime(dateFormat.format(date))
+                    .destination(state.transferDetails.destination.toString())
+                    .source(state.transferDetails.source.toString())
+                    .amount(state.transferDetails.amount.toString())
+                    .build();
+
+                ObjectMapper mapper = new ObjectMapper();
+                publishedTopic.publish(mapper.valueToTree(transferCompletedEvent)); 
+
+                return ctx.thenPersist(
+                    new TransferEvent.DeliveryConfirmed(
+                            getTransferId(),
+                            state().get().getTransferDetails()
+                    ),
+                    evt -> ctx.reply(Done.getInstance())
+                );
+            }
+        );
+
         builder.setEventHandlerChangingBehavior(TransferEvent.DeliveryConfirmed.class,
                 evt -> deliveryConfirmed(state));
+
         builder.setCommandHandler(TransferCommand.DeliveryFailed.class, (cmd, ctx) ->
                 ctx.thenPersist(
                         new TransferEvent.DeliveryFailed(getTransferId(), state().get().getTransferDetails()),
                         ect -> ctx.reply(Done.getInstance())
                 ));
+
         builder.setEventHandlerChangingBehavior(TransferEvent.DeliveryFailed.class,
                 evt -> refundSent(state));
 
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
+        
         return builder.build();
     }
 
@@ -147,26 +169,10 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.DeliveryConfirmed)));
 
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
-        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date date = new Date();
-
-        TransferCompleted evt = TransferCompleted.builder()
-            .id(getTransferId().toString())
-            .status("Delivery Confirmed")
-            .dateTime(dateFormat.format(date))
-            .destination(state.transferDetails.destination.toString())
-            .source(state.transferDetails.source.toString())
-            .amount(state.transferDetails.amount.toString())
-            .build();
-
-        ObjectMapper mapper = new ObjectMapper();
-        publishedTopic.publish(mapper.valueToTree(evt));                
+        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);               
 
         return builder.build();
     }
-
 
     private Behavior refundSent(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.RefundSent)));
