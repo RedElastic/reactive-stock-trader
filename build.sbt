@@ -133,7 +133,6 @@ lazy val utils = (project in file("utils"))
     version := "1.0-SNAPSHOT"
   )
 
-
 val lombok = "org.projectlombok" % "lombok" % "1.18.4"
 val cassandraExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.0.0"
 

@@ -17,7 +17,12 @@ public class TransferId {
 
     public static PathParamSerializer<TransferId> pathParamSerializer =
             PathParamSerializers.required("TransferId", TransferId::new, TransferId::getId);
+
     @NonNull String id;
+
+    public TransferId() { this.id = ""; }
+
+    public TransferId(String id) { this.id = id; }
 
     public static TransferId newId() { return new TransferId(UUID.randomUUID().toString()); }
 }

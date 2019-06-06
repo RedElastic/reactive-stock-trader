@@ -15,10 +15,11 @@ import java.util.UUID;
 @Value
 public class PortfolioId {
 
-    public static PathParamSerializer<PortfolioId> pathParamSerializer =
-            PathParamSerializers.required("PortfolioId", PortfolioId::new, PortfolioId::getId);
+    public static PathParamSerializer<PortfolioId> pathParamSerializer = PathParamSerializers.required("PortfolioId", PortfolioId::new, PortfolioId::getId);
     
     @NonNull String id;
+
+    public PortfolioId() { this.id = ""; }
 
     public PortfolioId(String id) { this.id = id; }
 

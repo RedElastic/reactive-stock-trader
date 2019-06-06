@@ -5,6 +5,7 @@ GET     /api/portfolio/:portfolioId/summary     controllers.PortfolioController.
 POST    /api/portfolio                          controllers.PortfolioController.openPortfolio()
 POST    /api/portfolio/:portfolioId/order       controllers.PortfolioController.placeOrder(portfolioId)
 
-GET     /api/transfer/:portfolioId             	controllers.WireTransferController.getAllTransfersFor(portfolioId)
-POST    /api/transfer                           controllers.WireTransferController.transfer()
 GET     /api/transfer/stream                    controllers.WireTransferController.ws()
+GET     /api/transfer/:portfolioId             	controllers.WireTransferController.getAllTransfersFor(portfolioId)
+
+POST    /api/transfer                           controllers.WireTransferController.transfer()
