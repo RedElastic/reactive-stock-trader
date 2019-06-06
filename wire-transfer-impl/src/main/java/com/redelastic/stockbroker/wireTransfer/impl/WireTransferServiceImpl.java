@@ -10,6 +10,7 @@ import akka.japi.Pair;
 import akka.japi.pf.FI;
 import akka.japi.pf.PFBuilder;
 import akka.stream.javadsl.Source;
+import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
@@ -30,6 +31,11 @@ import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
 import com.redelastic.stocktrader.wiretransfer.api.TransactionSummary;
 import scala.PartialFunction;
+import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
+import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
+import com.lightbend.lagom.javadsl.pubsub.TopicId;
+import java.util.concurrent.CompletableFuture;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
@@ -49,13 +55,16 @@ public class WireTransferServiceImpl implements WireTransferService {
 
     private final TransferRepositoryImpl transferRepository;
     private final CassandraSession db;
+    private final PubSubRegistry pubSub;
 
     @Inject
     WireTransferServiceImpl(TransferRepositoryImpl transferRepository,
                             ReadSide readSide,
-                            CassandraSession db) {
+                            CassandraSession db,
+                            PubSubRegistry pubSub) {
         this.transferRepository = transferRepository;
         this.db = db;
+        this.pubSub = pubSub;
         readSide.register(TransferProcess.class);
         readSide.register(TransferEventProcessor.class);
     }
@@ -110,23 +119,11 @@ public class WireTransferServiceImpl implements WireTransferService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Source<String, NotUsed>> streamCompletedTransfers() {
-        // Service calls are implemented by returning a lambda that expects the request and returns a CompletionStage
-        // that will complete with the response. In this case, the request is expected to be empty and is not used,
-        // and the response will stream messages over a WebSocket as each one is received.
-        //
-        // See https://www.lagomframework.com/documentation/1.3.x/java/ServiceImplementation.html#Working-with-streams
-        // for details on how streaming service calls work in Lagom.
-        //
-        // Also see the comments in MessageHubConsumerService for more details on how to run this code.
-        return _request -> completedFuture(
-            completedTransfers()
-            .subscribe() // <-- you get back a Subscriber instance
-            .atLeastOnce(
-                Flow.fromFunction(
-                    (TransferCompleted event) -> {
-                      // do something;
-                    })));
+    public ServiceCall<NotUsed, Source<JsonNode, ?>> transferStream() {
+        return request -> {
+            final PubSubRef<JsonNode> topic = pubSub.refFor(TopicId.of(JsonNode.class, "transfer"));
+            return CompletableFuture.completedFuture(topic.subscriber());
+        };
     }
 
     private Source<Pair<TransferCompleted, Offset>, ?> completedTransfersStream(AggregateEventTag<TransferEvent> tag, Offset offset) {

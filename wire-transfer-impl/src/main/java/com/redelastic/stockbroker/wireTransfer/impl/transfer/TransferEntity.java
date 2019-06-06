@@ -10,11 +10,32 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntity;
 import com.redelastic.stocktrader.TransferId;
 import lombok.extern.log4j.Log4j;
 
+import com.redelastic.stocktrader.wiretransfer.api.TransferCompleted;
+
+import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
+import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
+import com.lightbend.lagom.javadsl.pubsub.TopicId;
+
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
+import javax.inject.Inject;
 import java.util.Optional;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Log4j
 public class TransferEntity extends PersistentEntity<TransferCommand, TransferEvent, Optional<TransferState>> {
+
+    private final PubSubRef<JsonNode> publishedTopic;
+
+    @Inject
+    public TransferEntity(PubSubRegistry pubSub) {
+        publishedTopic = pubSub.refFor(TopicId.of(JsonNode.class, "transfer"));
+    }
 
     @Override
     public Behavior initialBehavior(Optional<Optional<TransferState>> snapshotState) {
@@ -122,12 +143,27 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         return builder.build();
     }
 
-
     private Behavior deliveryConfirmed(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.DeliveryConfirmed)));
 
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
         builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);
+
+        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+
+        TransferCompleted evt = TransferCompleted.builder()
+            .id(getTransferId().toString())
+            .status("Delivery Confirmed")
+            .dateTime(dateFormat.format(date))
+            .destination(state.transferDetails.destination.toString())
+            .source(state.transferDetails.source.toString())
+            .amount(state.transferDetails.amount.toString())
+            .build();
+
+        ObjectMapper mapper = new ObjectMapper();
+        publishedTopic.publish(mapper.valueToTree(evt));                
+
         return builder.build();
     }
 

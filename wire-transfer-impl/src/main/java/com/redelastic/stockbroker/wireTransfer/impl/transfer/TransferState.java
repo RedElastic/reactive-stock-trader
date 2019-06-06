@@ -14,7 +14,7 @@ import lombok.experimental.Wither;
 @Wither
 public class TransferState implements Jsonable {
 
-    @NonNull TransferDetails transferDetails;
+    @NonNull protected TransferDetails transferDetails;
     @NonNull Status status;
 
     public static TransferState from(TransferDetails transfer) {

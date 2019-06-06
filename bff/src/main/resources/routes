@@ -1,4 +1,4 @@
-GET     /api/portfolio             				controllers.PortfolioController.getAllPortfolios()
+GET     /api/portfolio             				      controllers.PortfolioController.getAllPortfolios()
 GET     /api/portfolio/:portfolioId             controllers.PortfolioController.getPortfolio(portfolioId)
 GET     /api/portfolio/:portfolioId/summary     controllers.PortfolioController.getSummary(portfolioId, includeOrderInfo: Boolean ?= false, includePrices: Boolean ?= false)
 
@@ -7,3 +7,4 @@ POST    /api/portfolio/:portfolioId/order       controllers.PortfolioController.
 
 GET     /api/transfer/:portfolioId             	controllers.WireTransferController.getAllTransfersFor(portfolioId)
 POST    /api/transfer                           controllers.WireTransferController.transfer()
+GET     /api/transfer/stream                    controllers.WireTransferController.ws()

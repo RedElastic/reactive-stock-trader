@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.pcollections.PSequence;
-
 import java.math.BigDecimal;
 
 @Value

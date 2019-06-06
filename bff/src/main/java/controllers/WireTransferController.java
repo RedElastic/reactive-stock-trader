@@ -19,16 +19,28 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
+import play.libs.F.Either;
 
 import javax.inject.Inject;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import play.mvc.*;
+import akka.stream.javadsl.Flow;
+import akka.stream.javadsl.Sink;
+import com.fasterxml.jackson.databind.JsonNode;
+import play.libs.F;
+import akka.NotUsed;
+import java.util.List;
+import java.util.Optional;
+import org.slf4j.Logger;
+import java.util.Arrays;
 
 @Log4j
 public class WireTransferController extends Controller {
 
     private final WireTransferService wireTransferService;
     private final Form<TransferForm> transferForm;
+    private final Logger logger = org.slf4j.LoggerFactory.getLogger("controllers.WireTransferController");
 
     @Inject
     private WireTransferController(WireTransferService wireTransferService,
@@ -64,6 +76,17 @@ public class WireTransferController extends Controller {
             .thenApply(Results::ok);
     }
 
+    public WebSocket ws() {
+        return WebSocket.Json.acceptOrResult(req -> {
+            return wireTransferService
+                .transferStream()
+                .invoke()
+                .thenApply(source -> {
+                    return F.Either.Right(Flow.fromSinkAndSourceCoupled(Sink.ignore(), source));
+                });
+        });
+    }
+
     private Transfer populateTransfer(TransferForm form) {
         Account sourceAccount = getAccount(form.getSourceType(), form.getSourceId());
         Account destinationAccount = getAccount(form.getDestinationType(), form.getDestinationId());
@@ -85,5 +108,7 @@ public class WireTransferController extends Controller {
                 throw new IllegalStateException();
         }
     }
+
+
 
 }
