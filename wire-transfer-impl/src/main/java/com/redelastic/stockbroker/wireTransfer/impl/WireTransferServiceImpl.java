@@ -86,11 +86,6 @@ public class WireTransferServiceImpl implements WireTransferService {
     }
 
     @Override
-    public Topic<TransferCompleted> completedTransfers() {
-        return TopicProducer.taggedStreamWithOffset(TransferEvent.TAG.allTags(), this::completedTransfersStream);
-    }
-
-    @Override
     public Topic<TransferRequest> transferRequest() {
         return TopicProducer.taggedStreamWithOffset(TransferEvent.TAG.allTags(), this::transferRequestSource);
     }
@@ -126,14 +121,6 @@ public class WireTransferServiceImpl implements WireTransferService {
         };
     }
 
-    private Source<Pair<TransferCompleted, Offset>, ?> completedTransfersStream(AggregateEventTag<TransferEvent> tag, Offset offset) {
-        return transferRepository.eventStream(tag, offset).collect(collectByEvent(
-            new PFBuilder<TransferEvent, TransferCompleted>()
-                .match(TransferEvent.DeliveryConfirmed.class, this::transferCompleted)
-                .build()
-        ));
-    }
-
     private Source<Pair<TransferRequest, Offset>, ?> transferRequestSource(AggregateEventTag<TransferEvent> tag, Offset offset) {
         return transferRepository
             .eventStream(tag, offset)
@@ -158,19 +145,6 @@ public class WireTransferServiceImpl implements WireTransferService {
             .transferId(fundsRetrieved.getTransferId())
             .account(fundsRetrieved.getTransferDetails().getDestination())
             .amount(fundsRetrieved.getTransferDetails().getAmount())
-            .build();
-    }
-
-    private TransferCompleted transferCompleted(TransferEvent.DeliveryConfirmed event) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date date = new Date();
-        return TransferCompleted.builder()
-            .id(event.getTransferId().toString())
-            .status("Delivery Confirmed")
-            .dateTime(dateFormat.format(date))
-            .destination(event.transferDetails.destination.toString())
-            .source(event.transferDetails.source.toString())
-            .amount(event.transferDetails.amount.toString())
             .build();
     }
 

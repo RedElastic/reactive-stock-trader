@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.JsonNode;
  */
 public interface WireTransferService extends Service {
 
-    String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
     String TRANSFER_REQUEST_TOPIC_ID = "WireTransfer-TransferRequest";
 
     ServiceCall<Transfer, TransferId> transferFunds();
@@ -32,8 +31,6 @@ public interface WireTransferService extends Service {
     ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactionsFor(String portfolioId);
 
     ServiceCall<NotUsed, Source<String, ?>> transferStream();
-
-    Topic<TransferCompleted> completedTransfers();
 
     Topic<TransferRequest> transferRequest();
 
@@ -46,7 +43,6 @@ public interface WireTransferService extends Service {
             restCall(Method.GET, "/api/transfer/:portfolioId", this::getAllTransactionsFor)            
         )
         .withTopics(
-            topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
             topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
         );
         // @formatter:on

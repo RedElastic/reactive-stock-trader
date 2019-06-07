@@ -11,6 +11,7 @@ import com.redelastic.stocktrader.TransferId;
 import lombok.extern.log4j.Log4j;
 
 import com.redelastic.stocktrader.wiretransfer.api.TransferCompleted;
+import com.redelastic.stocktrader.wiretransfer.api.Account;
 
 import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
 import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
@@ -126,12 +127,36 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
 
+                String sourceType = "";
+                String sourceId = "";
+
+                if (state.transferDetails.getSource() instanceof Account.Portfolio) {
+                  sourceType = "Portfolio";
+                  sourceId = ((Account.Portfolio) state.transferDetails.getSource()).getPortfolioId().getId();  
+                } else {
+                  sourceType = "Savings";
+                  sourceId = "";
+                }
+
+                String destType = "";
+                String destId = "";
+
+                if (state.transferDetails.getDestination() instanceof Account.Portfolio) {
+                  destType = "Portfolio";
+                  destId = ((Account.Portfolio) state.transferDetails.getDestination()).getPortfolioId().getId();  
+                } else {
+                  destType = "Savings";
+                  destId = "";
+                }                
+
                 TransferCompleted transferCompletedEvent = TransferCompleted.builder()
-                    .id(getTransferId().toString())
+                    .id(entityId().toString())
                     .status("Delivery Confirmed")
                     .dateTime(dateFormat.format(date))
-                    .destination(state.transferDetails.destination.toString())
-                    .source(state.transferDetails.source.toString())
+                    .destinationType(destType)
+                    .destinationId(destId)
+                    .sourceType(sourceType)
+                    .sourceId(sourceId)
                     .amount(state.transferDetails.amount.toString())
                     .build();
 
