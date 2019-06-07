@@ -125,7 +125,7 @@
         <h2 class="mb-3">
           Transfer History
         </h2> 
-        <table class="table">
+        <table id="xfer" class="table">
           <thead>
             <tr>
               <th scope="col">
@@ -149,7 +149,7 @@
             </tr>
           </thead>
           <tbody style="font-size:0.8em;">
-            <tr v-for="transfer in transfers">
+            <tr v-for="transfer in transfers" :key="transfer.id">
               <td>{{ transfer.id }}</td>
               <td>{{ transfer.status }}</td>
               <td scope="row">
@@ -253,15 +253,40 @@ export default {
     connect() {
       this.socket = new WebSocket("ws://localhost:9000/api/transfer/stream");
       this.socket.onopen = () => {
-        this.socket.onmessage = ({data}) => {
-          console.log("Recieved message:" + data);
+        this.socket.onmessage = (e) => {
+          console.log(e.data);
+          let event = JSON.parse(e.data);
+          console.log(event);
+          var index = -1;
+          
+          for (var i = 0; i < this.transfers.length; i++) {
+            if (this.transfers[i].id === event.id) {
+              index = i;
+              break;
+            }
+          }
+          
+          if (index === -1) {
+            console.log("new item");
+            this.transfers.push({
+              id: event.id,
+              status: event.status,
+              dateTime: event.dateTime,
+              source: event.sourceId,
+              destination: event.destinationId,
+              amount: event.amount
+            });
+          } else {
+            console.log("update index: " + index);
+            Vue.set(this.transfers[index], 'status', event.status);
+            this.transfers.push(this.transfers[index]);
+          }
         };
       };
     },
     disconnect() {
       this.socket.close();
-      this.logs = [];
-    },
+    }
   }
 }
 </script>
