@@ -30,11 +30,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Log4j
 public class TransferEntity extends PersistentEntity<TransferCommand, TransferEvent, Optional<TransferState>> {
 
-    private final PubSubRef<JsonNode> publishedTopic;
+    private final PubSubRef<String> publishedTopic;
 
     @Inject
     public TransferEntity(PubSubRegistry pubSub) {
-        publishedTopic = pubSub.refFor(TopicId.of(JsonNode.class, "transfer"));
+        publishedTopic = pubSub.refFor(TopicId.of(String.class, "transfer"));
     }
 
     @Override
@@ -136,7 +136,7 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                     .build();
 
                 ObjectMapper mapper = new ObjectMapper();
-                publishedTopic.publish(mapper.valueToTree(transferCompletedEvent)); 
+                publishedTopic.publish(mapper.valueToTree(transferCompletedEvent).toString()); 
 
                 return ctx.thenPersist(
                     new TransferEvent.DeliveryConfirmed(

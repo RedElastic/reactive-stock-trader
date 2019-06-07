@@ -119,9 +119,9 @@ public class WireTransferServiceImpl implements WireTransferService {
     }
 
     @Override
-    public ServiceCall<NotUsed, Source<JsonNode, ?>> transferStream() {
+    public ServiceCall<NotUsed, Source<String, ?>> transferStream() {
         return request -> {
-            final PubSubRef<JsonNode> topic = pubSub.refFor(TopicId.of(JsonNode.class, "transfer"));
+            final PubSubRef<String> topic = pubSub.refFor(TopicId.of(String.class, "transfer"));
             return CompletableFuture.completedFuture(topic.subscriber());
         };
     }

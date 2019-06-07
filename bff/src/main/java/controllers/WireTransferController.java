@@ -77,12 +77,12 @@ public class WireTransferController extends Controller {
     }
 
     public WebSocket ws() {
-        return WebSocket.Json.acceptOrResult(req -> {
+        return WebSocket.Text.acceptOrResult(req -> {
             return wireTransferService
                 .transferStream()
                 .invoke()
                 .thenApply(source -> {
-                    return F.Either.Right(Flow.fromSinkAndSourceCoupled(Sink.ignore(), source));
+                    return F.Either.Right(Flow.fromSinkAndSource(Sink.ignore(), source));
                 });
         });
     }
