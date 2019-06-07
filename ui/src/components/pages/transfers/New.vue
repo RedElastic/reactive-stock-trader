@@ -254,9 +254,7 @@ export default {
       this.socket = new WebSocket("ws://localhost:9000/api/transfer/stream");
       this.socket.onopen = () => {
         this.socket.onmessage = (e) => {
-          console.log(e.data);
           let event = JSON.parse(e.data);
-          console.log(event);
           var index = -1;
           
           for (var i = 0; i < this.transfers.length; i++) {
@@ -267,7 +265,6 @@ export default {
           }
           
           if (index === -1) {
-            console.log("new item");
             this.transfers.push({
               id: event.id,
               status: event.status,
