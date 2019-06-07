@@ -235,6 +235,7 @@ export default {
       }));
       this.transfers = t;
     });
+    this.connect();
   },
   methods: {
     onSubmit() {
@@ -248,7 +249,19 @@ export default {
     },
     onReset() {
       Object.assign(this.form, emptyForm);
-    }
+    },
+    connect() {
+      this.socket = new WebSocket("ws://localhost:9000/api/transfer/stream");
+      this.socket.onopen = () => {
+        this.socket.onmessage = ({data}) => {
+          console.log("Recieved message:" + data);
+        };
+      };
+    },
+    disconnect() {
+      this.socket.close();
+      this.logs = [];
+    },
   }
 }
 </script>
