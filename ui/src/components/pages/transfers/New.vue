@@ -275,8 +275,15 @@ export default {
             });
           } else {
             console.log("update index: " + index);
-            Vue.set(this.transfers[index], 'status', event.status);
-            this.transfers.push(this.transfers[index]);
+            let t = {
+              id: event.id,
+              status: event.status,
+              dateTime: event.dateTime,
+              source: event.sourceId,
+              destination: event.destinationId,
+              amount: event.amount
+            };
+            this.transfers.splice(index, 1, t);            
           }
         };
       };
