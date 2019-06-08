@@ -274,7 +274,6 @@ export default {
               amount: event.amount
             });
           } else {
-            console.log("update index: " + index);
             let t = {
               id: event.id,
               status: event.status,
