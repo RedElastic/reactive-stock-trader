@@ -15,6 +15,8 @@ import org.pcollections.PSequence;
 import com.lightbend.lagom.javadsl.api.transport.Method;
 
 import static com.lightbend.lagom.javadsl.api.Service.*;
+import akka.stream.javadsl.Source;
+import com.fasterxml.jackson.databind.JsonNode;
 
 
 /**
@@ -22,14 +24,13 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
  */
 public interface WireTransferService extends Service {
 
-    String PORTFOLIO_TRANSFER_TOPIC_ID = "WireTransfer-PortfolioTransfer";
     String TRANSFER_REQUEST_TOPIC_ID = "WireTransfer-TransferRequest";
 
     ServiceCall<Transfer, TransferId> transferFunds();
 
     ServiceCall<NotUsed, PSequence<TransactionSummary>> getAllTransactionsFor(String portfolioId);
 
-    Topic<TransferCompleted> completedTransfers();
+    ServiceCall<NotUsed, Source<String, ?>> transferStream();
 
     Topic<TransferRequest> transferRequest();
 
@@ -38,10 +39,10 @@ public interface WireTransferService extends Service {
         // @formatter:off
         return named("wire-transfer").withCalls(
             call(this::transferFunds),
-            restCall(Method.GET, "/api/transfer/:portfolioId", this::getAllTransactionsFor)
+            call(this::transferStream),
+            restCall(Method.GET, "/api/transfer/:portfolioId", this::getAllTransactionsFor)            
         )
         .withTopics(
-            topic(PORTFOLIO_TRANSFER_TOPIC_ID, this::completedTransfers),
             topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
         );
         // @formatter:on

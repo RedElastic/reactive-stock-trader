@@ -1,5 +1,3 @@
-
-
 organization in ThisBuild := "com.redelastic"
 
 scalaVersion in ThisBuild := "2.12.4"
@@ -37,7 +35,7 @@ lazy val portfolioApi = (project in file("portfolio-api"))
 
 lazy val portfolioImpl = (project in file("portfolio-impl"))
   .settings(commonSettings)
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .settings(
     version := "1.0-SNAPSHOT",
     libraryDependencies ++= Seq(
@@ -65,7 +63,7 @@ lazy val brokerApi = (project in file("broker-api"))
 
 lazy val brokerImpl = (project in file("broker-impl"))
   .settings(commonSettings)
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .dependsOn(
     utils,
     brokerApi,
@@ -91,7 +89,7 @@ lazy val wireTransferApi = (project in file("wire-transfer-api"))
 
 lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
   .settings(commonSettings)
-  .enablePlugins(LagomJava, SbtReactiveAppPlugin)
+  .enablePlugins(LagomJava)
   .dependsOn(
     wireTransferApi
   )
@@ -100,7 +98,8 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit,
-      lagomJavadslKafkaBroker
+      lagomJavadslKafkaBroker,
+      lagomJavadslPubSub
     ),
     maxErrors := 10000
 
@@ -108,7 +107,7 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
 
 lazy val bff = (project in file("bff"))
   .settings(commonSettings)
-  .enablePlugins(PlayJava, LagomPlay, SbtReactiveAppPlugin)
+  .enablePlugins(PlayJava, LagomPlay)
   .disablePlugins(PlayLayoutPlugin)
   .dependsOn(
     utils,
@@ -134,15 +133,12 @@ lazy val utils = (project in file("utils"))
     version := "1.0-SNAPSHOT"
   )
 
-
 val lombok = "org.projectlombok" % "lombok" % "1.18.4"
 val cassandraExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.0.0"
 
 val lagomApiDependencies = Seq(
   lagomJavadslApi,
   lombok)
-
-
 
 def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8"),

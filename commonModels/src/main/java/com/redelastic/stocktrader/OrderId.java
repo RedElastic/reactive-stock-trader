@@ -17,7 +17,12 @@ public class OrderId {
 
     public static PathParamSerializer<OrderId> pathParamSerializer =
             PathParamSerializers.required("OrderId", OrderId::new, OrderId::getId);
+
     @NonNull String id;
+
+    public OrderId() { this.id = ""; }
+
+    public OrderId(String id) { this.id = id; }
 
     public static OrderId newId() { return new OrderId(UUID.randomUUID().toString()); }
 }

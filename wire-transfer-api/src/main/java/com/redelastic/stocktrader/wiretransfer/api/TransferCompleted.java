@@ -17,7 +17,9 @@ public class TransferCompleted {
     @NonNull String id;
     @NonNull String status;
     @NonNull String dateTime;
-    @NonNull String source;
-    @NonNull String destination;
+    @NonNull String sourceType;
+    @NonNull String sourceId;
+    @NonNull String destinationType;
+    @NonNull String destinationId;
     @NonNull String amount;
 }

@@ -10,6 +10,7 @@ import akka.japi.Pair;
 import akka.japi.pf.FI;
 import akka.japi.pf.PFBuilder;
 import akka.stream.javadsl.Source;
+import akka.stream.javadsl.Flow;
 import com.lightbend.lagom.javadsl.api.ServiceCall;
 import com.lightbend.lagom.javadsl.api.broker.Topic;
 import com.lightbend.lagom.javadsl.broker.TopicProducer;
@@ -30,6 +31,11 @@ import com.redelastic.stocktrader.wiretransfer.api.TransferRequest;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
 import com.redelastic.stocktrader.wiretransfer.api.TransactionSummary;
 import scala.PartialFunction;
+import com.lightbend.lagom.javadsl.pubsub.PubSubRef;
+import com.lightbend.lagom.javadsl.pubsub.PubSubRegistry;
+import com.lightbend.lagom.javadsl.pubsub.TopicId;
+import java.util.concurrent.CompletableFuture;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
@@ -49,13 +55,16 @@ public class WireTransferServiceImpl implements WireTransferService {
 
     private final TransferRepositoryImpl transferRepository;
     private final CassandraSession db;
+    private final PubSubRegistry pubSub;
 
     @Inject
     WireTransferServiceImpl(TransferRepositoryImpl transferRepository,
                             ReadSide readSide,
-                            CassandraSession db) {
+                            CassandraSession db,
+                            PubSubRegistry pubSub) {
         this.transferRepository = transferRepository;
         this.db = db;
+        this.pubSub = pubSub;
         readSide.register(TransferProcess.class);
         readSide.register(TransferEventProcessor.class);
     }
@@ -74,11 +83,6 @@ public class WireTransferServiceImpl implements WireTransferService {
                     .build()
                 )
                 .thenApply(done -> transferId);
-    }
-
-    @Override
-    public Topic<TransferCompleted> completedTransfers() {
-        return TopicProducer.taggedStreamWithOffset(TransferEvent.TAG.allTags(), this::completedTransfersStream);
     }
 
     @Override
@@ -109,12 +113,12 @@ public class WireTransferServiceImpl implements WireTransferService {
         };
     }
 
-    private Source<Pair<TransferCompleted, Offset>, ?> completedTransfersStream(AggregateEventTag<TransferEvent> tag, Offset offset) {
-        return transferRepository.eventStream(tag, offset).collect(collectByEvent(
-            new PFBuilder<TransferEvent, TransferCompleted>()
-                .match(TransferEvent.DeliveryConfirmed.class, this::transferCompleted)
-                .build()
-        ));
+    @Override
+    public ServiceCall<NotUsed, Source<String, ?>> transferStream() {
+        return request -> {
+            final PubSubRef<String> topic = pubSub.refFor(TopicId.of(String.class, "transfer"));
+            return CompletableFuture.completedFuture(topic.subscriber());
+        };
     }
 
     private Source<Pair<TransferRequest, Offset>, ?> transferRequestSource(AggregateEventTag<TransferEvent> tag, Offset offset) {
@@ -141,19 +145,6 @@ public class WireTransferServiceImpl implements WireTransferService {
             .transferId(fundsRetrieved.getTransferId())
             .account(fundsRetrieved.getTransferDetails().getDestination())
             .amount(fundsRetrieved.getTransferDetails().getAmount())
-            .build();
-    }
-
-    private TransferCompleted transferCompleted(TransferEvent.DeliveryConfirmed event) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-        Date date = new Date();
-        return TransferCompleted.builder()
-            .id(event.getTransferId().toString())
-            .status("Delivery Confirmed")
-            .dateTime(dateFormat.format(date))
-            .destination(event.transferDetails.destination.toString())
-            .source(event.transferDetails.source.toString())
-            .amount(event.transferDetails.amount.toString())
             .build();
     }
 

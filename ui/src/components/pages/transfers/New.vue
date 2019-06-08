@@ -77,10 +77,7 @@
               </div>
             </b-form>
           </div>          
-          <div class="col-5">
-            <b-alert class="mb-5" v-model="showDismissibleAlert" variant="primary" dismissible>
-              Wire transfer has been initiated! Your cash will be available shortly. Please view pending wires for up-to-date transfer status.
-            </b-alert>          
+          <div class="col-5">          
             <div class="card">
               <div class="card-body">          
                 <h4>Active Portfolio</h4>          
@@ -88,8 +85,8 @@
                   <div class="col">
                     Cash on hand
                   </div>
-                  <div class="col">
-                    {{ portfolio.cashOnHand | toCurrency }}
+                  <div id="cashOnHand" class="col">
+                    {{ cashOnHand | toCurrency }}
                   </div>
                 </div>
               </div>
@@ -125,7 +122,7 @@
         <h2 class="mb-3">
           Transfer History
         </h2> 
-        <table class="table">
+        <table id="xfer" class="table">
           <thead>
             <tr>
               <th scope="col">
@@ -149,7 +146,7 @@
             </tr>
           </thead>
           <tbody style="font-size:0.8em;">
-            <tr v-for="transfer in transfers">
+            <tr v-for="transfer in transfers" :key="transfer.id">
               <td>{{ transfer.id }}</td>
               <td>{{ transfer.status }}</td>
               <td scope="row">
@@ -186,9 +183,7 @@ export default {
       submitted: false,
       form: Object.assign({}, emptyForm),
       transfers: [],
-      portfolio: {
-        cashOnHand: null
-      },
+      cashOnHand: null,
       options: {
         fromTo: [
           { value: 'portfolioWithdrawl', text: 'Withdrawal (out)' },
@@ -214,16 +209,13 @@ export default {
     },
     afterTransfer() {
       return this.form.depositWithdrawl === 'portfolioWithdrawl' 
-        ? this.portfolio.cashOnHand - this.form.amount
+        ? this.cashOnHand - this.form.amount
         : this.form.depositWithdrawl === 'portfolioDeposit' 
-        ? this.portfolio.cashOnHand + this.form.amount        
+        ? this.cashOnHand + this.form.amount        
         : null;
     }
   },
-  mounted() {   
-    getDetails().then(details => {
-     this.portfolio.cashOnHand = details.funds;
-    });
+  mounted() {       
     getAllTransfersFor(this.portfolioId).then(transfers => {          
       let t = transfers.map(transfer => ({
         id: transfer.id,
@@ -235,11 +227,17 @@ export default {
       }));
       this.transfers = t;
     });
+    this.connect();
+    this.updateCashOnHand();
   },
   methods: {
+    updateCashOnHand() {
+      getDetails().then(details => {
+       this.cashOnHand = details.funds;
+      });
+    },
     onSubmit() {
       this.submitted = true;
-      this.showDismissibleAlert = true;
       submitTransfer(this.form)
         .then(() => {
           this.submitted = false;
@@ -248,6 +246,49 @@ export default {
     },
     onReset() {
       Object.assign(this.form, emptyForm);
+    },
+    connect() {
+      this.socket = new WebSocket("ws://localhost:9000/api/transfer/stream");
+      this.socket.onopen = () => {
+        this.socket.onmessage = (e) => {
+          let event = JSON.parse(e.data);
+          var index = -1;
+          
+          // determine if we're updating a row (initiated) or adding a new row (completed)
+          for (var i = 0; i < this.transfers.length; i++) {
+            if (this.transfers[i].id === event.id) {
+              index = i;
+              break;
+            }
+          }
+          
+          if (index === -1) {
+            // unshift is similar to push, but prepends
+            this.transfers.unshift({
+              id: event.id,
+              status: event.status,
+              dateTime: event.dateTime,
+              source: event.sourceId,
+              destination: event.destinationId,
+              amount: event.amount
+            });
+          } else {
+            let t = {
+              id: event.id,
+              status: event.status,
+              dateTime: event.dateTime,
+              source: event.sourceId,
+              destination: event.destinationId,
+              amount: event.amount
+            };
+            this.transfers.splice(index, 1, t);
+            this.updateCashOnHand();
+          }
+        };
+      };
+    },
+    disconnect() {
+      this.socket.close();
     }
   }
 }
@@ -255,4 +296,13 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  @keyframes yellowfade {
+      from { background: yellow; }
+      to { background: transparent; }
+  }
+
+  .item-highlight {
+      animation-name: yellowfade;
+      animation-duration: 1.5s;
+  }
 </style>
