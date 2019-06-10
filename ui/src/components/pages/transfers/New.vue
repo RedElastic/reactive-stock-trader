@@ -78,7 +78,7 @@
             </b-form>
           </div>          
           <div class="col-5">          
-            <div class="card">
+            <div id="cashOnHandCard" class="card" v-bind:class="{ itemhighlight: cashOnHandHighlight == true }">
               <div class="card-body">          
                 <h4>Active Portfolio</h4>          
                 <div class="row">
@@ -154,7 +154,7 @@
               </td>
               <td>{{ transfer.source }}</td>                          
               <td>{{ transfer.destination }}</td>
-              <td>{{ transfer.amount }}</td>
+              <td>{{ transfer.amount | toCurrency }}</td>
             </tr>
           </tbody>
         </table>       
@@ -195,7 +195,8 @@ export default {
           { value: 'portfolio', text: 'Another portfolio' }
         ]
       },
-      showDismissibleAlert: false
+      showDismissibleAlert: false,
+      cashOnHandHighlight: false
     }
   },
   computed: {
@@ -235,6 +236,9 @@ export default {
       getDetails().then(details => {
        this.cashOnHand = details.funds;
       });
+    },
+    resetHighlight() {
+      setTimeout(() => this.cashOnHandHighlight = false, 5000);
     },
     onSubmit() {
       this.submitted = true;
@@ -283,6 +287,9 @@ export default {
             };
             this.transfers.splice(index, 1, t);
             this.updateCashOnHand();
+            // flash the 'cash on hand' card to let users know it's been updated
+            this.cashOnHandHighlight = true;
+            this.resetHighlight();
           }
         };
       };
@@ -301,8 +308,8 @@ export default {
       to { background: transparent; }
   }
 
-  .item-highlight {
+  .itemhighlight {
       animation-name: yellowfade;
-      animation-duration: 1.5s;
+      animation-duration: 2.5s;
   }
 </style>

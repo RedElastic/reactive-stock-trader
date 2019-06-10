@@ -37,8 +37,9 @@ Vue.use(Rollbar, {
 });
 
 Vue.filter('toCurrency', function (value) {
+    var v = value;
     if (typeof value !== "number") {
-        return value;
+        v = parseInt(value);
     }
     var formatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
