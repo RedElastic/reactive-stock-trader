@@ -35,7 +35,7 @@
              - name: "HTTP_BIND_ADDRESS"
                value: "0.0.0.0"
              - name: JAVA_OPTS
-               value: "-Dconfig.file=/etc/reactivestock-bff/production.conf -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+               value: "-Dconfig.file=/etc/reactivestock/production.conf -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
            resources:
              requests:
                memory: "256Mi"
@@ -62,12 +62,12 @@
              periodSeconds: 30
            volumeMounts:
              - name: app-creds
-               mountPath: "/etc/reactivestock-bff/"
+               mountPath: "/etc/reactivestock/"
                readOnly: true
          volumes:
            - name: app-creds
              secret:
-               secretName: bff-secrets
+               secretName: reactivestock-secrets
 
 
 

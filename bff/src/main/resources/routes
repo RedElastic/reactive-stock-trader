@@ -1,3 +1,5 @@
+GET     /healthz                                controllers.HomeController.healthz()
+
 GET     /api/portfolio             				      controllers.PortfolioController.getAllPortfolios()
 GET     /api/portfolio/:portfolioId             controllers.PortfolioController.getPortfolio(portfolioId)
 GET     /api/portfolio/:portfolioId/summary     controllers.PortfolioController.getSummary(portfolioId, includeOrderInfo: Boolean ?= false, includePrices: Boolean ?= false)
