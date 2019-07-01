@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reactivestock-bff
+  labels:
+    app: reactivestock-bff
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reactivestock-bff
+  template:
+    metadata:
+      labels:
+        app: reactivestock-bff
+      annotations: # Annoations used for Enterprise Suite Metrics
+        "prometheus.io/scrape": "true"
+        "prometheus.io/scheme": "http"
+        "prometheus.io/path": "/metrics"
+        "prometheus.io/port": "9001"
+    spec:
+      containers:
+      - name: bff
+        image: bff:1.0-SNAPSHOT
+        ports:
+        - name: bff-http
+          containerPort: 9000
+        - name: prometheus # Used for Enterprise Suite Metrics
+          containerPort: 9001
+          protocol: TCP
+        env:
+          - name: "HTTP_BIND_ADDRESS"
+            value: "0.0.0.0"
+          - name: "ALLOWED_HOST"
+            value: "192.168.99.106" #Minikube's IP address - we'll change this later.
+          - name: "APPLICATION_SECRET"
+            value: "change this to a secret value later"
