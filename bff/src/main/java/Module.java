@@ -25,5 +25,9 @@ public class Module extends AbstractModule implements ServiceClientGuiceSupport 
 
         bind(JavaJsonCustomObjectMapper.class).asEagerSingleton();
         bind(QuoteService.class).to(QuoteServiceImpl.class);
+
+        if (environment.isProd()) {
+            bind(ServiceLocator.class).to(ConfigurationServiceLocator.class);
+        }
     }
 }

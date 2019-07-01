@@ -169,6 +169,7 @@ import {activePortfolio} from '@/common/portfolio';
 import {getPortfolio} from '@/common/portfolio';
 import {getDetails} from '@/common/portfolio';
 import {getAllTransfersFor} from '@/common/transfers';
+import {wsBaseURL} from '@/common/config';
 
 const emptyForm = {
   amount: null,
@@ -252,7 +253,7 @@ export default {
       Object.assign(this.form, emptyForm);
     },
     connect() {
-      this.socket = new WebSocket("ws://localhost:9000/api/transfer/stream");
+      this.socket = new WebSocket(wsBaseURL + "/api/transfer/stream");
       this.socket.onopen = () => {
         this.socket.onmessage = (e) => {
           let event = JSON.parse(e.data);
