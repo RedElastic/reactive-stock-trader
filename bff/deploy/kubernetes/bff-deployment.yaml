@@ -48,7 +48,7 @@
                port: 9200
                httpHeaders:
                - name: Host
-                 value: reactivestock.com
+                 value: reactivestocktrader.com
              initialDelaySeconds: 5
              periodSeconds: 3
            livenessProbe:
@@ -57,7 +57,7 @@
                port: 9200
                httpHeaders:
                - name: Host
-                 value: reactivestock.com
+                 value: reactivestocktrader.com
              initialDelaySeconds: 60
              periodSeconds: 30
            volumeMounts:
