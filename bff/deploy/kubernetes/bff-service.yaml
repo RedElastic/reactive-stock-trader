@@ -5,7 +5,7 @@
        app: reactivestock-bff
      name: reactivestock-bff-svc
    spec:
-     type: NodePort
+     type: ClusterIP
      selector:
        app: reactivestock-bff
      ports:

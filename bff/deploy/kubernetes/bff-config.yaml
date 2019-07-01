@@ -1,0 +1,8 @@
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: bff-config
+    data:
+      BROKER_SERVICE_URL: "http://broker-svc.default:9000"
+      PORTFOLIO_SERVICE_URL: "http://portfolio-svc.default:9000"
+      WIRETRANSFER_SERVICE_URL: "http://wiretransfer-svc.default:9000"
