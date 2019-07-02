@@ -4,20 +4,22 @@ Kafka and Cassandra are required by Reactive Stock Trader for proper operations.
 
 ## Deploying Kafka
 
-### 1. Create a separate namespace for the Kafka cluster:
+### 1. Create a separate namespace for the Kafka cluster
 
     ```
     kubectl create namespace kafka
     ```
 
-### 2. To install the Kafka operator, we will use Helm. Start by adding the Strimzi Helm repository:
+### 2. To install the Kafka operator, we will use Helm
+
+Start by adding the Strimzi Helm repository:
 
     ```
     helm repo add strimzi http://strimzi.io/charts/
     helm repo update
     ```
   
-### 3. Deploy the Kafka Operator:
+### 3. Deploy the Kafka Operator
 
     ```
     helm install --namespace kafka --name reactivestock-kafka strimzi/strimzi-kafka-operator
@@ -31,13 +33,15 @@ kubectl get pods --namespace=kafka
 
 > It may take a few minutes for the operator to be ready.
   
-### 4. Verify that the Kafka Operator has been started:
+### 4. Verify that the Kafka Operator has been started
 
     ```
     helm ls
     ```
  
-### 5. Install Kafka using the `kafka-persistent-single.yaml` resource in the `exercises/apps/kafka` folder:
+### 5. Install Kafka
+
+We'll use the `kafka-persistent-single.yaml` resource in the `exercises/apps/kafka` folder:
 
 ```
 cd deploy/kubernetes
@@ -46,7 +50,7 @@ kubectl apply --namespace=kafka  -f kafka-persistent-single.yaml
     
 > `kafka-persistent-single.yaml` is a special script for creating a single broker Kafka cluster with persistence provided by a [PersistentVolume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). In production, you would want to run a minimum of 3 Kafka brokers distributed onto designated nodes.
 
-### 6. Validate that the `Kafka` and `Zookeeper` pods have started successfully with:
+### 6. Validate that the `Kafka` and `Zookeeper` pods have started successfully
 
     ```
     kubectl get pods --namespace=kafka
@@ -64,14 +68,14 @@ kubectl apply --namespace=kafka  -f kafka-persistent-single.yaml
 
 ## Deploying Cassandra
 
-### 1. Add the Helm incubator repo:
+### 1. Add the Helm incubator repo
 
     ```
     helm repo add incubator https://kubernetes-charts-incubator.storage.googleapis.com/
     helm repo update
     ```
 
-### 2. Run the following to install the Cassandra Helm chart:
+### 2. Run the following to install the Cassandra Helm chart
 
     ```
     cd deploy/kubernetes
@@ -80,7 +84,7 @@ kubectl apply --namespace=kafka  -f kafka-persistent-single.yaml
 
 This will create a single `Cassandra` node in the `Cassandra` namespace. This is only appropriate for deployment to Minikube and should not be used for production (you will need to figure out how to install a production-quality Cassandra cluster for prod).
 
-### 3. Verify deployment:
+### 3. Verify deployment
 
     ```
     kubectl get pods --namespace=cassandra
@@ -93,7 +97,7 @@ You should see output like the following when the Cassandra cluster is ready:
     cassandra-0   1/1     Running   3          2d
     ```
 
-### 4. Check that internal `Cassandra` node is running:
+### 4. Check that internal `Cassandra` node is running
 
     ```
     kubectl exec -it --namespace cassandra $(kubectl get pods --namespace cassandra -l app=cassandra,release=cassandra -o jsonpath='{.items[0].metadata.name}') nodetool status
