@@ -14,9 +14,9 @@ If you skip this step, publishing will most likely fail.
 
 To ensure you're pushing to Minikube's Docker Registry, run the following command:
 
-    ```
-    eval $(minikube docker-env)
-    ```
+```
+eval $(minikube docker-env)
+```
 
 > Hint: if you're using the Fish terminal (as I am) remove the `$`.
 
@@ -24,17 +24,17 @@ To ensure you're pushing to Minikube's Docker Registry, run the following comman
 
 Although we are developing RST in a monorepo, it's actually a collection of microservices. We will build and package each as its own Docker container. This is possible as we've configured `sbt native packager`.
 
-    ```
-    sbt "bff/docker:publishLocal"
-    ```
+```
+sbt "bff/docker:publishLocal"
+```
 
 ## 4. Validate the image
 
 Ensure the image has been built and is available in Minikube's Docker registry:
 
-    ```
-    docker images
-    ```
+```
+docker images
+```
 
 You should see the following:
 
@@ -45,23 +45,23 @@ bff                                                              1.0-SNAPSHOT   
 
 ## 5. Deploy the BFF to Minikube
 
-    ```
-    kubectl apply -f bff/deploy/kubernetes/bff-service.yaml
-    ```
+```
+kubectl apply -f bff/deploy/kubernetes/bff-service.yaml
+```
 
 ## 6. Deploy the ingress manifest
 
 The following will enable access to the BFF from outside of the Kubernetes cluster:
 
-    ```
-    kubectl apply -f bff/deploy/kubernetes/reactivestock-ingress.yaml
-    ```
+```
+kubectl apply -f bff/deploy/kubernetes/reactivestock-ingress.yaml
+```
 
 ## 7. Apply the new deployment
 
-    ```
-    kubectl apply -f bff/deploy/kubernetes/bff-deployment.yaml
-    ```
+```
+kubectl apply -f bff/deploy/kubernetes/bff-deployment.yaml
+```
     
 At this point it makes sense to get a list of all the pods:
 
@@ -85,33 +85,33 @@ In this folder, create a file `production.conf`. This will be our production con
 
 Copy the following content to `bff/deploy/secrets/production.conf`:
 
-    ```
-    include "application"
-         
-    play.http.secret.key = "REPLACEME"
-    
-    # Other secret configuration data here.  
-    ```
+```
+include "application"
+     
+play.http.secret.key = "REPLACEME"
+
+# Other secret configuration data here.  
+```
     
 Use the following command to generate a [Play Secret](https://www.playframework.com/documentation/latest/ApplicationSecret), use the command:
 
-    ```
-    sbt playGenerateSecret
-    ```
+```
+sbt playGenerateSecret
+```
 
 Look for the line "Generated new secret: ...". Substitute this value with `REPLACEME` in `frontend/deploy/secrets/production.conf`.
 
 ## 9. Add this file as a `secret` to Kubernetes
 
-   ```
-    kubectl create secret generic reactivestock-secrets --from-file=bff/deploy/secrets/production.conf
-   ```
-      
+```
+kubectl create secret generic reactivestock-secrets --from-file=bff/deploy/secrets/production.conf
+```
+   
 ## 10. Create the new `ConfigMap`
 
-    ```
-    kubectl apply -f bff/deploy/kubernetes/bff-config.yaml
-    ```
+```
+kubectl apply -f bff/deploy/kubernetes/bff-config.yaml
+```
 
 ## 11. Check the state of our `reactivestock-bff`
 
