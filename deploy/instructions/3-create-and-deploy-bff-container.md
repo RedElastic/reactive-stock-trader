@@ -136,6 +136,8 @@ Edit `/etc/hosts` and add a line similar to the following:
 
 Where `<your ip>` is the IP returned by Minikube above.
 
-## 13. In a web browser, open up [http://reactivestocktrader.com/healthz](http://reactivestocktrader.com/healthz).
+## 13. Verify health check
 
-You should see an "OK".
+Open up [http://reactivestocktrader.com/healthz](http://reactivestocktrader.com/healthz).
+
+You should see an "OK". Congrats! You deployed the BFF. Next we'll do the same for our bounded contexts (portfolio, broker, and wire transfers).
