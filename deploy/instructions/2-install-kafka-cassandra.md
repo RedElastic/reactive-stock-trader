@@ -4,15 +4,13 @@ Kafka and Cassandra are required by Reactive Stock Trader for proper operations.
 
 ## Deploying Kafka
 
-As the Order service publishes orders that have been placed to `Kafka`, we will need have a `Kafka` cluster.
-
-1. As a good practice, create a separate namespace for the Kafka cluster:
+1. Create a separate namespace for the Kafka cluster:
 
     ```
     kubectl create namespace kafka
     ```
 
-2. To install the `Kafka` operator, we will use Helm. Start by adding the `Strimzi` Helm repository:
+2. To install the Kafka operator, we will use Helm. Start by adding the Strimzi Helm repository:
 
     ```
     helm repo add strimzi http://strimzi.io/charts/
@@ -63,6 +61,7 @@ As the Order service publishes orders that have been placed to `Kafka`, we will 
     reactivestock-strimzi-zookeeper-0                        2/2     Running   6          2d
     strimzi-cluster-operator-5658bb5c6-8mmbc                 1/1     Running   5          2d
     ```
+
 ## Deploying Cassandra
 
 1. Add the Helm incubator repo:

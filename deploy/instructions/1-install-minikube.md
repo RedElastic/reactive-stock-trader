@@ -2,25 +2,38 @@
 
 We assume that you have Homebrew installed before continuing.
 
+1. Install Virtualbox and Minikube:
+
+Minikube requires virtualization, which we will use Virtualbox for. 
+
 `brew cask install virtualbox minikube` 
 
-To test out the installation, let's start up Minikube and assign 4 GiB of RAM. Note: this only works the first time you launch Minikube. If you forget to specify extra memory, you will need to delete Minicube cluster and start again. Without extra memory Kafka and Cassandra will have a hard time starting correctly.
+2. Verify installation:
+
+To test out the installation, let's start up Minikube and assign 4 GiB of RAM. 
+
+Note: allocating specific memory only works the first time you launch Minikube. If you forget to specify extra memory, you will need to delete the Minicube cluster and start again. Without extra memory Kafka and Cassandra will have a hard time starting correctly.
 
 `minikube start --memory 4096` 
 
 This will handle downloading the Minikube ISO and getting everything up and running with Virtualbox.
 
-Once you see that Minikube is up and running, test out the installation and bootup by launching the dashboard:
+3. Once you see that Minikube is up and running, test out the installation and bootup by launching the dashboard:
 
 `minikube dashboard`
 
-If you’d like to pause testing at any point, make sure to stop Minikube as it's quite resource intensive:
-
-`minikube stop`
+> If you’d like to pause testing at any point, make sure to stop Minikube as it's quite resource intensive: `minikube stop`
 
 For now though, we'll keep Minikube running so we can complete our configuration. 
 
-The next step is to install kubectl:
+4. Enable ingress addon:
+
+In order to expose ports to the outside world we need the _ingress addon_ for Minikube.
+
+`minikube addons enable ingress`
+
+
+5. Install kubectl:
 
 `brew install kubernetes-cli`
 
@@ -39,7 +52,7 @@ CURRENT NAME CLUSTER AUTHINFO NAMESPACE 
 * minikube minikube minikube 
 ```
 
-Finally, we'll need to install Helm:
+6. Install Helm:
 
 `brew install kubernetes-helm`
 
@@ -62,4 +75,4 @@ Client: &version.Version{SemVer:"v2.14.1", GitCommit:"5270352a09c7e8b6e8c9593002
 Server: &version.Version{SemVer:"v2.14.1", GitCommit:"5270352a09c7e8b6e8c9593002a73535276507c0", GitTreeState:"clean"} 
 ```
 
-Congrats! Minikube should be up and running.
+Congrats! Minikube should now be up and running properly.
