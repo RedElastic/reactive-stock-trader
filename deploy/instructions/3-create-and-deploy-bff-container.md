@@ -123,7 +123,7 @@ Did it start successfully? To force the pod to restart, delete it using `kubectl
 
 At this point, it should start successfully.
 
-## 12. Add reactivestocktrader.com to your hosts file:
+## 12. Add reactivestocktrader.com to your hosts file
 
 We have it configured in ALLOWED_HOSTS that `reactivestocktrader.com` is whitelisted. In order to make this happen, you'll need to add it to your hosts file.
 
