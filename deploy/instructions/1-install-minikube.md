@@ -2,13 +2,13 @@
 
 We assume that you have Homebrew installed before continuing.
 
-1. Install Virtualbox and Minikube:
+## 1. Install Virtualbox and Minikube:
 
 Minikube requires virtualization, which we will use Virtualbox for. 
 
 `brew cask install virtualbox minikube` 
 
-2. Verify installation:
+## 2. Verify installation:
 
 To test out the installation, let's start up Minikube and assign 4 GiB of RAM. 
 
@@ -18,7 +18,7 @@ Note: allocating specific memory only works the first time you launch Minikube. 
 
 This will handle downloading the Minikube ISO and getting everything up and running with Virtualbox.
 
-3. Once you see that Minikube is up and running, test out the installation and bootup by launching the dashboard:
+## 3. Once you see that Minikube is up and running, test out the installation and bootup by launching the dashboard:
 
 `minikube dashboard`
 
@@ -26,14 +26,14 @@ This will handle downloading the Minikube ISO and getting everything up and runn
 
 For now though, we'll keep Minikube running so we can complete our configuration. 
 
-4. Enable ingress addon:
+## 4. Enable ingress addon:
 
 In order to expose ports to the outside world we need the _ingress addon_ for Minikube.
 
 `minikube addons enable ingress`
 
 
-5. Install kubectl:
+## 5. Install kubectl:
 
 `brew install kubernetes-cli`
 
@@ -52,7 +52,7 @@ CURRENT NAME CLUSTER AUTHINFO NAMESPACE 
 * minikube minikube minikube 
 ```
 
-6. Install Helm:
+## 6. Install Helm:
 
 `brew install kubernetes-helm`
 
