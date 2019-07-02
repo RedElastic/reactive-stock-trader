@@ -1,7 +1,7 @@
     apiVersion: extensions/v1beta1
     kind: Ingress
     metadata:
-      name: reactive-stock
+      name: reactivestock-bff
     spec:
       rules:
       - host: reactivestocktrader.com
