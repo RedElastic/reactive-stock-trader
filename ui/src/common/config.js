@@ -1,2 +1,2 @@
-export const bffBaseURL = "http://localhost:9100";
-export const wsBaseURL = "ws://localhost:9100";
+export const bffBaseURL = "http://reactivestocktrader.com";
+export const wsBaseURL = "ws://reactivestocktrader.com";

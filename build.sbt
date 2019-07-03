@@ -25,15 +25,15 @@ lazy val root = (project in file("."))
     brokerApi,
     brokerImpl,
     wireTransferApi,
-    bff,
-    wireTransferImpl
+    wireTransferImpl,
+    bff
   )
   .settings(commonSettings)
 
-lazy val commonModels = (project in file("commonModels"))
+lazy val commonModels = (project in file("common-models"))
   .settings(commonSettings)
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslApi,
       lombok)
@@ -42,7 +42,7 @@ lazy val commonModels = (project in file("commonModels"))
 lazy val portfolioApi = (project in file("portfolio-api"))
   .settings(commonSettings)
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
   ).dependsOn(commonModels)
 
@@ -50,7 +50,7 @@ lazy val portfolioImpl = (project in file("portfolio-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava)
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit,
@@ -72,7 +72,7 @@ lazy val portfolioImpl = (project in file("portfolio-impl"))
 lazy val brokerApi = (project in file("broker-api"))
   .settings(commonSettings)
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
   ).dependsOn(commonModels)
 
@@ -86,7 +86,7 @@ lazy val brokerImpl = (project in file("broker-impl"))
     portfolioApi
   )
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit,
@@ -101,7 +101,7 @@ lazy val brokerImpl = (project in file("broker-impl"))
 lazy val wireTransferApi = (project in file("wire-transfer-api"))
   .settings(commonSettings)
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
   )
   .dependsOn(portfolioApi)
@@ -113,7 +113,7 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
     wireTransferApi
   )
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit,
@@ -137,7 +137,7 @@ lazy val bff = (project in file("bff"))
     wireTransferApi
   )
   .settings(
-    version := "1.0-SNAPSHOT",
+    version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslClient
     ),
@@ -153,7 +153,7 @@ lazy val bff = (project in file("bff"))
 lazy val utils = (project in file("utils"))
   .settings(commonSettings)
   .settings(
-    version := "1.0-SNAPSHOT"
+    version := "0.1-SNAPSHOT"
   )
 
 val lombok = "org.projectlombok" % "lombok" % "1.18.4"
@@ -175,4 +175,3 @@ def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
 
 lagomCassandraCleanOnStart in ThisBuild := true
 lagomKafkaCleanOnStart in ThisBuild := true
-
