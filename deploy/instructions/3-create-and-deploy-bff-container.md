@@ -79,9 +79,13 @@ kubectl logs reactivestock-bff-<pod-hash>
 
 Where `pod-hash` will be unique to your pod (assigned randomly during deployments).
     
-## 8. Create a folder `bff/deploy/secrets`
+## 8. Production secrets configuration
 
-In this folder, create a file `production.conf`. This will be our production configuration with secrets that will be applied at deploy time. You would want to ensure that this file is not included in source control by adding it to your `.gitignore` file.
+Create a folder `bff/deploy/secrets`. 
+
+In this folder, create a file `production.conf`. 
+
+This will be our production configuration with secrets that will be applied at deploy time. You would want to ensure that this file is not included in source control by adding it to your `.gitignore` file.
 
 Copy the following content to `bff/deploy/secrets/production.conf`:
 
@@ -101,25 +105,25 @@ sbt playGenerateSecret
 
 Look for the line "Generated new secret: ...". Substitute this value with `REPLACEME` in `frontend/deploy/secrets/production.conf`.
 
-## 9. Add this file as a `secret` to Kubernetes
+## 9. Add this file as a secret to Kubernetes
 
 ```
 kubectl create secret generic reactivestock-secrets --from-file=bff/deploy/secrets/production.conf
 ```
    
-## 10. Create the new `ConfigMap`
+## 10. Create the new ConfigMap
 
 ```
 kubectl apply -f bff/deploy/kubernetes/bff-config.yaml
 ```
 
-## 11. Check the state of our `reactivestock-bff`
+## 11. Check the state of our reactivestock-bff
 
 Did it start successfully? To force the pod to restart, delete it using `kubectl delete pod ...`
 
 At this point, it should start successfully.
 
-## 12. Add `reactivestocktrader.com` to your hosts file:
+## 12. Add reactivestocktrader.com to your hosts file
 
 We have it configured in ALLOWED_HOSTS that `reactivestocktrader.com` is whitelisted. In order to make this happen, you'll need to add it to your hosts file.
 

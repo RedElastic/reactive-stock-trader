@@ -50,7 +50,7 @@ kubectl apply --namespace=kafka  -f kafka-persistent-single.yaml
     
 > `kafka-persistent-single.yaml` is a special script for creating a single broker Kafka cluster with persistence provided by a [PersistentVolume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/). In production, you would want to run a minimum of 3 Kafka brokers distributed onto designated nodes.
 
-### 6. Validate that the `Kafka` and `Zookeeper` pods have started successfully
+### 6. Validate that the Kafka and Zookeeper pods have started successfully
 
 ```
 kubectl get pods --namespace=kafka
@@ -97,7 +97,7 @@ NAME          READY   STATUS    RESTARTS   AGE
 cassandra-0   1/1     Running   3          2d
 ```
 
-### 4. Check that internal `Cassandra` node is running
+### 4. Check that internal Cassandra node is running
 
 ```
 kubectl exec -it --namespace cassandra $(kubectl get pods --namespace cassandra -l app=cassandra,release=cassandra -o jsonpath='{.items[0].metadata.name}') nodetool status
