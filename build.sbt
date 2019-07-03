@@ -17,6 +17,10 @@ EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 val hamcrest = "org.hamcrest" % "hamcrest-all" % "1.3" % Test
 val junit = "com.novocode" % "junit-interface" % "0.11" % Test
 
+val lagomServiceDiscovery = "com.lightbend.lagom" %% "lagom-javadsl-akka-discovery-service-locator" % "1.0.0"
+val kubernetesServiceDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.0"
+val akkaManagementDeps = Seq(lagomServiceDiscovery, kubernetesServiceDiscovery)
+
 lazy val root = (project in file("."))
   .settings(name := "reactive-stock-trader")
   .aggregate(
@@ -56,7 +60,7 @@ lazy val portfolioImpl = (project in file("portfolio-impl"))
       lagomJavadslTestKit,
       lagomJavadslKafkaBroker,
       cassandraExtras
-    )
+    ) ++ akkaManagementDeps
   )
   .settings(lagomForkedTestSettings: _*)
   .dependsOn(
@@ -87,12 +91,12 @@ lazy val brokerImpl = (project in file("broker-impl"))
   )
   .settings(
     version := "0.1-SNAPSHOT",
+    maxErrors := 10000,
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit,
       lagomJavadslKafkaBroker
-    ),
-    maxErrors := 10000
+    ) ++ akkaManagementDeps    
   )
   .settings(lagomForkedTestSettings: _*)
   .settings(lagomServiceHttpPort := 9201)
@@ -114,13 +118,13 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
   )
   .settings(
     version := "0.1-SNAPSHOT",
+    maxErrors := 10000,
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
       lagomJavadslTestKit,
       lagomJavadslKafkaBroker,
       lagomJavadslPubSub
-    ),
-    maxErrors := 10000
+    ) ++ akkaManagementDeps
   )
   .settings(lagomForkedTestSettings: _*)
   .settings(lagomServiceHttpPort := 9200)
@@ -141,9 +145,7 @@ lazy val bff = (project in file("bff"))
     libraryDependencies ++= Seq(
       lagomJavadslClient
     ),
-
     PlayKeys.playMonitoredFiles ++= (sourceDirectories in(Compile, TwirlKeys.compileTemplates)).value,
-
     // EclipseKeys.createSrc := EclipseCreateSrc.ValueSet(EclipseCreateSrc.ManagedClasses, EclipseCreateSrc.ManagedResources)
     EclipseKeys.preTasks := Seq(compile in Compile)
   )
