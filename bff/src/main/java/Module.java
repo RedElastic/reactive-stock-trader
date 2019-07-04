@@ -34,7 +34,12 @@ public class Module extends AbstractModule implements ServiceClientGuiceSupport 
         bindClient(PortfolioService.class);
         bindClient(BrokerService.class);
         bindClient(WireTransferService.class);
+
         bind(JavaJsonCustomObjectMapper.class).asEagerSingleton();
         bind(QuoteService.class).to(QuoteServiceImpl.class);
+
+        if (environment.isProd()) {
+            bind(ServiceLocator.class).to(ConfigurationServiceLocator.class);
+        }
     }
 }
