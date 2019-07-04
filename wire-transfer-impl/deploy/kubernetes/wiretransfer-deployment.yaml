@@ -1,38 +1,38 @@
  apiVersion: apps/v1
  kind: Deployment
  metadata:
-   name: reactivestock-portfolio
+   name: reactivestock-wiretransfer
    namespace: default
    labels:
-     app: reactivestock-portfolio
+     app: reactivestock-wiretransfer
  spec:
    replicas: 1
    selector:
      matchLabels:
-       app: reactivestock-portfolio
+       app: reactivestock-wiretransfer
    template:
      metadata:
        labels:
-         app: reactivestock-portfolio
+         app: reactivestock-wiretransfer
        annotations: # Annoations used for Enterprise Suite Metrics
          "prometheus.io/scrape": "true"
          "prometheus.io/scheme": "http"
          "prometheus.io/path": "/metrics"
          "prometheus.io/port": "9001"
      spec:
-       serviceAccountName: reactivestock-portfolio-sa
+       serviceAccountName: reactivestock-wiretransfer-sa
        containers:
-       - name: reactivestock-portfolio
-         image: reactivestock-portfolio:0.1-SNAPSHOT
+       - name: reactivestock-wiretransfer
+         image: reactivestock-wiretransfer:0.1-SNAPSHOT
          ports:
          - name: http
-           containerPort: 9000
+           containerPort: 9020
          - name: akka-remote
-           containerPort: 2551
+           containerPort: 2553
          - name: akka-mgmt-http
-           containerPort: 8558
+           containerPort: 8560
          - name: prometheus # Used for Enterprise Suite Metrics
-           containerPort: 9001
+           containerPort: 9003
          envFrom:
          - configMapRef:
              name: reactivestock-portfolio-config
