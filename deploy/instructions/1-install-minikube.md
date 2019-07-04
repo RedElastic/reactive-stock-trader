@@ -76,3 +76,5 @@ Server: &version.Version{SemVer:"v2.14.1", GitCommit:"5270352a09c7e8b6e8c9593002
 ```
 
 Congrats! Minikube should now be up and running properly.
+
+> It can take a minute or two for `Server` to be ready and return a proper value.
