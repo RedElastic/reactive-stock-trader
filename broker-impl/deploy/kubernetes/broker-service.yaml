@@ -1,0 +1,14 @@
+ apiVersion: v1
+ kind: Service
+ metadata:
+   labels:
+     app: reactivestock-broker
+   name: reactivestock-broker-svc
+ spec:
+   type: ClusterIP
+   selector:
+     app: reactivestock-broker
+   ports:
+   - name: reactivestock-broker-http
+     port: 9010
+     targetPort: http

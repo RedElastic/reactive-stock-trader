@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: reactivestock-broker-config
+data:
+  CASSANDRA_CONTACT_POINT: "cassandra.cassandra"
+  KAFKA_BROKERS_SERVICE_URL: "reactivestock-strimzi-kafka-bootstrap.kafka:9092"
+  ALLOWED_HOST: "reactivestock-broker-svc.default"

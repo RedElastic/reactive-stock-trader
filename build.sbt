@@ -79,7 +79,6 @@ lazy val brokerApi = (project in file("broker-api"))
     libraryDependencies ++= lagomApiDependencies
   ).dependsOn(commonModels)
 
-
 lazy val brokerImpl = (project in file("broker-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava)

@@ -1,0 +1,65 @@
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+   name: reactivestock-broker
+   namespace: default
+   labels:
+     app: reactivestock-broker
+ spec:
+   replicas: 1
+   selector:
+     matchLabels:
+       app: reactivestock-broker
+   template:
+     metadata:
+       labels:
+         app: reactivestock-broker
+       annotations: # Annoations used for Enterprise Suite Metrics
+         "prometheus.io/scrape": "true"
+         "prometheus.io/scheme": "http"
+         "prometheus.io/path": "/metrics"
+         "prometheus.io/port": "9011"
+     spec:
+       serviceAccountName: reactivestock-broker-sa
+       containers:
+       - name: reactivestock-broker
+         image: reactivestock-broker:0.1-SNAPSHOT
+         ports:
+         - name: http
+           containerPort: 9010
+         - name: akka-remote
+           containerPort: 2552
+         - name: akka-mgmt-http
+           containerPort: 8559
+         - name: prometheus # Used for Enterprise Suite Metrics
+           containerPort: 9011
+         envFrom:
+         - configMapRef:
+             name: reactivestock-broker-config
+         env:
+           - name: "HTTP_BIND_ADDRESS"
+             value: "0.0.0.0"
+           - name: JAVA_OPTS
+             value: "-Dconfig.resource=application.prod.conf -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+           - name: "HOST_ADDRESS"
+             valueFrom:
+               fieldRef:
+                 fieldPath: "status.podIP"        
+         resources:
+           requests:
+             memory: "256Mi"
+             cpu: "100m"
+           limits:
+             memory: "1Gi"
+         readinessProbe:
+           httpGet:
+             path: /ready
+             port: akka-mgmt-http
+           initialDelaySeconds: 10
+           periodSeconds: 5
+         livenessProbe:
+           httpGet:
+             path: /alive
+             port: akka-mgmt-http
+           initialDelaySeconds: 90
+           periodSeconds: 30
