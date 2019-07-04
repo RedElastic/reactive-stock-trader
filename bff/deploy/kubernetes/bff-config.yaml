@@ -3,6 +3,6 @@
     metadata:
       name: bff-config
     data:
-      BROKER_SERVICE_URL: "http://reactivestock-broker-svc.default:9000"
+      BROKER_SERVICE_URL: "http://reactivestock-broker-svc.default:9010"
       PORTFOLIO_SERVICE_URL: "http://reactivestock-portfolio-svc.default:9000"
-      WIRETRANSFER_SERVICE_URL: "http://reactivestock-wiretransfer-svc.default:9000"
+      WIRETRANSFER_SERVICE_URL: "http://reactivestock-wiretransfer-svc.default:9020"

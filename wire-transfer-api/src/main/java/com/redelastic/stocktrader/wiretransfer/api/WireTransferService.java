@@ -37,7 +37,7 @@ public interface WireTransferService extends Service {
     @Override
     default Descriptor descriptor() {
         // @formatter:off
-        return named("wire-transfer").withCalls(
+        return named("wiretransfer").withCalls(
             call(this::transferFunds),
             call(this::transferStream),
             restCall(Method.GET, "/api/transfer/:portfolioId", this::getAllTransactionsFor)            
