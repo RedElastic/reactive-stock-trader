@@ -21,7 +21,7 @@
        spec:
          containers:
          - name: reactivestock-bff
-           image: bff:0.1-SNAPSHOT
+           image: reactivestock-bff:0.1-SNAPSHOT
            ports:
            - name: bff-http
              containerPort: 9200

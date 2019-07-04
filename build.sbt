@@ -22,7 +22,7 @@ val kubernetesServiceDiscovery = "com.lightbend.akka.discovery" %% "akka-discove
 val akkaManagementDeps = Seq(lagomServiceDiscovery, kubernetesServiceDiscovery)
 
 lazy val root = (project in file("."))
-  .settings(name := "reactive-stock-trader")
+  .settings(name := "reactivestock")
   .aggregate(
     portfolioApi,
     portfolioImpl,
@@ -46,7 +46,6 @@ lazy val commonModels = (project in file("common-models"))
 lazy val portfolioApi = (project in file("portfolio-api"))
   .settings(commonSettings)
   .settings(
-    version := "0.1-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
   ).dependsOn(commonModels)
 
@@ -54,6 +53,7 @@ lazy val portfolioImpl = (project in file("portfolio-impl"))
   .settings(commonSettings)
   .enablePlugins(LagomJava)
   .settings(
+    name := "reactivestock-portfolio",
     version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslPersistenceCassandra,
@@ -76,7 +76,6 @@ lazy val portfolioImpl = (project in file("portfolio-impl"))
 lazy val brokerApi = (project in file("broker-api"))
   .settings(commonSettings)
   .settings(
-    version := "0.1-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
   ).dependsOn(commonModels)
 
@@ -90,6 +89,7 @@ lazy val brokerImpl = (project in file("broker-impl"))
     portfolioApi
   )
   .settings(
+    name := "reactivestock-broker",
     version := "0.1-SNAPSHOT",
     maxErrors := 10000,
     libraryDependencies ++= Seq(
@@ -105,7 +105,6 @@ lazy val brokerImpl = (project in file("broker-impl"))
 lazy val wireTransferApi = (project in file("wire-transfer-api"))
   .settings(commonSettings)
   .settings(
-    version := "0.1-SNAPSHOT",
     libraryDependencies ++= lagomApiDependencies
   )
   .dependsOn(portfolioApi)
@@ -117,6 +116,7 @@ lazy val wireTransferImpl = (project in file("wire-transfer-impl"))
     wireTransferApi
   )
   .settings(
+    name := "reactivestock-wiretransfer",
     version := "0.1-SNAPSHOT",
     maxErrors := 10000,
     libraryDependencies ++= Seq(
@@ -141,6 +141,7 @@ lazy val bff = (project in file("bff"))
     wireTransferApi
   )
   .settings(
+    name := "reactivestock-bff",
     version := "0.1-SNAPSHOT",
     libraryDependencies ++= Seq(
       lagomJavadslClient
