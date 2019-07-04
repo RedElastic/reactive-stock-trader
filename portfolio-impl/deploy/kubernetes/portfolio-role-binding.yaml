@@ -1,7 +1,7 @@
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: reactive-portfolio-akka-cluster
+  name: reactivestock-portfolio-akka-cluster
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   namespace: default
-  name: reactive-portfolio-sa
+  name: reactivestock-portfolio-sa

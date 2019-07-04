@@ -2,7 +2,7 @@
  kind: Service
  metadata:
    labels:
-     app: orders
+     app: reactivestock-portfolio
    name: reactivestock-portfolio-svc
  spec:
    type: ClusterIP

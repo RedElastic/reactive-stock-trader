@@ -33,8 +33,5 @@ public class Module extends AbstractModule implements ServiceGuiceSupport {
         bind(PortfolioRepository.class).to(PortfolioRepositoryImpl.class);
         bindClient(BrokerService.class);
         bindClient(WireTransferService.class);
-        if (environment.isProd()) {
-            bind(ServiceLocator.class).to(ConfigurationServiceLocator.class);
-        }
     }
 }

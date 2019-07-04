@@ -6,7 +6,7 @@
    labels:
      app: reactivestock-portfolio
  spec:
-   replicas: 3
+   replicas: 1
    selector:
      matchLabels:
        app: reactivestock-portfolio
@@ -23,7 +23,7 @@
        serviceAccountName: reactivestock-portfolio-sa
        containers:
        - name: reactivestock-portfolio
-         image: portfolio:0.1-SNAPSHOT
+         image: reactivestock-portfolio:0.1-SNAPSHOT
          ports:
          - name: http
            containerPort: 9000
