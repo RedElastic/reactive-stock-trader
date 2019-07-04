@@ -79,7 +79,7 @@ helm repo update
 
 ```
 cd deploy/kubernetes
-helm install -f cassandra-values.yaml —-version 0.10.2 —-namespace "cassandra" -n "cassandra" incubator/cassandra
+helm install -f ./cassandra-values.yaml --version 0.10.2 --namespace "cassandra" -n "cassandra" incubator/cassandra
 ```
 
 This will create a single `Cassandra` node in the `Cassandra` namespace. This is only appropriate for deployment to Minikube and should not be used for production (you will need to figure out how to install a production-quality Cassandra cluster for prod).
