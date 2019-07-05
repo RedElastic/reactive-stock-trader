@@ -28,7 +28,7 @@
          - name: http
            containerPort: 9010
          - name: akka-remote
-           containerPort: 2552
+           containerPort: 2551
          - name: akka-mgmt-http
            containerPort: 8559
          - name: prometheus # Used for Enterprise Suite Metrics

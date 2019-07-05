@@ -89,6 +89,8 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
 
         builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
 
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+
         return builder.build();
     }
 
@@ -125,6 +127,8 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
 
         builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
 
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+
         return builder.build();
     }
 
@@ -134,6 +138,8 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         builder.setCommandHandler(TransferCommand.RequestFundsFailed.class, this::ignore);
 
         builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
         
         return builder.build();
     }
@@ -181,7 +187,9 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
 
         builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);  
 
-        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);           
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);     
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);      
 
         return builder.build();
     }
@@ -199,6 +207,8 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
 
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);        
 
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+
         builder.setEventHandlerChangingBehavior(TransferEvent.RefundDelivered.class, evt -> refundDelivered(state));
 
         return builder.build();
@@ -208,6 +218,10 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.RefundDelivered)));
 
         builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::ignore);
+
+        builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::warn);
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
 
         return builder.build();
     }

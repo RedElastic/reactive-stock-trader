@@ -10,11 +10,11 @@ Minikube requires virtualization, which we will use Virtualbox for.
 
 ## 2. Verify installation:
 
-To test out the installation, let's start up Minikube and assign 4 GiB of RAM. 
+To test out the installation, let's start up Minikube and assign 8 GiB of RAM. Unfortunately, anything less than this will prevent all of the microservices, along Kafka and Cassandra, from launching properly.
 
 Note: allocating specific memory only works the first time you launch Minikube. If you forget to specify extra memory, you will need to delete the Minicube cluster and start again. Without extra memory Kafka and Cassandra will have a hard time starting correctly.
 
-`minikube start --memory 4096` 
+`minikube start --memory 8192` 
 
 This will handle downloading the Minikube ISO and getting everything up and running with Virtualbox.
 
@@ -31,7 +31,6 @@ For now though, we'll keep Minikube running so we can complete our configuration
 In order to expose ports to the outside world we need the _ingress addon_ for Minikube.
 
 `minikube addons enable ingress`
-
 
 ## 5. Install kubectl:
 

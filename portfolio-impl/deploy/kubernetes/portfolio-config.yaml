@@ -6,3 +6,5 @@ data:
   CASSANDRA_CONTACT_POINT: "cassandra.cassandra"
   KAFKA_BROKERS_SERVICE_URL: "reactivestock-strimzi-kafka-bootstrap.kafka:9092"
   ALLOWED_HOST: "reactivestock-portfolio-svc.default"
+  BROKER_SERVICE_URL: "http://reactivestock-broker-svc.default:9010"
+  WIRETRANSFER_SERVICE_URL: "http://reactivestock-wiretransfer-svc.default:9020"  

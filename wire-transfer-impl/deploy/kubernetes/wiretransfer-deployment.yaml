@@ -28,11 +28,11 @@
          - name: http
            containerPort: 9020
          - name: akka-remote
-           containerPort: 2553
+           containerPort: 2551
          - name: akka-mgmt-http
            containerPort: 8560
          - name: prometheus # Used for Enterprise Suite Metrics
-           containerPort: 9003
+           containerPort: 9001
          envFrom:
          - configMapRef:
              name: reactivestock-wiretransfer-config
