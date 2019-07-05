@@ -17,8 +17,8 @@ EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 val hamcrest = "org.hamcrest" % "hamcrest-all" % "1.3" % Test
 val junit = "com.novocode" % "junit-interface" % "0.11" % Test
 
-val lagomServiceDiscovery = "com.lightbend.lagom" %% "lagom-javadsl-akka-discovery-service-locator" % "1.0.0"
-val kubernetesServiceDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.0"
+val lagomServiceDiscovery = "com.lightbend.lagom" %% "lagom-javadsl-akka-discovery-service-locator" % "1.5.1"
+val kubernetesServiceDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.1"
 val akkaManagementDeps = Seq(lagomServiceDiscovery, kubernetesServiceDiscovery)
 
 lazy val root = (project in file("."))

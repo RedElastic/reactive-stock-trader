@@ -14,11 +14,7 @@
      metadata:
        labels:
          app: reactivestock-broker
-       annotations: # Annoations used for Enterprise Suite Metrics
-         "prometheus.io/scrape": "true"
-         "prometheus.io/scheme": "http"
-         "prometheus.io/path": "/metrics"
-         "prometheus.io/port": "9011"
+         actorSystemName: reactivestock-broker
      spec:
        serviceAccountName: reactivestock-broker-sa
        containers:
@@ -27,12 +23,12 @@
          ports:
          - name: http
            containerPort: 9010
-         - name: akka-remote
-           containerPort: 2551
-         - name: akka-mgmt-http
+         - name: remoting
+           containerPort: 2552
+           protocol: TCP
+         - name: management
            containerPort: 8559
-         - name: prometheus # Used for Enterprise Suite Metrics
-           containerPort: 9011
+           protocol: TCP           
          envFrom:
          - configMapRef:
              name: reactivestock-broker-config
@@ -44,22 +40,23 @@
            - name: "HOST_ADDRESS"
              valueFrom:
                fieldRef:
-                 fieldPath: "status.podIP"        
+                 fieldPath: "status.podIP"  
+           - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
+             valueFrom:
+               fieldRef:
+                 apiVersion: v1
+                 fieldPath: "metadata.labels['app']"    
          resources:
            requests:
              memory: "256Mi"
              cpu: "100m"
            limits:
              memory: "1Gi"
-         readinessProbe:
-           httpGet:
-             path: /ready
-             port: akka-mgmt-http
-           initialDelaySeconds: 10
-           periodSeconds: 5
          livenessProbe:
            httpGet:
              path: /alive
-             port: akka-mgmt-http
-           initialDelaySeconds: 90
-           periodSeconds: 30
+             port: management
+         readinessProbe:
+           httpGet:
+             path: /ready
+             port: management

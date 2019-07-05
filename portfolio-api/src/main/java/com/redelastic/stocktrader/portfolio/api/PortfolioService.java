@@ -22,9 +22,6 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 
 import akka.stream.javadsl.Source;
 
-/**
- *
- */
 public interface PortfolioService extends Service {
 
     String ORDERS_TOPIC_ID = "Portfolio-OrderPlaced";
@@ -47,7 +44,7 @@ public interface PortfolioService extends Service {
     default Descriptor descriptor() {
 
         // @formatter:off
-        return named("portfolio").withCalls(
+        return named("reactivestock-portfolio").withCalls(
                 // Use restCall to make it explicit that this is an ordinary HTTP endpoint
                 restCall(Method.POST, "/api/portfolio", this::openPortfolio),
                 restCall(Method.POST, "/api/portfolio/:portfolioId/close", this::closePortfolio),
