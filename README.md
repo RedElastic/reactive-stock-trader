@@ -22,13 +22,13 @@ As of this date, 4 of 12 units of this series have been finished and are reflect
 * Unit 2: [Prototyping the UI and UI integration patterns](https://developer.ibm.com/tutorials/reactive-in-practice-2/)
 * Unit 3: [Translating the domain model to service APIs](https://developer.ibm.com/tutorials/reactive-in-practice-3/)
 * Unit 4: [Concurrency, parallelism and asynchrony](https://developer.ibm.com/tutorials/reactive-in-practice-4/)
-
-The remaining 8 units of this series are still under construction, so the topics reflected may not be in this repo yet:
-
 * Unit 5: [Event sourcing](https://developer.ibm.com/tutorials/reactive-in-practice-5/)
 * Unit 6: [CQRS - Write side (commands and state)](https://developer.ibm.com/tutorials/reactive-in-practice-6/)
 * Unit 7: [CQRS - Read side (queries and views)](https://developer.ibm.com/tutorials/reactive-in-practice-7/)
 * Unit 8: [Integration patterns for transactions](https://developer.ibm.com/tutorials/reactive-in-practice-8/)
+
+The remaining 4 units of this series are still under construction, so the topics reflected may not be in this repo yet:
+
 * Unit 9: Microservice integration patterns
 * Unit 10: Streaming data
 * Unit 11: Deploying and monitoring reactive systems in the cloud
