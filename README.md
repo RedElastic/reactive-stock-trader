@@ -63,7 +63,7 @@ The BFF exposes an API to the frontend on port 9100.
 
 ## Deploying to Kubernetes
 
-For instructions on how to deploy Reactive Stock Trader to Kubernetes, please view the folder here.
+For instructions on how to deploy Reactive Stock Trader to Kubernetes, you can find the deployment instructions and Helm Charts for Kafka and Cassandra here: [https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy](https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy)
 
 ## Interacting with the UI
 
