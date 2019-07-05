@@ -12,6 +12,7 @@ import com.redelastic.stocktrader.portfolio.impl.PortfolioRepositoryImpl;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioServiceImpl;
 import com.redelastic.stocktrader.wiretransfer.api.WireTransferService;
 
+
 @SuppressWarnings("WeakerAccess")
 public class Module extends AbstractModule implements ServiceGuiceSupport {
     @Override

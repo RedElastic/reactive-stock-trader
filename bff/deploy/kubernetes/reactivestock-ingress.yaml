@@ -1,0 +1,13 @@
+    apiVersion: extensions/v1beta1
+    kind: Ingress
+    metadata:
+      name: reactivestock-bff
+    spec:
+      rules:
+      - host: reactivestocktrader.com
+        http:
+          paths: 
+          - path: /
+            backend:
+              serviceName: reactivestock-bff-svc
+              servicePort: 80  

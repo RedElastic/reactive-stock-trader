@@ -18,13 +18,12 @@ import static com.lightbend.lagom.javadsl.api.Service.*;
 import akka.stream.javadsl.Source;
 import com.fasterxml.jackson.databind.JsonNode;
 
-
 /**
  * We won't try to model arbitrary account to account transfers.
  */
 public interface WireTransferService extends Service {
 
-    String TRANSFER_REQUEST_TOPIC_ID = "WireTransfer-TransferRequest";
+    String TRANSFER_REQUEST_TOPIC_ID = "transfers";
 
     ServiceCall<Transfer, TransferId> transferFunds();
 
@@ -37,14 +36,15 @@ public interface WireTransferService extends Service {
     @Override
     default Descriptor descriptor() {
         // @formatter:off
-        return named("wire-transfer").withCalls(
+        return named("reactivestock-wiretransfer").withCalls(
             call(this::transferFunds),
             call(this::transferStream),
             restCall(Method.GET, "/api/transfer/:portfolioId", this::getAllTransactionsFor)            
         )
         .withTopics(
             topic(TRANSFER_REQUEST_TOPIC_ID, this::transferRequest)
-        );
+        )
+        .withAutoAcl(true);
         // @formatter:on
     }
 }

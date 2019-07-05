@@ -47,7 +47,7 @@ public interface BrokerService extends Service {
     @Override
     default Descriptor descriptor() {
         // @formatter:off
-        return named("broker").withCalls(
+        return named("reactivestock-broker").withCalls(
                 restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
                 restCall(Method.GET, "/api/order/:orderId", this::getOrderSummary)
         ).withTopics(

@@ -1,0 +1,64 @@
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+   name: reactivestock-wiretransfer
+   namespace: default
+   labels:
+     app: reactivestock-wiretransfer
+ spec:
+   replicas: 1
+   selector:
+     matchLabels:
+       app: reactivestock-wiretransfer
+   template:
+      metadata:
+        labels:
+          app: reactivestock-wiretransfer
+          actorSystemName: reactivestock-wiretransfer
+      spec:
+       serviceAccountName: reactivestock-wiretransfer-sa
+       containers:
+       - name: reactivestock-wiretransfer
+         image: reactivestock-wiretransfer:0.1-SNAPSHOT
+         ports:
+         - name: http
+           containerPort: 9020
+         - name: remoting
+           containerPort: 2552
+           protocol: TCP
+         - name: management
+           containerPort: 8557
+           protocol: TCP           
+         - name: prometheus # Used for Enterprise Suite Metrics
+           containerPort: 9001
+         envFrom:
+         - configMapRef:
+             name: reactivestock-wiretransfer-config
+         env:
+           - name: "HTTP_BIND_ADDRESS"
+             value: "0.0.0.0"
+           - name: JAVA_OPTS
+             value: "-Dconfig.resource=application.prod.conf -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap"
+           - name: "HOST_ADDRESS"
+             valueFrom:
+               fieldRef:
+                 fieldPath: "status.podIP"  
+           - name: AKKA_CLUSTER_BOOTSTRAP_SERVICE_NAME
+             valueFrom:
+               fieldRef:
+                 apiVersion: v1
+                 fieldPath: "metadata.labels['app']"      
+         resources:
+           requests:
+             memory: "256Mi"
+             cpu: "100m"
+           limits:
+             memory: "1Gi"
+         livenessProbe:
+           httpGet:
+             path: /alive
+             port: management
+         readinessProbe:
+           httpGet:
+             path: /ready
+             port: management

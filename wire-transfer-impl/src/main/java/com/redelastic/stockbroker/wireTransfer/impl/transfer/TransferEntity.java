@@ -65,7 +65,6 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         return new TransferId(entityId());
     }
 
-
     private Behavior empty() {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.empty());
         
@@ -87,6 +86,11 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         });
 
         builder.setEventHandlerChangingBehavior(TransferEvent.TransferInitiated.class, this::fundsRequested);
+
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+
         return builder.build();
     }
 
@@ -97,6 +101,7 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
 
     private Behavior fundsRequested(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.FundsRequested)));
+        
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, (cmd, ctx) ->
             ctx.thenPersist(
                     new TransferEvent.FundsRetrieved(
@@ -107,6 +112,7 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
             ));
         builder.setEventHandlerChangingBehavior(TransferEvent.FundsRetrieved.class,
                 evt -> sendingFunds(state().get()));
+
         builder.setCommandHandler(TransferCommand.RequestFundsFailed.class, (cmd, ctx) ->
             ctx.thenPersist(
                     new TransferEvent.CouldNotSecureFunds(
@@ -115,15 +121,26 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                     ),
                     evt -> ctx.reply(Done.getInstance())
             ));
+
         builder.setEventHandlerChangingBehavior(TransferEvent.CouldNotSecureFunds.class,
                 evt -> fundsRequestFailed(state().get()));
+
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
 
         return builder.build();
     }
 
     private Behavior fundsRequestFailed(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.UnableToSecureFunds)));
+
         builder.setCommandHandler(TransferCommand.RequestFundsFailed.class, this::ignore);
+
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+        
         return builder.build();
     }
 
@@ -154,10 +171,11 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
                         ect -> ctx.reply(Done.getInstance())
                 ));
 
-        builder.setEventHandlerChangingBehavior(TransferEvent.DeliveryFailed.class,
-                evt -> refundSent(state));
+        builder.setEventHandlerChangingBehavior(TransferEvent.DeliveryFailed.class, evt -> refundSent(state));
 
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
+
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);
         
         return builder.build();
     }
@@ -166,35 +184,56 @@ public class TransferEntity extends PersistentEntity<TransferCommand, TransferEv
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.DeliveryConfirmed)));
 
         builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
-        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);               
+
+        builder.setCommandHandler(TransferCommand.DeliverySuccessful.class, this::ignore);  
+
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::warn);     
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);      
 
         return builder.build();
     }
 
     private Behavior refundSent(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.RefundSent)));
+        
         builder.setCommandHandler(TransferCommand.RefundSuccessful.class, (cmd, ctx) ->
-                ctx.thenPersist(
-                        new TransferEvent.RefundDelivered(
-                                getTransferId(),
-                                state().get().getTransferDetails()
-                        )
-                ));
+            ctx.thenPersist(
+                    new TransferEvent.RefundDelivered(
+                            getTransferId(),
+                            state().get().getTransferDetails()
+                    )
+            ));
+
+        builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);        
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+
         builder.setEventHandlerChangingBehavior(TransferEvent.RefundDelivered.class, evt -> refundDelivered(state));
 
-        builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
         return builder.build();
     }
 
     private Behavior refundDelivered(TransferState state) {
         BehaviorBuilder builder = newBehaviorBuilder(Optional.of(state.withStatus(TransferState.Status.RefundDelivered)));
 
-        builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::ignore);
+        builder.setCommandHandler(TransferCommand.RefundSuccessful.class, this::ignore);
+
+        builder.setCommandHandler(TransferCommand.RequestFundsSuccessful.class, this::warn);
+
+        builder.setCommandHandler(TransferCommand.DeliveryFailed.class, this::warn);
+
         return builder.build();
     }
 
     private <C extends TransferCommand> Persist ignore(C cmd, CommandContext<Done> ctx) {
         log.info(String.format("Ignoring command %s in state %s", cmd.toString(), state().toString()));
+        ctx.reply(Done.getInstance());
+        return ctx.done();
+    }
+
+    private <C extends TransferCommand> Persist warn(C cmd, CommandContext<Done> ctx) {
+        log.warn(String.format("Command %s in state %s should never have been received", cmd.toString(), state().toString()));
         ctx.reply(Done.getInstance());
         return ctx.done();
     }
