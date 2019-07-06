@@ -13,11 +13,6 @@
        metadata:
          labels:
            app: reactivestock-bff
-         annotations: # Annoations used for Enterprise Suite Metrics
-           "prometheus.io/scrape": "true"
-           "prometheus.io/scheme": "http"
-           "prometheus.io/path": "/metrics"
-           "prometheus.io/port": "9001"
        spec:
          containers:
          - name: reactivestock-bff
@@ -68,7 +63,3 @@
            - name: app-creds
              secret:
                secretName: reactivestock-secrets
-
-
-
-
