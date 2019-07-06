@@ -20,9 +20,6 @@
            ports:
            - name: bff-http
              containerPort: 9200
-           - name: prometheus # Used for Enterprise Suite Metrics
-             containerPort: 9001
-             protocol: TCP
            envFrom:
              - configMapRef:
                  name: bff-config
