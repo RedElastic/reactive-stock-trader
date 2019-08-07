@@ -22,7 +22,7 @@ eval $(minikube docker-env)
 
 ## 3. Build a Docker container for the BFF
 
-Although we are developing RST in a monorepo, it's actually a collection of microservices. We will build and package each as its own Docker container. This is possible as we've configured `sbt native packager`.
+Although we are developing RST in a monorepo, it's actually a collection of microservices. We will build and package each as its own Docker container. This is possible as we've configured `sbt native packager`. Make sure your terminal prompt is located on the root of `reactive-stock-trader` and execute:
 
 ```
 sbt "bff/docker:publishLocal"
@@ -36,11 +36,11 @@ Ensure the image has been built and is available in Minikube's Docker registry:
 docker images
 ```
 
-You should see the following:
+You should see a number of docker images including one for bff similar to the following:
 
 ```
 REPOSITORY                                                       TAG                  IMAGE ID            CREATED             SIZE
-bff                                                              1.0-SNAPSHOT         50d718525c69        9 hours ago         322MB
+reactivestock-bff                                                              1.0-SNAPSHOT         50d718525c69        20 seconds ago         322MB
 ```
 
 ## 5. Deploy the BFF to Minikube
@@ -69,19 +69,27 @@ At this point it makes sense to get a list of all the pods:
 kubectl get pods --all-namespaces
 ```
 
-Then `kubectl describe pod ...` to investigate the state of the pod.
+The `get pods` output should indicate a Status that the reactive-bff container is being created but not running.
+  
+To investigate the state of the reactive-bff pod use:
 
-If you need to troubleshoot, you can access Play logs on the pod, e.g:
+```
+kubectl describe pod reactivestock-bff-<pod-hash>
+```
+
+Note: `pod-hash` will be unique to your pod (assigned randomly during deployments).
+
+Notice Events at the end of the `describe pod` output. There are warnings about failing to mount a volume and a "reactive-secrets" not being found. You will fix this shortly.
+
+Note: If the volume mount and "reactive-secrets" warnings did not exist and the reactive-bff container was created and had a Running Status, but you still had problems with the reactive-bff application, you can troubleshoot further by accessing the reactive-bff Play logs on the pod using:
 
 ```
 kubectl logs reactivestock-bff-<pod-hash>
 ```
-
-Where `pod-hash` will be unique to your pod (assigned randomly during deployments).
-    
+   
 ## 8. Production secrets configuration
 
-Create a folder `bff/deploy/secrets`. 
+Now let's fix volume mount and "reactive-secrets" warnings. Create a folder `bff/deploy/secrets`. 
 
 In this folder, create a file `production.conf`. 
 
@@ -119,9 +127,11 @@ kubectl apply -f bff/deploy/kubernetes/bff-config.yaml
 
 ## 11. Check the state of our reactivestock-bff
 
-Did it start successfully? To force the pod to restart, delete it using `kubectl delete pod ...`
+Did it start successfully? The Deployment controller should pick up the addition of the reactive-secrets and successfully start the reactive-bff container and pod (Status should be Running). If it doesn't you can force the pod to restart by deleting it using:
 
-At this point, it should start successfully.
+```
+kubectl delete pod reactivestock-bff-<pod-hash>`
+```
 
 ## 12. Add reactivestocktrader.com to your hosts file
 
