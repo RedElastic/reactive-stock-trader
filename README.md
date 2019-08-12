@@ -16,7 +16,7 @@ The main technologies showcased:
 
 ## Published units of learning materials
 
-As of this date, 4 of 12 units of this series have been finished and are reflected in the code:
+As of this date, 8 of 12 units of this series have been finished and are reflected in the code:
 
 * Unit 1: [Introduction: event storming the 'stock trader' domain](https://developer.ibm.com/tutorials/reactive-in-practice-1/)
 * Unit 2: [Prototyping the UI and UI integration patterns](https://developer.ibm.com/tutorials/reactive-in-practice-2/)
