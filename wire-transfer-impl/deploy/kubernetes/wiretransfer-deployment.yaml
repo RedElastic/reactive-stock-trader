@@ -29,8 +29,6 @@
          - name: management
            containerPort: 8557
            protocol: TCP           
-         - name: prometheus # Used for Enterprise Suite Metrics
-           containerPort: 9001
          envFrom:
          - configMapRef:
              name: reactivestock-wiretransfer-config

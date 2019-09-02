@@ -13,11 +13,6 @@
        metadata:
          labels:
            app: reactivestock-bff
-         annotations: # Annoations used for Enterprise Suite Metrics
-           "prometheus.io/scrape": "true"
-           "prometheus.io/scheme": "http"
-           "prometheus.io/path": "/metrics"
-           "prometheus.io/port": "9001"
        spec:
          containers:
          - name: reactivestock-bff
@@ -25,9 +20,6 @@
            ports:
            - name: bff-http
              containerPort: 9200
-           - name: prometheus # Used for Enterprise Suite Metrics
-             containerPort: 9001
-             protocol: TCP
            envFrom:
              - configMapRef:
                  name: bff-config
