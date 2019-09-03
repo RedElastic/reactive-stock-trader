@@ -60,7 +60,3 @@
            - name: app-creds
              secret:
                secretName: reactivestock-secrets
-
-
-
-

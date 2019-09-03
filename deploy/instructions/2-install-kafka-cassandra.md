@@ -41,7 +41,7 @@ helm ls
  
 ### 5. Install Kafka
 
-We'll use the `kafka-persistent-single.yaml` resource in the `exercises/apps/kafka` folder:
+We'll use the `kafka-persistent-single.yaml` resource in the `deploy/kubernetes` folder:
 
 ```
 cd deploy/kubernetes

@@ -14,7 +14,7 @@ The main technologies showcased:
 * Kafka
 * Cassandra
 
-## -- UNDER CONSTRUCTION --
+## Published units of learning materials
 
 As of this date, 4 of 12 units of this series have been finished and are reflected in the code:
 
@@ -22,39 +22,19 @@ As of this date, 4 of 12 units of this series have been finished and are reflect
 * Unit 2: [Prototyping the UI and UI integration patterns](https://developer.ibm.com/tutorials/reactive-in-practice-2/)
 * Unit 3: [Translating the domain model to service APIs](https://developer.ibm.com/tutorials/reactive-in-practice-3/)
 * Unit 4: [Concurrency, parallelism and asynchrony](https://developer.ibm.com/tutorials/reactive-in-practice-4/)
+* Unit 5: [Event sourcing](https://developer.ibm.com/tutorials/reactive-in-practice-5/)
+* Unit 6: [CQRS - Write side (commands and state)](https://developer.ibm.com/tutorials/reactive-in-practice-6/)
+* Unit 7: [CQRS - Read side (queries and views)](https://developer.ibm.com/tutorials/reactive-in-practice-7/)
+* Unit 8: [Integration patterns for transactions](https://developer.ibm.com/tutorials/reactive-in-practice-8/)
 
-The remaining 8 units of this series are still under construction, so the topics reflected may not be in this repo yet:
+The remaining 4 units of this series are still under construction, so the topics reflected may not be in this repo yet:
 
-* Unit 5: Persistence: aggregates, state, and event sourcing in Lagom
-* Unit 6: Advanced persistence in Lagom: sharding, passivation, and activation
-* Unit 7: Reactive integration patterns: circuit breakers, timeouts, and fan-outs
-* Unit 8: Read-side processing and consistency basics
-* Unit 9: Transactions: advanced consistency and resilience across asynchronous boundaries
+* Unit 9: Microservice integration patterns
 * Unit 10: Streaming data
 * Unit 11: Deploying and monitoring reactive systems in the cloud
 * Unit 12: Recap and conclusion
 
-### Work in progress sections
-
-Reactive Stock Trader is a work in progress. At this point the following functionality is available through the UI, organized by the associated navigation item:
-
-- 'Reactive Stock Trader':
-  * Create a new portfolio
-  * Load an existing portfolio (search by portfolio ID and click 'Lookup portfolio' to load)
-  * The name and short ID for the active portfolio is displayed in the top navigation bar
-- 'Portfolio':
-  * View the current state of the active portfolio ('Portfolio' item in navigation. Note that this view does not presently auto update
-- 'Quote':
-  * view stock quote data
-- 'Trading':
-  * 'Place New Order':
-    - Only market buy and sell orders are currently implemented
-- 'Transfers':
-  * 'Place Wire Transfer':
-    - Transfers can be made between the active portfolio and another portfolio or a 'savings account'.
-    - With the savings account option the ID is ignored, and all transfers will succeed. No account balance is tracked so the savings accounts are a free source (and sink) for money.
-
-## -- CONTRIBUTIONS --
+## Contributions
 
 If you would like to contribute, or have questions, you can reach out to us on Gitter:
 
@@ -62,46 +42,46 @@ If you would like to contribute, or have questions, you can reach out to us on G
 
 This will be a fast-moving code base until approximately May, 2019. We recommend reaching out to us before submitting a PR to make sure your change will align with the learning content in the series.
 
-# Lagom backend: installation and running
+# Installation
+
+The following will help you get set up in the following contexts:
+
+- Local development
+- Deployment to local Kubernetes (using Minikube)
+- Interactions (UI, command line)
+
+## Local development
 
 - Install Java 8 SDK
 - [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
+
+Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
+
 - `sbt runAll`
 
-The BFF exposes an API to the frontend on port 9000.
+The BFF exposes an API to the frontend on port 9100.
 
-# Vue.js UI: Installation and running
+## Deploying to Kubernetes
+
+For instructions on how to deploy Reactive Stock Trader to Kubernetes, you can find the deployment instructions and Helm Charts for Kafka and Cassandra here: [https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy](https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy)
+
+## Interacting with the UI
 
 The UI is developed in Vue.js. You'll need to have [Node.js and npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and then follow the instructions below.
 
-## Project setup and launching for development
+Project setup and launching for development: 
+
 ```
 npm install
 npm run serve
 ```
 
-This will launch the UI on [localhost:9000](localhost:9000) for development.
+This will launch the UI on [localhost:8080](localhost:8080) for development. You can then use the UI to interact with the Lagom system.
 
-## Testing / debugging
+Testing / debugging:
 
-### Run your tests
-```
-npm run test
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-## Production
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-## Customize configuration
+- Run your tests: `npm run test`
+- Lints and fixes files: `npm run lint`
 
 Reactive Stock Trader uses Rollbar for debugging purposes. In order to make use of Rollbar:
 
@@ -113,7 +93,7 @@ Visit [Environment Variables and Modes](https://cli.vuejs.org/guide/mode-and-env
 
 For additional Vue configuration information, see [Configuration Reference](https://cli.vuejs.org/config/).
 
-# Appendix: command line use
+## Interacting with the command line
 
 If you would like to test the backend without installing the UI, you can use the following command line information to help.
 
