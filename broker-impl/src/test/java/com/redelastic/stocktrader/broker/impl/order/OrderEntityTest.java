@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2019 RedElastic Inc.
- * See LICENSE file for details.
- */
-
 package com.redelastic.stocktrader.broker.impl.order;
 
 import akka.actor.ActorSystem;
@@ -13,7 +8,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Optional;
-
 
 public class OrderEntityTest {
     private static ActorSystem system;

@@ -1,7 +1,4 @@
-/*
- * Copyright (c) 2019 RedElastic Inc.
- * See LICENSE file for details.
- */
+package services;
 
 import com.redelastic.stocktrader.TradeType;
 import play.data.format.Formatters;
@@ -13,7 +10,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.text.ParseException;
 import java.util.Locale;
-
 
 @Singleton
 class FormattersProvider implements Provider<Formatters> {

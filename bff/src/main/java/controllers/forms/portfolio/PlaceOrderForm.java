@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2019 RedElastic Inc.
- * See LICENSE file for details.
- */
-
 package controllers.forms.portfolio;
 
 import com.redelastic.stocktrader.TradeType;

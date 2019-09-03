@@ -1,13 +1,9 @@
-/*
- * Copyright (c) 2019 RedElastic Inc.
- * See LICENSE file for details.
- */
+package services;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import play.libs.Json;
-
 
 class JavaJsonCustomObjectMapper {
 

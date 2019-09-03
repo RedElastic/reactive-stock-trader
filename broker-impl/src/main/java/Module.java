@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2019 RedElastic Inc.
- * See LICENSE file for details.
- */
-
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.server.ServiceGuiceSupport;
 import com.redelastic.stocktrader.broker.api.BrokerService;

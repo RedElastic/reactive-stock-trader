@@ -1,6 +1,3 @@
-/*
- * Copyright (C) 2016 Lightbend Inc. <http://www.lightbend.com>
- */
 package com.redelastic.stocktrader.portfolio.impl;
 
 import java.util.List;
