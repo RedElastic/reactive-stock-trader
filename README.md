@@ -36,11 +36,7 @@ The remaining 4 units of this series are still under construction, so the topics
 
 ## Contributions
 
-If you would like to contribute, or have questions, you can reach out to us on Gitter:
-
-* [https://gitter.im/reactive-in-practice](https://gitter.im/reactive-in-practice)
-
-This will be a fast-moving code base until approximately May, 2019. We recommend reaching out to us before submitting a PR to make sure your change will align with the learning content in the series.
+If you would like to contribute, fork this repo and issue a PR. All contributions are welcome!
 
 # Installation
 
