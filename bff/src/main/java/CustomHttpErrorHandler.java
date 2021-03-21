@@ -1,5 +1,3 @@
-package services;
-
 import com.lightbend.lagom.javadsl.api.transport.NotFound;
 import com.lightbend.lagom.javadsl.api.transport.TransportException;
 import com.typesafe.config.Config;
@@ -30,7 +28,8 @@ class CustomHttpErrorHandler extends DefaultHttpErrorHandler {
 
     @Override
     protected CompletionStage<Result> onDevServerError(Http.RequestHeader request, UsefulException exception) {
-        if (exception.cause instanceof NotFound || exception.cause instanceof CompletionException && exception.cause.getCause() instanceof NotFound) {
+        if (exception.cause instanceof NotFound || 
+		exception.cause instanceof CompletionException && exception.cause.getCause() instanceof NotFound) {
             return CompletableFuture.completedFuture(Results.notFound());
         } else if (exception.cause instanceof TransportException) {
             // TODO Pull out the Lagom HTTP message and return that instead of double wrapped

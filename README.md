@@ -95,27 +95,28 @@ If you would like to test the backend without installing the UI, you can use the
 
 The `jq` command line tool for JSON is very handy for pretty printing JSON responses, on Mac this can be installed with `brew install jq`.
 
-Create a new portfolio named "piggy bank savings":
-`PID=$(curl -X POST http:/localhost:9000/api/portfolio -F name="piggy bank savings" | jq -r .portfolioId); echo $PID`
+### A short smoke test
 
-Place an order:
-`curl -X POST http://localhost:9000/api/portfolio/$PID/order -F symbol=RHT -F shares=10 -F order=buy`
+The following `curl` commands will create a new portfolio and then place a few
+orders to ensure that all microservices are functioning correctly.
 
-View the portfolio
-`curl http://localhost:9000/api/portfolio/$PID | jq .`
+```bash
+# open a new portfolio
+PID=$(curl -X POST http:/localhost:9100/api/portfolio -F name="piggy bank savings" | jq -r .portfolioId); echo $PID
 
-Transfer funds into the portfolio
-`curl -X POST http://localhost:9000/api/transfer -F amount=20000 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID`
+# check the portfolio (you should see a lack of funds)
+curl http://localhost:9100/api/portfolio/$PID | jq .
 
-```
-PID=$(curl -X POST http:/localhost:9000/api/portfolio -F name="piggy bank savings" | jq -r .portfolioId); echo $PID
+# transfer funds into the portfolio
+curl -X POST http://localhost:9100/api/transfer -F amount=20000 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID
 
-curl -X POST http://localhost:9000/api/transfer -F amount=20000 -F sourceType=savings -F sourceId=123 -F destinationType=portfolio -F destinationId=$PID
+# check the portfolio (you should see new funds)
+curl http://localhost:9100/api/portfolio/$PID | jq .
 
-curl http://localhost:9000/api/portfolio/$PID | jq .
+# purchase shares in IBM
+curl -X POST http://localhost:9100/api/portfolio/$PID/order -F symbol=IBM -F shares=10 -F order=buy
 
-curl -X POST http://localhost:9000/api/portfolio/$PID/order -F symbol=IBM -F shares=10 -F order=buy
-
-curl http://localhost:9000/api/portfolio/$PID | jq .
+# you should see less funds and now hold shares of IBM
+curl http://localhost:9100/api/portfolio/$PID | jq .
 ```
 

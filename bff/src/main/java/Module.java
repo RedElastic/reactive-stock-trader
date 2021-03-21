@@ -1,5 +1,3 @@
-package services;
-
 import com.google.inject.AbstractModule;
 import com.lightbend.lagom.javadsl.api.ServiceAcl;
 import com.lightbend.lagom.javadsl.api.ServiceInfo;

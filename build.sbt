@@ -5,12 +5,14 @@ import sbt.Keys.javacOptions
 
 organization in ThisBuild := "com.redelastic"
 
-scalaVersion in ThisBuild := "2.12.4"
+scalaVersion in ThisBuild := "2.12.8"
 
 lagomServiceLocatorEnabled in ThisBuild := true
+lagomCassandraCleanOnStart in ThisBuild := true
+lagomKafkaCleanOnStart in ThisBuild := true
+
 lagomServiceLocatorPort in ThisBuild := 9108
 lagomServiceGatewayPort in ThisBuild := 9109
-lagomCassandraCleanOnStart in ThisBuild := true
 
 EclipseKeys.projectFlavor in Global := EclipseProjectFlavor.Java
 
@@ -18,7 +20,7 @@ val hamcrest = "org.hamcrest" % "hamcrest-all" % "1.3" % Test
 val junit = "com.novocode" % "junit-interface" % "0.11" % Test
 
 val lagomServiceDiscovery = "com.lightbend.lagom" %% "lagom-javadsl-akka-discovery-service-locator" % "1.5.1"
-val kubernetesServiceDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.1"
+val kubernetesServiceDiscovery = "com.lightbend.akka.discovery" %% "akka-discovery-kubernetes-api" % "1.0.10"
 val akkaManagementDeps = Seq(lagomServiceDiscovery, kubernetesServiceDiscovery)
 
 lazy val root = (project in file("."))
@@ -159,7 +161,7 @@ lazy val utils = (project in file("utils"))
   )
 
 val lombok = "org.projectlombok" % "lombok" % "1.18.4"
-val cassandraExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.0.0"
+val cassandraExtras = "com.datastax.cassandra" % "cassandra-driver-extras" % "3.11.0"
 
 val lagomApiDependencies = Seq(
   lagomJavadslApi,
@@ -174,6 +176,3 @@ def commonSettings: Seq[Setting[_]] = eclipseSettings ++ Seq(
   ),
   crossPaths := false // Work around JUnit issue with SBT
 )
-
-lagomCassandraCleanOnStart in ThisBuild := true
-lagomKafkaCleanOnStart in ThisBuild := true

@@ -1,11 +1,9 @@
-package services;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import play.libs.Json;
 
-class JavaJsonCustomObjectMapper {
+public class JavaJsonCustomObjectMapper {
 
     JavaJsonCustomObjectMapper() {
         ObjectMapper mapper = Json.newDefaultMapper()

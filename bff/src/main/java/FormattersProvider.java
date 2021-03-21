@@ -1,5 +1,3 @@
-package services;
-
 import com.redelastic.stocktrader.TradeType;
 import play.data.format.Formatters;
 import play.data.format.Formatters.SimpleFormatter;
