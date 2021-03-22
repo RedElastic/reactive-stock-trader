@@ -52,7 +52,7 @@ Most of your interaction with Lagom will be via the command line. Please
 complete the following steps.
 
 1. Install Java 8 SDK
-	- [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
+1. [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
 1. Sign up for [IEX Cloud](https://iexcloud.io)
 	- IEX Cloud is used for stock quotes and historical stock data
 	- Click "sandbox mode" from the main landing page to avoid production limits (see instructions on IEX Cloud for more info)
