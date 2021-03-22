@@ -16,7 +16,10 @@ The main technologies showcased:
 
 ## Published units of learning materials
 
-As of this date, 8 of 12 units of this series have been finished and are reflected in the code:
+This reference architecture is meant to enhance the learning experience of
+Reactive in Practice, a 12 part learning series published by IBM. Please visit
+the learning materials below to learn about CQRS and event sourcing using Lagom
+and Vue.
 
 * Unit 1: [Introduction: event storming the 'stock trader' domain](https://developer.ibm.com/tutorials/reactive-in-practice-1/)
 * Unit 2: [Prototyping the UI and UI integration patterns](https://developer.ibm.com/tutorials/reactive-in-practice-2/)
@@ -26,13 +29,10 @@ As of this date, 8 of 12 units of this series have been finished and are reflect
 * Unit 6: [CQRS - Write side (commands and state)](https://developer.ibm.com/tutorials/reactive-in-practice-6/)
 * Unit 7: [CQRS - Read side (queries and views)](https://developer.ibm.com/tutorials/reactive-in-practice-7/)
 * Unit 8: [Integration patterns for transactions](https://developer.ibm.com/tutorials/reactive-in-practice-8/)
-
-The remaining 4 units of this series are still under construction, so the topics reflected may not be in this repo yet:
-
-* Unit 9: Microservice integration patterns
-* Unit 10: Streaming data
-* Unit 11: Deploying and monitoring reactive systems in the cloud
-* Unit 12: Recap and conclusion
+* Unit 9: [Reactive integration patterns](https://developer.ibm.com/tutorials/reactive-in-practice-9/)
+* Unit 10: [Streaming data](https://developer.ibm.com/tutorials/reactive-in-practice-10/)
+* Unit 11: [Deploying and monitoring reactive systems in the cloud](https://developer.ibm.com/tutorials/reactive-in-practice-11/)
+* Unit 12: [Recap and conclusion](https://developer.ibm.com/tutorials/reactive-in-practice-12/)
 
 ## Contributions
 
@@ -46,56 +46,29 @@ The following will help you get set up in the following contexts:
 - Deployment to local Kubernetes (using Minikube)
 - Interactions (UI, command line)
 
-## Local development
+## Local development and running locally
 
-- Install Java 8 SDK
-- [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
+Most of your interaction with Lagom will be via the command line. Please
+complete the following steps.
 
-Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
+1. Install Java 8 SDK
+	- [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
+1. Sign up for [IEX Cloud](https://iexcloud.io) and generate an API token
+	- IEX Cloud is used for stock quotes and historical stock data
+	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your IEX public API key in
+	  `broker-impl/src/main/resources/application.conf` and
+`application.prod.conf`
+1. Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
+	- `sbt runAll`
 
-- `sbt runAll`
+The BFF ("backend for frontend") exposes an API on port 9100.
 
-The BFF exposes an API to the frontend on port 9100.
+### Testing the backend with CURL
 
-## Deploying to Kubernetes
-
-For instructions on how to deploy Reactive Stock Trader to Kubernetes, you can find the deployment instructions and Helm Charts for Kafka and Cassandra here: [https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy](https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy)
-
-## Interacting with the UI
-
-The UI is developed in Vue.js. You'll need to have [Node.js and npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and then follow the instructions below.
-
-Project setup and launching for development: 
-
-```
-npm install
-npm run serve
-```
-
-This will launch the UI on [localhost:8080](localhost:8080) for development. You can then use the UI to interact with the Lagom system.
-
-Testing / debugging:
-
-- Run your tests: `npm run test`
-- Lints and fixes files: `npm run lint`
-
-Reactive Stock Trader uses Rollbar for debugging purposes. In order to make use of Rollbar:
-
-* copy `config.env` to `.env.local`
-* sign up at Rollbar and create an access token
-* change `VUE_APP_ROLLBAR_ACCESS_TOKEN` to your token in `.env.local`
-
-Visit [Environment Variables and Modes](https://cli.vuejs.org/guide/mode-and-env.html) and [https://rollbar.com](Rollbar) for more details.
-
-For additional Vue configuration information, see [Configuration Reference](https://cli.vuejs.org/config/).
-
-## Interacting with the command line
-
-If you would like to test the backend without installing the UI, you can use the following command line information to help.
+Let's ensure Reactive Stock trader is running properly before wiring up the UI.
+Do do this, we'll use `curl` and `jq` from the command line.
 
 The `jq` command line tool for JSON is very handy for pretty printing JSON responses, on Mac this can be installed with `brew install jq`.
-
-### A short smoke test
 
 The following `curl` commands will create a new portfolio and then place a few
 orders to ensure that all microservices are functioning correctly.
@@ -119,4 +92,38 @@ curl -X POST http://localhost:9100/api/portfolio/$PID/order -F symbol=IBM -F sha
 # you should see less funds and now hold shares of IBM
 curl http://localhost:9100/api/portfolio/$PID | jq .
 ```
+## Configuring and launching the UI
+
+The UI is developed in Vue.js. You'll need to have [Node.js and npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and then follow the instructions below.
+
+Project setup and launching for development: 
+
+```
+npm install
+npm run serve
+```
+
+This will launch the UI on [localhost:8080](localhost:8080) for development. You can then use the UI to interact with the Lagom system.
+
+Testing / debugging:
+
+- Run your tests: `npm run test`
+- Lints and fixes files: `npm run lint`
+
+### Sign up for Rollbar and configure the API key
+
+The Vue UI uses Rollbar for debugging purposes. You will need to create a
+Rollbar account and then set up your API key as follows.
+
+1. sign up at Rollbar and create an access token
+1. obtain an access token
+1. edit `ui/.env` and ensure `VUE_APP_ROLLBAR_ACCESS_TOKEN` is set to your token
+
+Visit [Environment Variables and Modes](https://cli.vuejs.org/guide/mode-and-env.html) and [https://rollbar.com](Rollbar) for more details.
+
+For additional Vue configuration information, see [Configuration Reference](https://cli.vuejs.org/config/).
+
+## Deploying to Kubernetes
+
+For instructions on how to deploy Reactive Stock Trader to Kubernetes, you can find the deployment instructions and Helm Charts for Kafka and Cassandra here: [https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy](https://github.com/RedElastic/reactive-stock-trader/tree/master/deploy)
 
