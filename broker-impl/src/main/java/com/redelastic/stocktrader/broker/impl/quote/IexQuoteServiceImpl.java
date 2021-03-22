@@ -26,6 +26,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
 
     private final WSClient wsClient;
     private final String hostName;
+    private final String token;
     private final Duration requestTimeout;
 
     private final CircuitBreaker circuitBreaker;
@@ -36,7 +37,8 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                         ActorSystem actorSystem) {
         this.wsClient = wsClient;
         this.hostName = config.getString("quote.iex.hostname");
-        this.requestTimeout = Duration.ofMillis(1000); // TODO: Configurable
+        this.token = config.getString("quote.iex.token");
+        this.requestTimeout = Duration.ofMillis(1000); 
         int maxFailures = 10;
         Duration callTimeout = this.requestTimeout.minus(this.requestTimeout.dividedBy(10));
         Duration resetTimeout = Duration.ofMillis(1000);
@@ -49,7 +51,8 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
     }
 
     private WSRequest quoteRequest(String symbol) {
-        String url = String.format("https://%s/1.0/stock/%s/quote", this.hostName, symbol);
+        String url = String.format("%s/stock/%s/quote/?token=%s", this.hostName, symbol, this.token);
+        log.info("quote url: " + url);
         return wsClient.url(url);
     }
 
@@ -61,12 +64,9 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                                 .get());
 
         request.thenAccept(response -> {
-            if (response.getStatus() == 200) {
-                log.debug(response.toString());
-            } else {
-                log.info(response.toString());
-            }
+        	log.info(response.toString());
         });
+
         return request
                 .thenApply(response -> {
                     JsonNode json = response.getBody(json());
