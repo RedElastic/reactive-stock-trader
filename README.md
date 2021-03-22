@@ -93,6 +93,24 @@ curl -X POST http://localhost:9100/api/portfolio/$PID/order -F symbol=IBM -F sha
 # you should see less funds and now hold shares of IBM
 curl http://localhost:9100/api/portfolio/$PID | jq .
 ```
+
+If all backend services are configured correctly, you should see the following output:
+
+```json
+{
+  "portfolioId": "93ce709d-c15d-4277-b973-1e41c5d2be09",
+  "name": "piggy bank savings",
+  "funds": 18654,
+  "holdings": [
+    {
+      "symbol": "IBM",
+      "shareCount": 10,
+      "marketValue": 1323
+    }
+  ]
+}
+```
+
 ## Configuring and launching the UI
 
 The UI is developed in Vue.js. You'll need to have [Node.js and npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and then follow the instructions below.
