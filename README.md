@@ -59,6 +59,9 @@ complete the following steps.
 	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your API test key in
 	  `broker-impl/src/main/resources/application.conf` and
 `application.prod.conf` (test keys from IEX start with `T`)
+1. Sign up at [Rollbar](https://rollbar.com) and create an access token for front-end logging
+	- obtain an access token
+	- edit `ui/.env` and ensure `VUE_APP_ROLLBAR_ACCESS_TOKEN` is set to your token
 1. Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
 	- `sbt runAll`
 
@@ -128,19 +131,6 @@ Testing / debugging:
 
 - Run your tests: `npm run test`
 - Lints and fixes files: `npm run lint`
-
-### Sign up for Rollbar and configure the API key
-
-The Vue UI uses Rollbar for debugging purposes. You will need to create a
-Rollbar account and then set up your API key as follows.
-
-1. sign up at Rollbar and create an access token
-1. obtain an access token
-1. edit `ui/.env` and ensure `VUE_APP_ROLLBAR_ACCESS_TOKEN` is set to your token
-
-Visit [Environment Variables and Modes](https://cli.vuejs.org/guide/mode-and-env.html) and [https://rollbar.com](Rollbar) for more details.
-
-For additional Vue configuration information, see [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## Deploying to Kubernetes
 
