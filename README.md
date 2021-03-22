@@ -53,11 +53,12 @@ complete the following steps.
 
 1. Install Java 8 SDK
 	- [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
-1. Sign up for [IEX Cloud](https://iexcloud.io) and generate an API token
+1. Sign up for [IEX Cloud](https://iexcloud.io)
 	- IEX Cloud is used for stock quotes and historical stock data
-	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your IEX public API key in
+	- Click "sandbox mode" from the main landing page to avoid production limits (see instructions on IEX Cloud for more info)
+	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your API test key in
 	  `broker-impl/src/main/resources/application.conf` and
-`application.prod.conf`
+`application.prod.conf` (test keys from IEX start with `T`)
 1. Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
 	- `sbt runAll`
 
@@ -92,6 +93,24 @@ curl -X POST http://localhost:9100/api/portfolio/$PID/order -F symbol=IBM -F sha
 # you should see less funds and now hold shares of IBM
 curl http://localhost:9100/api/portfolio/$PID | jq .
 ```
+
+If all backend services are configured correctly, you should see the following output:
+
+```json
+{
+  "portfolioId": "93ce709d-c15d-4277-b973-1e41c5d2be09",
+  "name": "piggy bank savings",
+  "funds": 18654,
+  "holdings": [
+    {
+      "symbol": "IBM",
+      "shareCount": 10,
+      "marketValue": 1323
+    }
+  ]
+}
+```
+
 ## Configuring and launching the UI
 
 The UI is developed in Vue.js. You'll need to have [Node.js and npm installed](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) and then follow the instructions below.
