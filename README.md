@@ -53,11 +53,12 @@ complete the following steps.
 
 1. Install Java 8 SDK
 	- [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
-1. Sign up for [IEX Cloud](https://iexcloud.io) and generate an API token
+1. Sign up for [IEX Cloud](https://iexcloud.io)
 	- IEX Cloud is used for stock quotes and historical stock data
-	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your IEX public API key in
+	- Click "sandbox mode" from the main landing page to avoid production limits (see instructions on IEX Cloud for more info)
+	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your API test key in
 	  `broker-impl/src/main/resources/application.conf` and
-`application.prod.conf`
+`application.prod.conf` (test keys from IEX start with `T`)
 1. Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
 	- `sbt runAll`
 
