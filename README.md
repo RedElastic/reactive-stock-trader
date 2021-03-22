@@ -53,13 +53,13 @@ complete the following steps.
 
 1. Install Java 8 SDK
 1. [Install sbt](https://www.scala-sbt.org/1.x/docs/Setup.html) (`brew install sbt` on Mac)
-1. Sign up for [IEX Cloud](https://iexcloud.io)
+1. Sign up for a free [IEX Cloud](https://iexcloud.io) account for a sandbox stock quote service
 	- IEX Cloud is used for stock quotes and historical stock data
 	- Click "sandbox mode" from the main landing page to avoid production limits (see instructions on IEX Cloud for more info)
 	- Update `quote.iex.token="YOUR_TOKEN_HERE"` with your API test key in
 	  `broker-impl/src/main/resources/application.conf` and
 `application.prod.conf` (test keys from IEX start with `T`)
-1. Sign up at [Rollbar](https://rollbar.com) and create an access token for front-end logging
+1. Sign up for a free [Rollbar](https://rollbar.com) account and create an access token for front-end logging
 	- obtain an access token
 	- edit `ui/.env` and ensure `VUE_APP_ROLLBAR_ACCESS_TOKEN` is set to your token
 1. Running Lagom in development mode is simple. Start by launching the backend services using `sbt`.
