@@ -67,6 +67,14 @@ complete the following steps.
 
 The BFF ("backend for frontend") exposes an API on port 9100.
 
+### Setting up an IDE
+
+Lagom should import fine into IntelliJ IDEA and VSCode. A few pieces of advice:
+
+- Lagom requires Java 8 compatibility mode for compilation. We recommend installing Java 11 as your default JDK and the compilation target to Java 8. This combination will provide the best ergonomics and support.
+- Reactive Stock Trader makes heavy use of [Lombok](https://projectlombok.org/), a persistent collections framework for Java. You should find the appropriate IDE extensions for Lombok to avoid (significant) IDE warnings.
+	- For a Lombok introduction please visit here: [https://dzone.com/articles/introduction-to-lombok](https://dzone.com/articles/introduction-to-lombok)
+
 ### Testing the backend with CURL
 
 Let's ensure Reactive Stock trader is running properly before wiring up the UI.
