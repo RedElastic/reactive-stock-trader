@@ -138,7 +138,8 @@
 
         return chart;
       },      
-      updateChart: function (timeframe) {      
+      updateChart: function (timeframe) {   
+        // TODO replace this with a call to the backend API   
         IEX.get(this.iexQueryStr(this.symbol, timeframe), {timeout: 2000})
           .then(response => {                
             if (timeframe === "1d") {

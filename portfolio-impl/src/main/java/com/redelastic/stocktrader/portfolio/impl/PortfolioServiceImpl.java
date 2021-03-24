@@ -30,8 +30,6 @@ import org.pcollections.TreePVector;
 
 import akka.stream.javadsl.Source;
 
-import com.redelastic.stocktrader.PortfolioId;
-
 import java.util.concurrent.CompletableFuture;
 
 @Singleton

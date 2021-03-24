@@ -10,9 +10,6 @@ import org.pcollections.PSequence;
 
 import static java.util.stream.Collectors.toList;
 
-
-// TODO: preserve stable ordering? Maybe, or just order by symbol.
-
 @Value
 class Holdings {
 

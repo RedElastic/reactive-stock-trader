@@ -4,8 +4,11 @@ import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.DetailedQuotesRequest;
+import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
+import com.redelastic.stocktrader.portfolio.api.Holding;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
@@ -29,15 +32,17 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
-import services.quote.QuoteService;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+
+import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
 public class PortfolioController extends Controller {
@@ -45,7 +50,6 @@ public class PortfolioController extends Controller {
     private final Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
     private final PortfolioService portfolioService;
-    private final QuoteService quoteService;
     private final BrokerService brokerService;
 
     private final Form<PlaceOrderForm> placeOrderForm;
@@ -53,37 +57,37 @@ public class PortfolioController extends Controller {
 
     @Inject
     private PortfolioController(PortfolioService portfolioService,
-                                QuoteService quoteService,
                                 BrokerService brokerService,
                                 FormFactory formFactory) {
         this.portfolioService = portfolioService;
-        this.quoteService = quoteService;
         this.brokerService = brokerService;
         this.placeOrderForm = formFactory.form(PlaceOrderForm.class);
         this.openPortfolioForm = formFactory.form(OpenPortfolioForm.class);
     }
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
-        val portfolioView = portfolioService
+
+        CompletionStage<PortfolioView> portfolioView = portfolioService
                 .getPortfolio(new PortfolioId(portfolioId))
                 .invoke();
 
-        val pricedView = portfolioView
-                .thenCompose(view ->
-                        quoteService.priceHoldings(view.getHoldings())
-                                .thenApply(pricedHoldings ->
-                                        Portfolio.builder()
-                                                .portfolioId(view.getPortfolioId().getId())
-                                                .name(view.getName())
-                                                .funds(view.getFunds())
-                                                .holdings(pricedHoldings)
-                                                .build()
-                                )
-                );
+        CompletionStage<PSequence<Holding>> holdings = portfolioView
+                .thenApply(PortfolioView::getHoldings);
 
-        return pricedView
+        // prepares a list of trading symbols from the portfolio, e.g, AAPL,IBM,GOOG
+        CompletionStage<String> symbols = holdings
+                .thenApply(this::holdingsToStrings);
+
+        CompletionStage<DetailedQuotesResponse> response = symbols
+                .thenCompose(r -> brokerService.getDetailedQuotes(r).invoke());
+
+        return response
                 .thenApply(Json::toJson)
                 .thenApply(Results::ok);
+    }
+
+    public String holdingsToStrings(PSequence<Holding> holdings) {
+            return holdings.stream().map(Holding::getSymbol).collect(Collectors.joining(","));
     }
 
     public CompletionStage<Result> getAllPortfolios() {

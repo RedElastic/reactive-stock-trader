@@ -23,7 +23,6 @@ public abstract class TransferRequest {
 
     public interface Visitor<T> {
         T visit(WithdrawlRequest withdrawlRequest);
-
         T visit(DepositRequest depositRequest);
     }
 
