@@ -4,6 +4,7 @@ import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.DetailedQuote;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesRequest;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
@@ -19,7 +20,6 @@ import controllers.forms.portfolio.PlaceOrderForm;
 import lombok.val;
 import models.CompletedOrder;
 import models.EquityHolding;
-import models.Portfolio;
 import models.PortfolioSummary;
 import org.pcollections.ConsPStack;
 import org.pcollections.PSequence;
@@ -42,6 +42,9 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
@@ -67,27 +70,132 @@ public class PortfolioController extends Controller {
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
 
-        CompletionStage<PortfolioView> portfolioView = portfolioService
+        CompletableFuture<PortfolioView> portfolioView = portfolioService
                 .getPortfolio(new PortfolioId(portfolioId))
-                .invoke();
+                .invoke()
+                .toCompletableFuture();
 
         CompletionStage<PSequence<Holding>> holdings = portfolioView
                 .thenApply(PortfolioView::getHoldings);
 
-        // prepares a list of trading symbols from the portfolio, e.g, AAPL,IBM,GOOG
         CompletionStage<String> symbols = holdings
                 .thenApply(this::holdingsToStrings);
 
-        CompletionStage<DetailedQuotesResponse> response = symbols
-                .thenCompose(r -> brokerService.getDetailedQuotes(r).invoke());
+        CompletableFuture<DetailedQuotesResponse> detailedQuotes = symbols
+                .thenCompose(r -> {
+                        if (r.isEmpty()) {
+                                return CompletableFuture.completedFuture(null);
+                        }
+                        else {
+                                return brokerService.getDetailedQuotes(r).invoke();
+                        }
+                }).toCompletableFuture();
+        
+        CompletionStage<PortfolioSummary> summary = CompletableFuture
+                .allOf(portfolioView, detailedQuotes)
+                .thenApply(done -> {
+                    PortfolioView pv = portfolioView.join();
+                    DetailedQuotesResponse dqr = detailedQuotes.join();
+                    
+                    Map<String, DetailedQuote> quoteMap = new HashMap<String, DetailedQuote>();
+                    if (dqr != null) {
+                        for (DetailedQuote quote: dqr.getDetailedQuotes()) {
+                                quoteMap.put(quote.getSymbol(), quote);
+                        }
+                    }
 
-        return response
+                    List<EquityHolding> equities = new ArrayList<EquityHolding>();
+                    if (dqr != null) {
+                        for (Holding holding : pv.getHoldings()) {
+                            DetailedQuote quote = quoteMap.get(holding.getSymbol());
+                            EquityHolding pricedHolding = 
+                                EquityHolding.builder()
+                                        .open(quote.getOpen())
+                                        .openTime(quote.getOpenTime())
+                                        .openSource(quote.getOpenSource())
+                                        .close(quote.getClose())
+                                        .closeTime(quote.getCloseTime())
+                                        .closeSource(quote.getCloseSource())
+                                        .high(quote.getHigh())
+                                        .highTime(quote.getHighTime())
+                                        .highSource(quote.getHighSource())
+                                        .low(quote.getLow())
+                                        .lowTime(quote.getLowTime())
+                                        .lowSource(quote.getLowSource())
+                                        .latestPrice(quote.getLatestPrice())
+                                        .latestSource(quote.getLatestSource())
+                                        .latestTime(quote.getLatestTime())
+                                        .latestUpdate(quote.getLatestUpdate())
+                                        .latestVolume(quote.getLatestVolume())
+                                        .iexRealtimePrice(quote.getIexRealtimePrice())
+                                        .iexRealtimeSize(quote.getIexRealtimeSize())
+                                        .iexLastUpdated(quote.getIexLastUpdated())
+                                        .delayedPrice(quote.getDelayedPrice())
+                                        .delayedPriceTime(quote.getDelayedPriceTime())
+                                        .oddLotDelayedPrice(quote.getOddLotDelayedPrice())
+                                        .oddLotDelayedPriceTime(quote.getOddLotDelayedPriceTime())
+                                        .extendedPrice(quote.getExtendedPrice())
+                                        .extendedChange(quote.getExtendedChange())
+                                        .extendedChangePercent(quote.getExtendedChangePercent())
+                                        .extendedPriceTime(quote.getExtendedPriceTime())
+                                        .previousClose(quote.getPreviousClose())
+                                        .previousVolume(quote.getPreviousVolume())
+                                        .change(quote.getChange())
+                                        .changePercent(quote.getChangePercent())
+                                        .volume(quote.getVolume())
+                                        .iexMarketPercent(quote.getIexMarketPercent())
+                                        .iexVolume(quote.getIexVolume())
+                                        .avgTotalVolume(quote.getAvgTotalVolume())
+                                        .iexBidPrice(quote.getIexBidPrice())
+                                        .iexBidSize(quote.getIexBidSize())
+                                        .iexAskPrice(quote.getIexAskPrice())
+                                        .iexAskSize(quote.getIexAskSize())
+                                        .iexOpen(quote.getIexOpen())
+                                        .iexOpenTime(quote.getIexOpenTime())
+                                        .iexClose(quote.getIexClose())
+                                        .iexCloseTime(quote.getIexCloseTime())
+                                        .marketCap(quote.getMarketCap())
+                                        .peRatio(quote.getPeRatio())
+                                        .week52High(quote.getWeek52High())
+                                        .week52Low(quote.getWeek52Low())
+                                        .ytdChange(quote.getYtdChange())
+                                        .lastTradeTime(quote.getLastTradeTime())
+                                        .isUSMarketOpen(quote.getIsUSMarketOpen())
+                                        .exchange(quote.getExchange())
+                                        .industry(quote.getIndustry())
+                                        .website(quote.getWebsite())
+                                        .description(quote.getDescription())
+                                        .CEO(quote.getCEO())
+                                        .employees(quote.getEmployees())
+                                        .address(quote.getAddress())
+                                        .address2(quote.getAddress2())
+                                        .state(quote.getState())
+                                        .city(quote.getCity())
+                                        .zip(quote.getZip())
+                                        .country(quote.getCountry())
+                                        .phone(quote.getPhone())
+                                        .build();
+                               equities.add(pricedHolding);                                 
+                        }
+                }
+                    
+                return PortfolioSummary.builder()
+                        .portfolioId(pv.getPortfolioId().getId())
+                        .name(pv.getName())
+                        .funds(pv.getFunds())
+                        .equities(ConsPStack.from(equities))
+                        .build();
+        });
+
+        return summary
                 .thenApply(Json::toJson)
                 .thenApply(Results::ok);
     }
 
-    public String holdingsToStrings(PSequence<Holding> holdings) {
-            return holdings.stream().map(Holding::getSymbol).collect(Collectors.joining(","));
+    private String holdingsToStrings(PSequence<Holding> holdings) {
+            String s = holdings.stream().map(Holding::getSymbol).collect(Collectors.joining(","));
+            System.out.println("holdingsToStrings: " + s);
+            return s;
     }
 
     public CompletionStage<Result> getAllPortfolios() {

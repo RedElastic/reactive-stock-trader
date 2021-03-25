@@ -52,7 +52,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                 actorSystem.getScheduler(),
                 maxFailures,
                 callTimeout,
-                resetTimeout); // TODO
+                resetTimeout); 
     }
 
     public CompletionStage<Quote> getQuote(String symbol) {
@@ -63,7 +63,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                                 .get());
 
         request.thenAccept(response -> {
-        	log.info(response.toString());
+        	log.info(response.asJson().toString());
         });
 
         return request
@@ -103,8 +103,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
     }
 
     private WSRequest detailedQuotesRequest(String symbols) {
-        // /stock/market/batch?symbols=aapl,fb,tsla&types=quote,news,chart&range=1m&last=5
-        String url = String.format("%s/stock/market/batch/?symbols=%s&types=quotes,company?token=%s", this.hostName, symbols, this.token);
+        String url = String.format("%s/stock/market/batch?symbols=%s&types=quote,company&range=5y&token=%s", this.hostName, symbols, this.token);
         log.info("quote url: " + url);
         return wsClient.url(url);
     }

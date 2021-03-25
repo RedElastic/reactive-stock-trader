@@ -20,4 +20,5 @@ public class PortfolioSummary {
     PSequence<EquityHolding> equities;
 
     PSequence<CompletedOrder> completedOrders;
+
 }
