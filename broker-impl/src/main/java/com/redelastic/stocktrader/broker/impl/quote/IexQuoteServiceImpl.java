@@ -9,6 +9,7 @@ import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.typesafe.config.Config;
 
 import org.pcollections.ConsPStack;
+import org.pcollections.TreePVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -89,7 +90,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
         return request
             .thenApply(response -> {
                 JsonNode json = response.getBody(json());
-                ConsPStack<DetailedQuote> quotes = ConsPStack.empty();
+                TreePVector<DetailedQuote> quotes = TreePVector.empty();
                 for (Iterator<JsonNode> jsonIterator = json.iterator(); jsonIterator.hasNext(); ) {
                     JsonNode node = jsonIterator.next();
                     Company company = Json.fromJson(node.get("company"), Company.class);
@@ -100,7 +101,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                                                 .company(company)
                                                 .quote(quote)
                                                 .build();
-                    quotes.add(dqr);
+                    quotes = quotes.plus(dqr);
                 }
                 return DetailedQuotesResponse.builder().detailedQuotes(quotes).build();
             });
