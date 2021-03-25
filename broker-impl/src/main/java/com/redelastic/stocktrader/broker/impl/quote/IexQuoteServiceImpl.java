@@ -3,13 +3,10 @@ package com.redelastic.stocktrader.broker.impl.quote;
 import akka.actor.ActorSystem;
 import akka.pattern.CircuitBreaker;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redelastic.stocktrader.broker.api.DetailedQuotesRequest;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.redelastic.stocktrader.broker.api.Quote;
 import com.typesafe.config.Config;
 
-import org.pcollections.PSequence;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -20,6 +17,7 @@ import play.libs.ws.WSResponse;
 
 import javax.inject.Inject;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -84,13 +82,21 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                                 .setRequestTimeout(requestTimeout)
                                 .get());
 
-        request.thenAccept(response -> {
-        	log.info(response.toString());
-        });
-
         return request
                 .thenApply(response -> {
                     JsonNode json = response.getBody(json());
+                    for (Iterator<JsonNode> jsonIterator = json.iterator(); jsonIterator.hasNext(); ) {
+                        JsonNode node = jsonIterator.next();
+                        IexCompany company = Json.fromJson(node.get("company"), IexCompany.class);
+                        IexQuote quote = Json.fromJson(node.get("quote"), IexQuote.class);
+                        String stock = company.getSymbol();
+                        IexDetailedQuoteResponse dqr = IexDetailedQuoteResponse.builder()
+                                                    .symbol(stock)
+                                                    .company(company)
+                                                    .quote(quote)
+                                                    .build();
+                        // insert it into the overall response here
+                    }
                     DetailedQuotesResponse detailedQuoteResponse = Json.fromJson(json, DetailedQuotesResponse.class);
                     return detailedQuoteResponse;
                 });

@@ -1,8 +1,8 @@
 package com.redelastic.stocktrader.broker.impl.quote;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
+
+import lombok.Data;
 
 @Data
 class IexQuoteResponse {
