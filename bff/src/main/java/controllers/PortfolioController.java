@@ -9,6 +9,7 @@ import com.redelastic.stocktrader.broker.api.DetailedQuotesRequest;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
+import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.portfolio.api.Holding;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
@@ -97,83 +98,24 @@ public class PortfolioController extends Controller {
                     PortfolioView pv = portfolioView.join();
                     DetailedQuotesResponse dqr = detailedQuotes.join();
                     
-                    Map<String, DetailedQuote> quoteMap = new HashMap<String, DetailedQuote>();
+                    // we'll need to modify below to stash DetailedQuote instead of Quote if we want to extract company info into EquityHolding
+                    Map<String, Quote> quoteMap = new HashMap<String, Quote>();
                     if (dqr != null) {
                         for (DetailedQuote quote: dqr.getDetailedQuotes()) {
-                                quoteMap.put(quote.getSymbol(), quote);
+                                quoteMap.put(quote.getSymbol(), quote.getQuote());
                         }
                     }
 
                     List<EquityHolding> equities = new ArrayList<EquityHolding>();
                     if (dqr != null) {
                         for (Holding holding : pv.getHoldings()) {
-                            DetailedQuote quote = quoteMap.get(holding.getSymbol());
+                            Quote quote = quoteMap.get(holding.getSymbol());
                             EquityHolding pricedHolding = 
                                 EquityHolding.builder()
-                                        .open(quote.getOpen())
-                                        .openTime(quote.getOpenTime())
-                                        .openSource(quote.getOpenSource())
-                                        .close(quote.getClose())
-                                        .closeTime(quote.getCloseTime())
-                                        .closeSource(quote.getCloseSource())
-                                        .high(quote.getHigh())
-                                        .highTime(quote.getHighTime())
-                                        .highSource(quote.getHighSource())
-                                        .low(quote.getLow())
-                                        .lowTime(quote.getLowTime())
-                                        .lowSource(quote.getLowSource())
-                                        .latestPrice(quote.getLatestPrice())
-                                        .latestSource(quote.getLatestSource())
-                                        .latestTime(quote.getLatestTime())
-                                        .latestUpdate(quote.getLatestUpdate())
-                                        .latestVolume(quote.getLatestVolume())
-                                        .iexRealtimePrice(quote.getIexRealtimePrice())
-                                        .iexRealtimeSize(quote.getIexRealtimeSize())
-                                        .iexLastUpdated(quote.getIexLastUpdated())
-                                        .delayedPrice(quote.getDelayedPrice())
-                                        .delayedPriceTime(quote.getDelayedPriceTime())
-                                        .oddLotDelayedPrice(quote.getOddLotDelayedPrice())
-                                        .oddLotDelayedPriceTime(quote.getOddLotDelayedPriceTime())
-                                        .extendedPrice(quote.getExtendedPrice())
-                                        .extendedChange(quote.getExtendedChange())
-                                        .extendedChangePercent(quote.getExtendedChangePercent())
-                                        .extendedPriceTime(quote.getExtendedPriceTime())
-                                        .previousClose(quote.getPreviousClose())
-                                        .previousVolume(quote.getPreviousVolume())
-                                        .change(quote.getChange())
-                                        .changePercent(quote.getChangePercent())
-                                        .volume(quote.getVolume())
-                                        .iexMarketPercent(quote.getIexMarketPercent())
-                                        .iexVolume(quote.getIexVolume())
-                                        .avgTotalVolume(quote.getAvgTotalVolume())
-                                        .iexBidPrice(quote.getIexBidPrice())
-                                        .iexBidSize(quote.getIexBidSize())
-                                        .iexAskPrice(quote.getIexAskPrice())
-                                        .iexAskSize(quote.getIexAskSize())
-                                        .iexOpen(quote.getIexOpen())
-                                        .iexOpenTime(quote.getIexOpenTime())
-                                        .iexClose(quote.getIexClose())
-                                        .iexCloseTime(quote.getIexCloseTime())
-                                        .marketCap(quote.getMarketCap())
-                                        .peRatio(quote.getPeRatio())
-                                        .week52High(quote.getWeek52High())
-                                        .week52Low(quote.getWeek52Low())
-                                        .ytdChange(quote.getYtdChange())
-                                        .lastTradeTime(quote.getLastTradeTime())
-                                        .isUSMarketOpen(quote.getIsUSMarketOpen())
-                                        .exchange(quote.getExchange())
-                                        .industry(quote.getIndustry())
-                                        .website(quote.getWebsite())
-                                        .description(quote.getDescription())
-                                        .CEO(quote.getCEO())
-                                        .employees(quote.getEmployees())
-                                        .address(quote.getAddress())
-                                        .address2(quote.getAddress2())
-                                        .state(quote.getState())
-                                        .city(quote.getCity())
-                                        .zip(quote.getZip())
-                                        .country(quote.getCountry())
-                                        .phone(quote.getPhone())
+                                        .symbol(quote.getSymbol())
+                                        .shares(holding.getShareCount())
+                                        //.currentValue() TODO
+                                        .quote(quote)
                                         .build();
                                equities.add(pricedHolding);                                 
                         }

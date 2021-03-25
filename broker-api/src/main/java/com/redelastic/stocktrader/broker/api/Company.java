@@ -1,14 +1,14 @@
-package com.redelastic.stocktrader.broker.impl.quote;
+package com.redelastic.stocktrader.broker.api;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import lombok.*;
 
-@JsonDeserialize(builder = IexCompany.IexCompanyBuilder.class)
+@JsonDeserialize(builder = Company.CompanyBuilder.class)
 @Builder
 @Data
-class IexCompany {
+public class Company {
     String symbol;
     String companyName;
     String exchange;
@@ -30,6 +30,6 @@ class IexCompany {
     String phone;
 
     @JsonPOJOBuilder(withPrefix = "")
-    public static final class IexCompanyBuilder {
+    public static final class CompanyBuilder {
     }
 }

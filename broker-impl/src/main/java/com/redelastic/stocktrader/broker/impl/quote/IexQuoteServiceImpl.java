@@ -3,10 +3,12 @@ package com.redelastic.stocktrader.broker.impl.quote;
 import akka.actor.ActorSystem;
 import akka.pattern.CircuitBreaker;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.redelastic.stocktrader.broker.api.Company;
+import com.redelastic.stocktrader.broker.api.DetailedQuote;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
-import com.redelastic.stocktrader.broker.api.Quote;
 import com.typesafe.config.Config;
 
+import org.pcollections.ConsPStack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -19,6 +21,8 @@ import javax.inject.Inject;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.concurrent.CompletionStage;
+
+import com.redelastic.stocktrader.broker.api.Quote;
 
 /**
  * Delegate quotes out to the IexTrading public API.
@@ -67,11 +71,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
         return request
                 .thenApply(response -> {
                     JsonNode json = response.getBody(json());
-                    IexQuoteResponse iexQuoteResponse = Json.fromJson(json, IexQuoteResponse.class);
-                    return Quote.builder()
-                            .symbol(symbol)
-                            .sharePrice(iexQuoteResponse.getLatestPrice())
-                            .build();
+                    return Json.fromJson(json, Quote.class);
                 });
     }
 
@@ -81,25 +81,29 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                         detailedQuotesRequest(req)
                                 .setRequestTimeout(requestTimeout)
                                 .get());
+                                
+        request.thenAccept(response -> {
+            log.info(response.asJson().toString());
+        });
 
         return request
-                .thenApply(response -> {
-                    JsonNode json = response.getBody(json());
-                    for (Iterator<JsonNode> jsonIterator = json.iterator(); jsonIterator.hasNext(); ) {
-                        JsonNode node = jsonIterator.next();
-                        IexCompany company = Json.fromJson(node.get("company"), IexCompany.class);
-                        IexQuote quote = Json.fromJson(node.get("quote"), IexQuote.class);
-                        String stock = company.getSymbol();
-                        IexDetailedQuoteResponse dqr = IexDetailedQuoteResponse.builder()
-                                                    .symbol(stock)
-                                                    .company(company)
-                                                    .quote(quote)
-                                                    .build();
-                        // insert it into the overall response here
-                    }
-                    DetailedQuotesResponse detailedQuoteResponse = Json.fromJson(json, DetailedQuotesResponse.class);
-                    return detailedQuoteResponse;
-                });
+            .thenApply(response -> {
+                JsonNode json = response.getBody(json());
+                ConsPStack<DetailedQuote> quotes = ConsPStack.empty();
+                for (Iterator<JsonNode> jsonIterator = json.iterator(); jsonIterator.hasNext(); ) {
+                    JsonNode node = jsonIterator.next();
+                    Company company = Json.fromJson(node.get("company"), Company.class);
+                    Quote quote = Json.fromJson(node.get("quote"), Quote.class);
+                    String stock = company.getSymbol();
+                    DetailedQuote dqr = DetailedQuote.builder()
+                                                .symbol(stock)
+                                                .company(company)
+                                                .quote(quote)
+                                                .build();
+                    quotes.add(dqr);
+                }
+                return DetailedQuotesResponse.builder().detailedQuotes(quotes).build();
+            });
     }
 
     private WSRequest quoteRequest(String symbol) {
