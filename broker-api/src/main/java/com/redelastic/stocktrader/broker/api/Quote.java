@@ -6,8 +6,6 @@ import java.math.BigInteger;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import org.joda.time.DateTime;
-
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
