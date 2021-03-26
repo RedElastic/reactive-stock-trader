@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,7 @@ public class PortfolioController extends Controller {
                         }
                     }
 
+                    // TODO add completed orders to result
                     List<EquityHolding> equities = new ArrayList<EquityHolding>();
                     if (dqr != null) {
                         for (Holding holding : pv.getHoldings()) {
@@ -114,7 +116,7 @@ public class PortfolioController extends Controller {
                                 EquityHolding.builder()
                                         .symbol(quote.getSymbol())
                                         .shares(holding.getShareCount())
-                                        //.currentValue() TODO
+                                        .currentValue(quote.getLatestPrice().multiply(new BigDecimal(holding.getShareCount())))
                                         .quote(quote)
                                         .build();
                                equities.add(pricedHolding);                                 
@@ -126,6 +128,7 @@ public class PortfolioController extends Controller {
                         .name(pv.getName())
                         .funds(pv.getFunds())
                         .equities(ConsPStack.from(equities))
+                        //.completedOrders(pv.getCompletedOrders())
                         .build();
         });
 

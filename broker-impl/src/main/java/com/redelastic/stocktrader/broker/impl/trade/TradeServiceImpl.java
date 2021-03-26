@@ -65,6 +65,6 @@ public class TradeServiceImpl implements TradeService {
         return quoteService
                 .getQuote(order.getDetails().getSymbol())
                 .thenApply(quote ->
-                        new BigDecimal(quote.getLatestPrice()).multiply(BigDecimal.valueOf(order.getDetails().getShares()))); // TODO change from string
+                        quote.getLatestPrice().multiply(BigDecimal.valueOf(order.getDetails().getShares()))); 
     }
 }
