@@ -11,8 +11,8 @@ import java.math.BigDecimal;
 @Builder
 public class CompletedOrder {
     @NonNull String orderId;
-    String symbol;
-    Integer shares;
-    BigDecimal price;
-    TradeType tradeType;
+    @NonNull String symbol;
+    @NonNull Integer shares;
+    @NonNull BigDecimal price;
+    @NonNull TradeType tradeType;
 }

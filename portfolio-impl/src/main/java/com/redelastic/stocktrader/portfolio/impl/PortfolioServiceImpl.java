@@ -28,12 +28,6 @@ import java.util.List;
 import org.pcollections.PSequence;
 import org.pcollections.TreePVector;
 
-import akka.stream.javadsl.Source;
-
-import com.redelastic.stocktrader.PortfolioId;
-
-import java.util.concurrent.CompletableFuture;
-
 @Singleton
 public class PortfolioServiceImpl implements PortfolioService {
 

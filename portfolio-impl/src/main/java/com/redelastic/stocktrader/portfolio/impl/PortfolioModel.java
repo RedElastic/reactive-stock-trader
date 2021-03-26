@@ -37,12 +37,10 @@ class PortfolioModel {
                                 .name(portfolio.getName())
                                 .funds(portfolio.getFunds())
                                 .holdings(portfolio.getHoldings().asSequence())
-                                .completedOrders(
-                                        ConsPStack.from(portfolio.getCompletedOrders()))
+                                .completedOrders(ConsPStack.from(portfolio.getCompletedOrders()))
                                 .build()
                 );
     }
-
 
     CompletionStage<Done> placeOrder(OrderId orderId, OrderDetails orderDetails) {
         return portfolioEntity.ask(new PortfolioCommand.PlaceOrder(orderId, orderDetails));

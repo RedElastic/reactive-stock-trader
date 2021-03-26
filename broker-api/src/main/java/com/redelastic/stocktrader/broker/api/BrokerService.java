@@ -26,6 +26,14 @@ public interface BrokerService extends Service {
     ServiceCall<NotUsed, Quote> getQuote(String symbol);
 
     /**
+     * Takes a sequence of ticker symbols and returns a sequence of detailed quotes.
+     *
+     * @param symbol Stock ticker symbol.
+     * @return
+     */
+    ServiceCall<NotUsed, DetailedQuotesResponse> getDetailedQuotes(String symbols);
+    
+    /**
      * Get the current status of an order.
      *
      * @param orderId ID for the order.
@@ -44,7 +52,8 @@ public interface BrokerService extends Service {
         // @formatter:off
         return named("reactivestock-broker").withCalls(
                 restCall(Method.GET, "/api/quote/:symbol", this::getQuote),
-                restCall(Method.GET, "/api/order/:orderId", this::getOrderSummary)
+                restCall(Method.GET, "/api/order/:orderId", this::getOrderSummary),
+                restCall(Method.GET, "/api/detailedQuote/:symbols", this::getDetailedQuotes)
         ).withTopics(
                 topic(ORDER_RESULTS_TOPIC_ID, this::orderResult)
                         .withProperty(KafkaProperties.partitionKeyStrategy(), orderResult -> orderResult.getPortfolioId().getId())

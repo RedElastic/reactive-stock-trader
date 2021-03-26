@@ -150,12 +150,8 @@ class PortfolioEntity extends PersistentEntity<PortfolioCommand, PortfolioEvent,
             setEventHandler(PortfolioEvent.FundsDebited.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.FundsCredited.class, evt -> state().update(evt));
             setEventHandler(PortfolioEvent.SharesDebited.class, evt -> state().update(evt));
-            setEventHandler(PortfolioEvent.OrderFulfilled.class, evt ->
-                    state().orderCompleted(evt.getOrderId()));
-            setEventHandler(PortfolioEvent.OrderFailed.class, evt ->
-                    state().orderCompleted(evt.getOrderId()));
-
-
+            setEventHandler(PortfolioEvent.OrderFulfilled.class, evt -> state().orderCompleted(evt.getOrderId()));
+            setEventHandler(PortfolioEvent.OrderFailed.class, evt -> state().orderCompleted(evt.getOrderId()));
         }
 
         private Persist acceptRefund(PortfolioCommand.AcceptRefund cmd, CommandContext<Done> ctx) {

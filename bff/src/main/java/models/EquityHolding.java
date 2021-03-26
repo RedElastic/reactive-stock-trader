@@ -6,10 +6,13 @@ import lombok.Value;
 
 import java.math.BigDecimal;
 
+import com.redelastic.stocktrader.broker.api.DetailedQuote;
+
 @Value
 @Builder
 public class EquityHolding {
     @NonNull String symbol;
-    int shares;
-    BigDecimal sharePrice;
+    @NonNull Integer shares;
+    @NonNull BigDecimal currentValue;
+    @NonNull DetailedQuote detailedQuote;
 }

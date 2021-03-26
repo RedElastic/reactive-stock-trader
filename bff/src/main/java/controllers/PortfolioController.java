@@ -4,8 +4,11 @@ import com.redelastic.CSHelper;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.PortfolioId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
+import com.redelastic.stocktrader.broker.api.DetailedQuote;
+import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
+import com.redelastic.stocktrader.portfolio.api.Holding;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 import com.redelastic.stocktrader.portfolio.api.PortfolioView;
@@ -13,10 +16,10 @@ import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import controllers.forms.portfolio.OpenPortfolioForm;
 import controllers.forms.portfolio.PlaceOrderForm;
+import lombok.NonNull;
 import lombok.val;
 import models.CompletedOrder;
 import models.EquityHolding;
-import models.Portfolio;
 import models.PortfolioSummary;
 import org.pcollections.ConsPStack;
 import org.pcollections.PSequence;
@@ -29,15 +32,21 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
-import services.quote.QuoteService;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
 public class PortfolioController extends Controller {
@@ -45,7 +54,6 @@ public class PortfolioController extends Controller {
     private final Logger log = LoggerFactory.getLogger(PortfolioController.class);
 
     private final PortfolioService portfolioService;
-    private final QuoteService quoteService;
     private final BrokerService brokerService;
 
     private final Form<PlaceOrderForm> placeOrderForm;
@@ -53,37 +61,95 @@ public class PortfolioController extends Controller {
 
     @Inject
     private PortfolioController(PortfolioService portfolioService,
-                                QuoteService quoteService,
                                 BrokerService brokerService,
                                 FormFactory formFactory) {
         this.portfolioService = portfolioService;
-        this.quoteService = quoteService;
         this.brokerService = brokerService;
         this.placeOrderForm = formFactory.form(PlaceOrderForm.class);
         this.openPortfolioForm = formFactory.form(OpenPortfolioForm.class);
     }
 
     public CompletionStage<Result> getPortfolio(String portfolioId) {
-        val portfolioView = portfolioService
+
+        CompletableFuture<PortfolioView> portfolioView = portfolioService
                 .getPortfolio(new PortfolioId(portfolioId))
-                .invoke();
+                .invoke()
+                .toCompletableFuture();
 
-        val pricedView = portfolioView
-                .thenCompose(view ->
-                        quoteService.priceHoldings(view.getHoldings())
-                                .thenApply(pricedHoldings ->
-                                        Portfolio.builder()
-                                                .portfolioId(view.getPortfolioId().getId())
-                                                .name(view.getName())
-                                                .funds(view.getFunds())
-                                                .holdings(pricedHoldings)
-                                                .build()
-                                )
-                );
+        CompletableFuture<DetailedQuotesResponse> detailedQuotes = portfolioView
+                .thenApply(PortfolioView::getHoldings)
+                .thenApply(this::holdingsToStrings)
+                .thenCompose(r -> {
+                        if (r.isEmpty()) {
+                                return CompletableFuture.completedFuture(null);
+                        }
+                        else {
+                                return brokerService.getDetailedQuotes(r).invoke();
+                        }
+                }).toCompletableFuture();
+        
+        CompletableFuture<PSequence<CompletedOrder>> completedOrders =
+                        portfolioView
+                                .thenApply(PortfolioView::getCompletedOrders)
+                                .thenCompose(this::completedOrders)
+                                .toCompletableFuture();
+        
+        CompletionStage<PortfolioSummary> summary = CompletableFuture
+                .allOf(portfolioView, detailedQuotes)
+                .thenApply(done -> {
+                    PortfolioView pv = portfolioView.join();
+                    DetailedQuotesResponse dqr = detailedQuotes.join();
+                    PSequence<CompletedOrder> co = completedOrders.join();
 
-        return pricedView
+                    Map<String, DetailedQuote> quoteMap = new HashMap<String, DetailedQuote>();
+                    if (dqr != null) {
+                        for (DetailedQuote quote: dqr.getDetailedQuotes()) {
+                                quoteMap.put(quote.getSymbol(), quote);
+                        }
+                    }
+
+                    List<EquityHolding> equities = new ArrayList<EquityHolding>();
+                    BigDecimal totalStockValue = new BigDecimal(0.0);
+                    if (dqr != null) {
+                        for (Holding holding : pv.getHoldings()) {
+                            DetailedQuote quote = quoteMap.get(holding.getSymbol());
+                            BigDecimal currentValue = quote.getQuote().getLatestPrice().multiply(new BigDecimal(holding.getShareCount()));
+                            totalStockValue = totalStockValue.add(currentValue);
+                            EquityHolding pricedHolding = 
+                                EquityHolding.builder()
+                                        .symbol(quote.getSymbol())
+                                        .shares(holding.getShareCount())
+                                        .currentValue(currentValue)
+                                        .detailedQuote(quote)
+                                        .build();
+                               equities.add(pricedHolding);                                 
+                        }
+                    }
+
+                    Optional<@NonNull BigDecimal> totalTradeCost = co.stream()
+                        .map(x -> x.getPrice())
+                        .reduce((a, b) -> a.add(b));
+                    
+                    return PortfolioSummary.builder()
+                        .portfolioId(pv.getPortfolioId().getId())
+                        .name(pv.getName())
+                        .funds(pv.getFunds())
+                        .totalStockValue(totalStockValue)
+                        .totalTradeCost(totalTradeCost.orElse(new BigDecimal(0.0)))
+                        .equities(ConsPStack.from(equities))
+                        .completedOrders(co)
+                        .build();
+        });
+
+        return summary
                 .thenApply(Json::toJson)
                 .thenApply(Results::ok);
+    }
+
+    private String holdingsToStrings(PSequence<Holding> holdings) {
+            String s = holdings.stream().map(Holding::getSymbol).collect(Collectors.joining(","));
+            System.out.println("holdingsToStrings: " + s);
+            return s;
     }
 
     public CompletionStage<Result> getAllPortfolios() {
@@ -92,54 +158,6 @@ public class PortfolioController extends Controller {
                 .invoke();
 
         return portfolios
-                .thenApply(Json::toJson)
-                .thenApply(Results::ok);
-    }
-
-    public CompletionStage<Result> getSummary(String portfolioId, Boolean includeOrderInfo, Boolean includePrices) {
-        val getModel = portfolioService
-                .getPortfolio(new PortfolioId(portfolioId))
-                .invoke()
-                .toCompletableFuture();
-
-        CompletableFuture<PSequence<CompletedOrder>> getCompletedOrders =
-                includeOrderInfo ?
-                        getModel
-                                .thenApply(PortfolioView::getCompletedOrders)
-                                .thenCompose(this::completedOrders)
-                                .toCompletableFuture()
-                        : CompletableFuture.completedFuture(null);
-
-        CompletableFuture<PSequence<EquityHolding>> getEquityHoldings =
-                includePrices ?
-                        getModel
-                                .<PSequence<EquityHolding>>thenApply(model ->
-                                        ConsPStack.from(
-                                                model.getHoldings().stream().map(holding ->
-                                                        EquityHolding.builder()
-                                                                .symbol(holding.getSymbol())
-                                                                .shares(holding.getShareCount())
-                                                                .build()
-                                                ).collect(toList())))
-                                .toCompletableFuture()
-                        : CompletableFuture.completedFuture(null);
-
-        val summaryView = CompletableFuture
-                .allOf(getModel, getCompletedOrders, getEquityHoldings)
-                .thenApply(done -> {
-                    PortfolioView model = getModel.join();
-                    PSequence<CompletedOrder> completedOrders = getCompletedOrders.join();
-                    PSequence<EquityHolding> equities = getEquityHoldings.join();
-                    return PortfolioSummary.builder()
-                            .portfolioId(model.getPortfolioId().getId())
-                            .name(model.getName())
-                            .funds(model.getFunds())
-                            .completedOrders(completedOrders)
-                            .equities(equities)
-                            .build();
-                });
-
-        return summaryView
                 .thenApply(Json::toJson)
                 .thenApply(Results::ok);
     }

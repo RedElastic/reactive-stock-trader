@@ -19,7 +19,6 @@ import java.math.BigDecimal;
  * Events should be fairly basic and general, as we'd like the events to remain stable over time. Commands may change
  * more easily.
  */
-
 interface PortfolioEvent extends Jsonable, AggregateEvent<PortfolioEvent> {
 
     int NUM_SHARDS = 20;

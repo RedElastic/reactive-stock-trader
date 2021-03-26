@@ -3,8 +3,13 @@ package com.redelastic.stocktrader.broker.impl.quote;
 import akka.actor.ActorSystem;
 import akka.pattern.CircuitBreaker;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.redelastic.stocktrader.broker.api.Quote;
+import com.redelastic.stocktrader.broker.api.Company;
+import com.redelastic.stocktrader.broker.api.DetailedQuote;
+import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.typesafe.config.Config;
+
+import org.pcollections.ConsPStack;
+import org.pcollections.TreePVector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import play.libs.Json;
@@ -15,7 +20,10 @@ import play.libs.ws.WSResponse;
 
 import javax.inject.Inject;
 import java.time.Duration;
+import java.util.Iterator;
 import java.util.concurrent.CompletionStage;
+
+import com.redelastic.stocktrader.broker.api.Quote;
 
 /**
  * Delegate quotes out to the IexTrading public API.
@@ -47,13 +55,7 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                 actorSystem.getScheduler(),
                 maxFailures,
                 callTimeout,
-                resetTimeout); // TODO
-    }
-
-    private WSRequest quoteRequest(String symbol) {
-        String url = String.format("%s/stock/%s/quote/?token=%s", this.hostName, symbol, this.token);
-        log.info("quote url: " + url);
-        return wsClient.url(url);
+                resetTimeout); 
     }
 
     public CompletionStage<Quote> getQuote(String symbol) {
@@ -64,17 +66,57 @@ public class IexQuoteServiceImpl implements QuoteService, WSBodyReadables {
                                 .get());
 
         request.thenAccept(response -> {
-        	log.info(response.toString());
+        	log.info(response.asJson().toString());
         });
 
         return request
                 .thenApply(response -> {
                     JsonNode json = response.getBody(json());
-                    IexQuoteResponse iexQuoteResponse = Json.fromJson(json, IexQuoteResponse.class);
-                    return Quote.builder()
-                            .symbol(symbol)
-                            .sharePrice(iexQuoteResponse.getLatestPrice())
-                            .build();
+                    return Json.fromJson(json, Quote.class);
                 });
     }
+
+    public CompletionStage<DetailedQuotesResponse> getDetailedQuotes(String req) {
+        CompletionStage<WSResponse> request =
+                circuitBreaker.callWithCircuitBreakerCS(() ->
+                        detailedQuotesRequest(req)
+                                .setRequestTimeout(requestTimeout)
+                                .get());
+                                
+        request.thenAccept(response -> {
+            log.info(response.asJson().toString());
+        });
+
+        return request
+            .thenApply(response -> {
+                JsonNode json = response.getBody(json());
+                TreePVector<DetailedQuote> quotes = TreePVector.empty();
+                for (Iterator<JsonNode> jsonIterator = json.iterator(); jsonIterator.hasNext(); ) {
+                    JsonNode node = jsonIterator.next();
+                    Company company = Json.fromJson(node.get("company"), Company.class);
+                    Quote quote = Json.fromJson(node.get("quote"), Quote.class);
+                    String stock = company.getSymbol();
+                    DetailedQuote dqr = DetailedQuote.builder()
+                                                .symbol(stock)
+                                                .company(company)
+                                                .quote(quote)
+                                                .build();
+                    quotes = quotes.plus(dqr);
+                }
+                return DetailedQuotesResponse.builder().detailedQuotes(quotes).build();
+            });
+    }
+
+    private WSRequest quoteRequest(String symbol) {
+        String url = String.format("%s/stock/%s/quote/?token=%s", this.hostName, symbol, this.token);
+        log.info("quote url: " + url);
+        return wsClient.url(url);
+    }
+
+    private WSRequest detailedQuotesRequest(String symbols) {
+        String url = String.format("%s/stock/market/batch?symbols=%s&types=quote,company&range=5y&token=%s", this.hostName, symbols, this.token);
+        log.info("quote url: " + url);
+        return wsClient.url(url);
+    }
+
 }

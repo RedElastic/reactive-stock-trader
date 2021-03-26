@@ -4,19 +4,19 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title mb-3">
-            {{ quote.companyName }}
+            {{ equity.company.companyName }}
           </h5>
           <h6 class="card-subtitle mb-2">
-            {{ quote.symbol }} <span class="text-muted">
-              ({{ quote.primaryExchange }})
+            {{ equity.quote.symbol }} <span class="text-muted">
+              ({{ equity.quote.primaryExchange }})
             </span>
           </h6>
           <p class="card-text" /><p :class="returnClass">
-            {{ quote.latestPrice | toCurrency }} <span
+            {{ equity.quote.latestPrice | toCurrency }} <span
               style="font-size:0.8em;"
               :class="returnClass"
             >
-              {{ quote.change | toCurrency }} {{ quote.changePercent | iexPercent }}%
+              {{ equity.quote.change | toCurrency }} {{ equity.quote.changePercent | iexPercent }}%
             </span>
           </p>            
           <div class="row">
@@ -81,7 +81,6 @@
 
 <script>
   import QuoteChart from '@/components/components/quote/QuoteChart.vue'
-  import {IEX} from '@/common/http.js'
   import Vue from 'vue'
 
   export default {
@@ -95,16 +94,9 @@
         required: true
       }
     },
-    data: function () {
-      return {
-        quote: {
-          companyName: null
-        }
-      }
-    },
     computed: {
       returnClass: function() {
-        if (this.quote.changePercent >= 0.0) {
+        if (this.equity.quote.changePercent >= 0.0) {
           return 'positiveReturn';
         } else {
           return 'negativeReturn';
@@ -112,11 +104,7 @@
       },
     },
     mounted() {
-      IEX.get('/stock/' + this.equity.symbol + '/quote', {timeout: 2000})
-        .then(response => {          
-          this.quote = response.data;        
-        })
-        .catch(e => Vue.rollbar.error(e))
+        
     }
   } 
 </script>

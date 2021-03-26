@@ -12,9 +12,7 @@ import com.lightbend.lagom.javadsl.persistence.cassandra.CassandraSession;
 
 import akka.Done;
 import org.pcollections.PSequence;
-import org.pcollections.TreePVector;
 import com.redelastic.stocktrader.portfolio.impl.PortfolioEvent.Opened;
-import com.redelastic.stocktrader.portfolio.impl.PortfolioEvent.Closed;
 
 import javax.inject.Inject;
 
