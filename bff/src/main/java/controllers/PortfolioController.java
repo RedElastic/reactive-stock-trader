@@ -16,6 +16,7 @@ import com.redelastic.stocktrader.portfolio.api.order.OrderDetails;
 import com.redelastic.stocktrader.portfolio.api.order.OrderType;
 import controllers.forms.portfolio.OpenPortfolioForm;
 import controllers.forms.portfolio.PlaceOrderForm;
+import lombok.NonNull;
 import lombok.val;
 import models.CompletedOrder;
 import models.EquityHolding;
@@ -108,24 +109,33 @@ public class PortfolioController extends Controller {
                     }
 
                     List<EquityHolding> equities = new ArrayList<EquityHolding>();
+                    BigDecimal totalStockValue = new BigDecimal(0.0);
                     if (dqr != null) {
                         for (Holding holding : pv.getHoldings()) {
                             DetailedQuote quote = quoteMap.get(holding.getSymbol());
+                            BigDecimal currentValue = quote.getQuote().getLatestPrice().multiply(new BigDecimal(holding.getShareCount()));
+                            totalStockValue = totalStockValue.add(currentValue);
                             EquityHolding pricedHolding = 
                                 EquityHolding.builder()
                                         .symbol(quote.getSymbol())
                                         .shares(holding.getShareCount())
-                                        .currentValue(quote.getQuote().getLatestPrice().multiply(new BigDecimal(holding.getShareCount())))
+                                        .currentValue(currentValue)
                                         .detailedQuote(quote)
                                         .build();
                                equities.add(pricedHolding);                                 
                         }
                     }
+
+                    Optional<@NonNull BigDecimal> totalTradeCost = co.stream()
+                        .map(x -> x.getPrice())
+                        .reduce((a, b) -> a.add(b));
                     
-                return PortfolioSummary.builder()
+                    return PortfolioSummary.builder()
                         .portfolioId(pv.getPortfolioId().getId())
                         .name(pv.getName())
                         .funds(pv.getFunds())
+                        .totalStockValue(totalStockValue)
+                        .totalTradeCost(totalTradeCost.orElse(new BigDecimal(0.0)))
                         .equities(ConsPStack.from(equities))
                         .completedOrders(co)
                         .build();

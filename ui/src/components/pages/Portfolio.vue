@@ -21,7 +21,7 @@
             <div class="col">
               <div class="row">
                 <div class="col-6">
-                  Value (USD)
+                  Equities Value (USD)
                 </div> 
                 <div class="col-6">
                   {{ portfolio.value | toCurrency }}
@@ -29,18 +29,18 @@
               </div>        
               <div class="row">
                 <div class="col-6">
+                  Trade Cost (USD)
+                </div> 
+                <div class="col-6">
+                  {{ portfolio.cost | toCurrency }}
+                </div>
+              </div>        
+              <div class="row">
+                <div class="col-6">
                   Return
                 </div> 
                 <div class="col-6">
-                  {{ portfolio.returnValue | toCurrency }} ({{ portfolio.returnPercent | iexPercent }})
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-6">
-                  Return (24h)
-                </div> 
-                <div class="col-6">
-                  {{ portfolio.return24h | toCurrency }} ({{ portfolio.returnPercent24h | iexPercent }})
+                  {{ portfolio.returnValueTotal | toCurrency }} ({{ portfolio.returnPercentTotal }}%)
                 </div>
               </div>
             </div> 
@@ -165,10 +165,10 @@
             returnPercent24h: null
           }));
           this.portfolio.equities = equities;
-          let equitiesValue = equities.reduce((acc,eq) => acc + eq.value, 0);
-          this.portfolio.value = this.portfolio.cashOnHand + equitiesValue;
-          this.portfolio.returnValue = null;
-          this.portfolio.returnPercent = null;
+          this.portfolio.value = details.totalStockValue;
+          this.portfolio.cost = details.totalTradeCost;
+          this.portfolio.returnValueTotal = details.returnValueTotal;
+          this.portfolio.returnPercentTotal = details.returnPercentTotal;
           this.portfolio.returnPercent = null;
           this.portfolio.returnPercent24h = null;
         });
