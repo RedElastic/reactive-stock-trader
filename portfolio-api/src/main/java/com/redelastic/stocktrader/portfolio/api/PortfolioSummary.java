@@ -4,9 +4,6 @@ import com.redelastic.stocktrader.PortfolioId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.pcollections.PSequence;
-
-import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -17,7 +14,6 @@ public class PortfolioSummary {
 		this.name = name;
 	}
 
-    @NonNull PortfolioId portfolioId;
-
-    @NonNull String name;
+	@NonNull PortfolioId portfolioId;
+	@NonNull String name;
 }

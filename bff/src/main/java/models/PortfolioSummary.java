@@ -11,14 +11,8 @@ import java.math.BigDecimal;
 @Builder
 public class PortfolioSummary {
     @NonNull String portfolioId;
-
     @NonNull String name;
-
-    @NonNull
-    BigDecimal funds;
-
+    @NonNull BigDecimal funds;
     PSequence<EquityHolding> equities;
-
     PSequence<CompletedOrder> completedOrders;
-
 }

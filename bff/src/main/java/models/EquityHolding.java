@@ -13,5 +13,5 @@ public class EquityHolding {
     String symbol;
     Integer shares;
     BigDecimal currentValue;
-    DetailedQuote quote;
+    DetailedQuote detailedQuote;
 }

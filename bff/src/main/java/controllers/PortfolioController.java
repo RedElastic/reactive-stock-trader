@@ -8,7 +8,6 @@ import com.redelastic.stocktrader.broker.api.DetailedQuote;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
 import com.redelastic.stocktrader.broker.api.OrderStatus;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
-import com.redelastic.stocktrader.broker.api.Quote;
 import com.redelastic.stocktrader.portfolio.api.Holding;
 import com.redelastic.stocktrader.portfolio.api.OpenPortfolioDetails;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
@@ -117,7 +116,7 @@ public class PortfolioController extends Controller {
                                         .symbol(quote.getSymbol())
                                         .shares(holding.getShareCount())
                                         .currentValue(quote.getQuote().getLatestPrice().multiply(new BigDecimal(holding.getShareCount())))
-                                        .quote(quote)
+                                        .detailedQuote(quote)
                                         .build();
                                equities.add(pricedHolding);                                 
                         }

@@ -11,7 +11,6 @@ import com.lightbend.lagom.javadsl.persistence.PersistentEntityRegistry;
 import com.redelastic.stocktrader.OrderId;
 import com.redelastic.stocktrader.broker.api.BrokerService;
 import com.redelastic.stocktrader.broker.api.DetailedQuotesResponse;
-import com.redelastic.stocktrader.broker.api.DetailedQuotesRequest;
 import com.redelastic.stocktrader.broker.api.OrderResult;
 import com.redelastic.stocktrader.broker.api.OrderSummary;
 import com.redelastic.stocktrader.broker.api.Quote;
@@ -22,7 +21,6 @@ import com.redelastic.stocktrader.broker.impl.quote.QuoteService;
 import com.redelastic.stocktrader.portfolio.api.OrderPlaced;
 import com.redelastic.stocktrader.portfolio.api.PortfolioService;
 
-import org.pcollections.PSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
