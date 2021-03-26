@@ -153,10 +153,12 @@
         .then(details => {          
           this.portfolio.name = details.name;
           this.portfolio.cashOnHand = details.funds;
-          let equities = details.holdings.map(holding => ({
-            symbol: holding.symbol,
-            shares: holding.shareCount,
-            value: holding.marketValue,
+          let equities = details.equities.map(equity => ({
+            symbol: equity.symbol,
+            shares: equity.shares,
+            value: equity.currentValue,
+            quote: equity.detailedQuote.quote,
+            company: equity.detailedQuote.company,
             returnValue: null,
             returnPercent: null,
             return24h: null,
@@ -170,7 +172,6 @@
           this.portfolio.returnPercent = null;
           this.portfolio.returnPercent24h = null;
         });
-      
     },
     methods: {
       update() {
