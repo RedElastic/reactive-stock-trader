@@ -22,8 +22,8 @@ public class PortfolioSummary {
     BigDecimal totalStockValue;
     BigDecimal totalTradeCost;
     
-    @Getter(lazy=true) private final BigDecimal returnPercentTotal = calculateReturnPercent();
     @Getter(lazy=true) private final BigDecimal returnValueTotal = calculateReturnValue();
+    @Getter(lazy=true) private final BigDecimal returnPercentTotal = calculateReturnPercent();
     
     PSequence<EquityHolding> equities;
     PSequence<CompletedOrder> completedOrders;
@@ -32,7 +32,12 @@ public class PortfolioSummary {
     @NonNull final Date asOf = new Date();
 
     private BigDecimal calculateReturnPercent() {
-        return getReturnValueTotal().divide(totalTradeCost, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(100));
+        int comparison = totalStockValue.compareTo(BigDecimal.valueOf(0.0));
+
+        if (comparison > 0)
+            return getReturnValueTotal().divide(totalTradeCost, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(100));
+        else
+            return BigDecimal.valueOf(0.0);
     }
 
     private BigDecimal calculateReturnValue() {
