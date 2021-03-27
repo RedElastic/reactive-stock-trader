@@ -22,11 +22,13 @@ public class PortfolioSummary {
     BigDecimal totalStockValue;
     BigDecimal totalTradeCost;
     
-    @Getter(lazy=true) private final BigDecimal returnValueTotal = calculateReturnValue();
-    @Getter(lazy=true) private final BigDecimal returnPercentTotal = calculateReturnPercent();
-    
     PSequence<EquityHolding> equities;
     PSequence<CompletedOrder> completedOrders;
+
+    @Getter(lazy=true) private final BigDecimal returnValueTotal = calculateReturnValue();
+    @Getter(lazy=true) private final BigDecimal returnPercentTotal = calculateReturnPercent();
+    @Getter(lazy=true) private final boolean hasTransfers = funds.compareTo(BigDecimal.valueOf(0.0)) != 0 ? true : false;
+    @Getter(lazy=true) private final boolean hasEquities = completedOrders.size() > 0 ? true : false;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm a z")
     @NonNull final Date asOf = new Date();
